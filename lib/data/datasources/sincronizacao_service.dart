@@ -20,14 +20,25 @@ class EstruturaPasta {
 
   /// Gera o caminho da pasta do especialista para o mês atual
   String get caminhoEspecialista => '$especialista/$ano/${_nomeDoMes(mes)}';
-  
+
   /// Gera o caminho da pasta geral (arquivo)
   String get caminhoGeral => 'Arquivo_Geral/$ano/${_nomeDoMes(mes)}';
 
   String _nomeDoMes(int mes) {
     const meses = [
-      '', 'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-      'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+      '',
+      'Janeiro',
+      'Fevereiro',
+      'Março',
+      'Abril',
+      'Maio',
+      'Junho',
+      'Julho',
+      'Agosto',
+      'Setembro',
+      'Outubro',
+      'Novembro',
+      'Dezembro',
     ];
     return meses[mes];
   }
@@ -37,7 +48,7 @@ class EstruturaPasta {
 /// Organiza arquivos por especialista e faz arquivamento automático
 class SincronizacaoService {
   static const String _pastaRoot = 'QualityFruit_Dados';
-  
+
   /// Salva ficha localmente com estrutura organizada
   Future<File> salvarFichaLocal(Ficha ficha, String especialista) async {
     final estrutura = EstruturaPasta(
@@ -49,9 +60,10 @@ class SincronizacaoService {
 
     // Cria diretório local se não existir
     final directory = await _criarDiretorioLocal(estrutura.caminhoEspecialista);
-    
+
     // Nome do arquivo: FICHA_20250722_001.json
-    final nomeArquivo = 'FICHA_${_formatarData(ficha.dataAvaliacao)}_${ficha.numeroFicha}.json';
+    final nomeArquivo =
+        'FICHA_${_formatarData(ficha.dataAvaliacao)}_${ficha.numeroFicha}.json';
     final file = File('${directory.path}/$nomeArquivo');
 
     // Converte ficha para JSON
@@ -63,7 +75,7 @@ class SincronizacaoService {
         'versao_app': '1.0.0',
         'data_criacao': DateTime.now().toIso8601String(),
         'dispositivo': Platform.operatingSystem,
-      }
+      },
     });
 
     // Salva arquivo
@@ -87,15 +99,22 @@ class SincronizacaoService {
     );
 
     final directory = await _criarDiretorioLocal(estrutura.caminhoEspecialista);
-    final nomeArquivo = 'COMPLETO_${_formatarData(ficha.dataAvaliacao)}_${ficha.numeroFicha}.json';
+    final nomeArquivo =
+        'COMPLETO_${_formatarData(ficha.dataAvaliacao)}_${ficha.numeroFicha}.json';
     final file = File('${directory.path}/$nomeArquivo');
 
     // Estrutura completa dos dados
     final dadosCompletos = {
       'ficha': FichaModel.fromEntity(ficha).toJson(),
-      'amostras': amostras.map((a) => AmostraModel.fromEntity(a).toSqliteMap()).toList(),
-      'medidas': medidas.map((m) => MedidaModel.fromEntity(m).toSqliteMap()).toList(),
-      'defeitos': defeitos.map((d) => DefeitoModel.fromEntity(d).toSqliteMap()).toList(),
+      'amostras': amostras
+          .map((a) => AmostraModel.fromEntity(a).toSqliteMap())
+          .toList(),
+      'medidas': medidas
+          .map((m) => MedidaModel.fromEntity(m).toSqliteMap())
+          .toList(),
+      'defeitos': defeitos
+          .map((d) => DefeitoModel.fromEntity(d).toSqliteMap())
+          .toList(),
       'metadados': {
         'especialista': especialista,
         'total_amostras': amostras.length,
@@ -104,7 +123,7 @@ class SincronizacaoService {
         'versao_app': '1.0.0',
         'data_criacao': DateTime.now().toIso8601String(),
         'dispositivo': Platform.operatingSystem,
-      }
+      },
     };
 
     await file.writeAsString(jsonEncode(dadosCompletos));
@@ -127,7 +146,11 @@ class SincronizacaoService {
     final directory = await _obterDiretorioLocal(estrutura.caminhoEspecialista);
     if (!await directory.exists()) return [];
 
-    final files = await directory.list().where((entity) => entity is File).cast<File>().toList();
+    final files = await directory
+        .list()
+        .where((entity) => entity is File)
+        .cast<File>()
+        .toList();
     return files;
   }
 
@@ -137,13 +160,6 @@ class SincronizacaoService {
     required int ano,
     required int mes,
   }) async {
-    final estruturaOrigem = EstruturaPasta(
-      especialista: especialista,
-      ano: ano,
-      mes: mes,
-      nomePasta: _pastaRoot,
-    );
-
     final estruturaDestino = EstruturaPasta(
       especialista: 'Arquivo_Geral',
       ano: ano,
@@ -161,8 +177,10 @@ class SincronizacaoService {
     if (arquivosOrigem.isEmpty) return [];
 
     // Cria diretório de destino
-    final diretorioDestino = await _criarDiretorioLocal(estruturaDestino.caminhoGeral);
-    
+    final diretorioDestino = await _criarDiretorioLocal(
+      estruturaDestino.caminhoGeral,
+    );
+
     List<File> arquivosMovidos = [];
 
     for (final arquivo in arquivosOrigem) {
@@ -192,11 +210,7 @@ class SincronizacaoService {
     final rootDir = Directory(rootPath);
 
     if (!await rootDir.exists()) {
-      return {
-        'especialistas': {},
-        'arquivo_geral': 0,
-        'total_arquivos': 0,
-      };
+      return {'especialistas': {}, 'arquivo_geral': 0, 'total_arquivos': 0};
     }
 
     Map<String, int> especialistas = {};
@@ -206,7 +220,7 @@ class SincronizacaoService {
     await for (final entity in rootDir.list()) {
       if (entity is Directory) {
         final nome = entity.path.split('/').last;
-        
+
         if (nome == 'Arquivo_Geral') {
           // Conta arquivos do arquivo geral
           final anoDir = Directory('${entity.path}/$ano');
@@ -222,14 +236,19 @@ class SincronizacaoService {
           if (await anoDir.exists()) {
             final mesDir = Directory('${anoDir.path}/${_nomeDoMes(mes)}');
             if (await mesDir.exists()) {
-              especialistas[nome] = await mesDir.list().where((e) => e is File).length;
+              especialistas[nome] = await mesDir
+                  .list()
+                  .where((e) => e is File)
+                  .length;
             }
           }
         }
       }
     }
 
-    final totalArquivos = especialistas.values.fold(0, (sum, count) => sum + count) + arquivoGeral;
+    final totalArquivos =
+        especialistas.values.fold(0, (sum, count) => sum + count) +
+        arquivoGeral;
 
     return {
       'especialistas': especialistas,
@@ -244,11 +263,11 @@ class SincronizacaoService {
   Future<Directory> _criarDiretorioLocal(String caminho) async {
     final baseDir = await getApplicationDocumentsDirectory();
     final directory = Directory('${baseDir.path}/$_pastaRoot/$caminho');
-    
+
     if (!await directory.exists()) {
       await directory.create(recursive: true);
     }
-    
+
     return directory;
   }
 
@@ -266,8 +285,19 @@ class SincronizacaoService {
   /// Nome do mês por extenso
   String _nomeDoMes(int mes) {
     const meses = [
-      '', 'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-      'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+      '',
+      'Janeiro',
+      'Fevereiro',
+      'Março',
+      'Abril',
+      'Maio',
+      'Junho',
+      'Julho',
+      'Agosto',
+      'Setembro',
+      'Outubro',
+      'Novembro',
+      'Dezembro',
     ];
     return meses[mes];
   }
@@ -277,11 +307,11 @@ class SincronizacaoService {
     final dataLimite = DateTime.now().subtract(const Duration(days: 180));
     final baseDir = await getApplicationDocumentsDirectory();
     final rootDir = Directory('${baseDir.path}/$_pastaRoot');
-    
+
     if (!await rootDir.exists()) return 0;
 
     int arquivosRemovidos = 0;
-    
+
     await for (final entity in rootDir.list(recursive: true)) {
       if (entity is File) {
         final stat = await entity.stat();

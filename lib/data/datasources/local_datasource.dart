@@ -4,11 +4,12 @@ import 'package:path/path.dart';
 /// Datasource local para gerenciar o banco de dados SQLite
 class LocalDatasource {
   static const _databaseName = 'quality_fruit.db';
-  static const _databaseVersion = 1;
+  static const _databaseVersion = 4;
 
   // Tabelas
   static const _tableFichas = 'fichas';
   static const _tableAmostras = 'amostras';
+  static const _tableAmostrasDetalhadas = 'amostras_detalhadas';
   static const _tableMedidas = 'medidas';
   static const _tableDefeitos = 'defeitos';
 
@@ -42,6 +43,8 @@ class LocalDatasource {
         numero_ficha TEXT UNIQUE NOT NULL,
         data_avaliacao TEXT NOT NULL,
         cliente TEXT NOT NULL,
+        fazenda TEXT NOT NULL,
+        ano INTEGER NOT NULL,
         produto TEXT NOT NULL,
         variedade TEXT NOT NULL,
         origem TEXT NOT NULL,
@@ -49,7 +52,14 @@ class LocalDatasource {
         peso_total REAL NOT NULL,
         quantidade_amostras INTEGER NOT NULL,
         responsavel_avaliacao TEXT NOT NULL,
+        produtor_responsavel TEXT,
         observacoes TEXT,
+        observacao_a TEXT,
+        observacao_b TEXT,
+        observacao_c TEXT,
+        observacao_d TEXT,
+        observacao_f TEXT,
+        observacao_g TEXT,
         criado_em TEXT NOT NULL,
         atualizado_em TEXT
       )
@@ -100,6 +110,54 @@ class LocalDatasource {
       )
     ''');
 
+    // Tabela Amostras Detalhadas (planilha física)
+    await db.execute('''
+      CREATE TABLE $_tableAmostrasDetalhadas (
+        id TEXT PRIMARY KEY,
+        ficha_id TEXT NOT NULL,
+        letra_amostra TEXT NOT NULL,
+        data TEXT,
+        caixa_marca TEXT,
+        classe TEXT,
+        area TEXT,
+        variedade TEXT,
+        peso_bruto_kg REAL,
+        sacola_cumbuca TEXT,
+        caixa_cumbuca_alta TEXT,
+        aparencia_calibro_0a7 TEXT,
+        cor_umd TEXT,
+        peso_embalagem REAL,
+        peso_liquido_kg REAL,
+        baga_mm REAL,
+        brix REAL,
+        brix_media REAL,
+        teia_aranha REAL,
+        aranha REAL,
+        amassada REAL,
+        aquosa_cor_baga REAL,
+        cacho_duro REAL,
+        cacho_ralo_banguelo REAL,
+        cicatriz REAL,
+        corpo_estranho REAL,
+        desgrane_percentual REAL,
+        mosca_fruta REAL,
+        murcha REAL,
+        oidio REAL,
+        podre REAL,
+        queimado_sol REAL,
+        rachada REAL,
+        sacarose REAL,
+        translucido REAL,
+        glomerella REAL,
+        traca REAL,
+        observacoes TEXT,
+        criado_em TEXT NOT NULL,
+        atualizado_em TEXT,
+        FOREIGN KEY (ficha_id) REFERENCES $_tableFichas (id) ON DELETE CASCADE,
+        UNIQUE(ficha_id, letra_amostra)
+      )
+    ''');
+
     // Índices para melhor performance
     await db.execute(
       'CREATE INDEX idx_fichas_cliente ON $_tableFichas (cliente)',
@@ -127,7 +185,97 @@ class LocalDatasource {
 
   /// Atualiza o esquema do banco de dados
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    // Implementar migrações futuras aqui
+    // Migração da versão 1 para 2: adicionar coluna fazenda
+    if (oldVersion < 2) {
+      await db.execute(
+        'ALTER TABLE $_tableFichas ADD COLUMN fazenda TEXT NOT NULL DEFAULT ""',
+      );
+    }
+
+    // Migração da versão 2 para 3: adicionar novos campos da planilha física
+    if (oldVersion < 3) {
+      await db.execute(
+        'ALTER TABLE $_tableFichas ADD COLUMN ano INTEGER NOT NULL DEFAULT ${DateTime.now().year}',
+      );
+      await db.execute(
+        'ALTER TABLE $_tableFichas ADD COLUMN produtor_responsavel TEXT',
+      );
+      await db.execute(
+        'ALTER TABLE $_tableFichas ADD COLUMN observacao_a TEXT',
+      );
+      await db.execute(
+        'ALTER TABLE $_tableFichas ADD COLUMN observacao_b TEXT',
+      );
+      await db.execute(
+        'ALTER TABLE $_tableFichas ADD COLUMN observacao_c TEXT',
+      );
+      await db.execute(
+        'ALTER TABLE $_tableFichas ADD COLUMN observacao_d TEXT',
+      );
+      await db.execute(
+        'ALTER TABLE $_tableFichas ADD COLUMN observacao_f TEXT',
+      );
+      await db.execute(
+        'ALTER TABLE $_tableFichas ADD COLUMN observacao_g TEXT',
+      );
+    }
+    
+    // Migração da versão 3 para 4: adicionar tabela de amostras detalhadas
+    if (oldVersion < 4) {
+      await db.execute('''
+        CREATE TABLE $_tableAmostrasDetalhadas (
+          id TEXT PRIMARY KEY,
+          ficha_id TEXT NOT NULL,
+          letra_amostra TEXT NOT NULL,
+          data TEXT,
+          caixa_marca TEXT,
+          classe TEXT,
+          area TEXT,
+          variedade TEXT,
+          peso_bruto_kg REAL,
+          sacola_cumbuca TEXT,
+          caixa_cumbuca_alta TEXT,
+          aparencia_calibro_0a7 TEXT,
+          cor_umd TEXT,
+          peso_embalagem REAL,
+          peso_liquido_kg REAL,
+          baga_mm REAL,
+          brix REAL,
+          brix_media REAL,
+          teia_aranha REAL,
+          aranha REAL,
+          amassada REAL,
+          aquosa_cor_baga REAL,
+          cacho_duro REAL,
+          cacho_ralo_banguelo REAL,
+          cicatriz REAL,
+          corpo_estranho REAL,
+          desgrane_percentual REAL,
+          mosca_fruta REAL,
+          murcha REAL,
+          oidio REAL,
+          podre REAL,
+          queimado_sol REAL,
+          rachada REAL,
+          sacarose REAL,
+          translucido REAL,
+          glomerella REAL,
+          traca REAL,
+          observacoes TEXT,
+          criado_em TEXT NOT NULL,
+          atualizado_em TEXT,
+          FOREIGN KEY (ficha_id) REFERENCES $_tableFichas (id) ON DELETE CASCADE,
+          UNIQUE(ficha_id, letra_amostra)
+        )
+      ''');
+      
+      await db.execute(
+        'CREATE INDEX idx_amostras_detalhadas_ficha ON $_tableAmostrasDetalhadas (ficha_id)',
+      );
+      await db.execute(
+        'CREATE INDEX idx_amostras_detalhadas_letra ON $_tableAmostrasDetalhadas (letra_amostra)',
+      );
+    }
   }
 
   /// Fecha a conexão com o banco de dados
@@ -232,6 +380,7 @@ class LocalDatasource {
 
   String get tableFichas => _tableFichas;
   String get tableAmostras => _tableAmostras;
+  String get tableAmostrasDetalhadas => _tableAmostrasDetalhadas;
   String get tableMedidas => _tableMedidas;
   String get tableDefeitos => _tableDefeitos;
 }

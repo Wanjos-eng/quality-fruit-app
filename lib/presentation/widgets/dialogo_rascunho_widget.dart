@@ -25,16 +25,9 @@ class DialogoRascunhoWidget extends StatelessWidget {
     return AlertDialog(
       title: Row(
         children: [
-          Icon(
-            Icons.edit_note,
-            color: AppColors.secondaryOrange,
-            size: 28,
-          ),
+          Icon(Icons.edit_note, color: AppColors.secondaryOrange, size: 28),
           const SizedBox(width: 12),
-          Text(
-            'Rascunho Encontrado',
-            style: AppTypography.titleMedium,
-          ),
+          Text('Rascunho Encontrado', style: AppTypography.titleMedium),
         ],
       ),
       content: Column(
@@ -46,7 +39,7 @@ class DialogoRascunhoWidget extends StatelessWidget {
             style: AppTypography.bodyLarge,
           ),
           const SizedBox(height: 16),
-          
+
           // Informações do rascunho
           Container(
             padding: const EdgeInsets.all(16),
@@ -69,8 +62,8 @@ class DialogoRascunhoWidget extends StatelessWidget {
                   _buildInfoRow(
                     'Salvo em:',
                     '${dataRascunho.day}/${dataRascunho.month}/${dataRascunho.year} '
-                    '${dataRascunho.hour.toString().padLeft(2, '0')}:'
-                    '${dataRascunho.minute.toString().padLeft(2, '0')}',
+                        '${dataRascunho.hour.toString().padLeft(2, '0')}:'
+                        '${dataRascunho.minute.toString().padLeft(2, '0')}',
                   ),
                 if (tempoDecorrido != null)
                   _buildInfoRow(
@@ -81,7 +74,7 @@ class DialogoRascunhoWidget extends StatelessWidget {
               ],
             ),
           ),
-          
+
           const SizedBox(height: 16),
           Text(
             '⚠️ Se ignorar, todos os dados do rascunho serão perdidos permanentemente.',
@@ -99,12 +92,9 @@ class DialogoRascunhoWidget extends StatelessWidget {
             Navigator.of(context).pop();
             onAcaoSelecionada(AcaoRascunho.manter);
           },
-          child: Text(
-            'Manter',
-            style: AppTypography.buttonSecondaryGreen,
-          ),
+          child: Text('Manter', style: AppTypography.buttonSecondaryGreen),
         ),
-        
+
         // Botão Ignorar
         TextButton(
           onPressed: () {
@@ -119,7 +109,7 @@ class DialogoRascunhoWidget extends StatelessWidget {
             ),
           ),
         ),
-        
+
         // Botão Recuperar (Principal)
         ElevatedButton.icon(
           onPressed: () {
@@ -170,7 +160,8 @@ class DialogoRascunhoWidget extends StatelessWidget {
   String _formatarTempo(int minutos) {
     if (minutos < 60) {
       return '${minutos}min atrás';
-    } else if (minutos < 1440) { // 24 horas
+    } else if (minutos < 1440) {
+      // 24 horas
       final horas = minutos ~/ 60;
       return '${horas}h atrás';
     } else {

@@ -49,6 +49,9 @@ dependencies:
   
   # Acesso aos diretórios do sistema
   path_provider: ^2.1.1
+  
+  # Manipulação de caminhos
+  path: ^1.8.3
 
 dev_dependencies:
   flutter_test:

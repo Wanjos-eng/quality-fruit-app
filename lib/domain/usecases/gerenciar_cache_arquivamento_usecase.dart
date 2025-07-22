@@ -20,9 +20,9 @@ class ResultadoSalvamento {
 
 /// Opções para recuperação de rascunho
 enum AcaoRascunho {
-  recuperar,    // Recupera o rascunho
-  ignorar,      // Ignora e limpa o rascunho
-  manter,       // Mantém o rascunho para depois
+  recuperar, // Recupera o rascunho
+  ignorar, // Ignora e limpa o rascunho
+  manter, // Mantém o rascunho para depois
 }
 
 /// Use case para gerenciar cache, rascunhos e arquivamento
@@ -57,7 +57,7 @@ class GerenciarCacheArquivamentoUseCase {
       'ficha': ficha,
       'data_rascunho': dataRascunho,
       'especialista': especialista,
-      'tempo_decorrido': dataRascunho != null 
+      'tempo_decorrido': dataRascunho != null
           ? DateTime.now().difference(dataRascunho).inMinutes
           : null,
     };
@@ -68,11 +68,11 @@ class GerenciarCacheArquivamentoUseCase {
     switch (acao) {
       case AcaoRascunho.recuperar:
         return await _cacheService.recuperarRascunhoFicha();
-      
+
       case AcaoRascunho.ignorar:
         await _cacheService.limparTodosRascunhos();
         return null;
-      
+
       case AcaoRascunho.manter:
         return null; // Não faz nada, mantém o rascunho
     }
@@ -84,7 +84,10 @@ class GerenciarCacheArquivamentoUseCase {
   }
 
   /// Salva rascunho de amostras
-  Future<void> salvarRascunhoAmostras(String fichaId, List<Amostra> amostras) async {
+  Future<void> salvarRascunhoAmostras(
+    String fichaId,
+    List<Amostra> amostras,
+  ) async {
     await _cacheService.salvarRascunhoAmostras(fichaId, amostras);
   }
 
@@ -100,10 +103,12 @@ class GerenciarCacheArquivamentoUseCase {
     try {
       // 1. Salva no banco local
       final fichaSalva = await _fichaRepository.salvar(ficha);
-      
+
       // 2. Salva amostras
       for (final amostra in amostras) {
-        await _amostraRepository.salvar(amostra.copyWith(fichaId: fichaSalva.id));
+        await _amostraRepository.salvar(
+          amostra.copyWith(fichaId: fichaSalva.id),
+        );
       }
 
       // 3. Salva medidas
@@ -138,7 +143,6 @@ class GerenciarCacheArquivamentoUseCase {
         ficha: fichaSalva,
         caminhoArquivo: caminhoArquivo,
       );
-
     } catch (e) {
       return ResultadoSalvamento(
         sucesso: false,
@@ -178,7 +182,6 @@ class GerenciarCacheArquivamentoUseCase {
         'periodo': '$mesArquivo/$anoArquivo',
         'relatorio': relatorio,
       };
-
     } catch (e) {
       return {
         'sucesso': false,
@@ -192,23 +195,21 @@ class GerenciarCacheArquivamentoUseCase {
   /// Obtém estatísticas do sistema de arquivos
   Future<Map<String, dynamic>> obterEstatisticasSistema() async {
     final agora = DateTime.now();
-    
+
     // Estatísticas do cache
     final estatisticasCache = await _cacheService.obterEstatisticasCache();
-    
+
     // Relatório do mês atual
     final relatorioAtual = await _sincronizacaoService.gerarRelatorioArquivos(
       ano: agora.year,
       mes: agora.month,
     );
-    
+
     // Relatório do mês anterior
     final mesAnterior = agora.month == 1 ? 12 : agora.month - 1;
     final anoAnterior = agora.month == 1 ? agora.year - 1 : agora.year;
-    final relatorioAnterior = await _sincronizacaoService.gerarRelatorioArquivos(
-      ano: anoAnterior,
-      mes: mesAnterior,
-    );
+    final relatorioAnterior = await _sincronizacaoService
+        .gerarRelatorioArquivos(ano: anoAnterior, mes: mesAnterior);
 
     return {
       'cache': estatisticasCache,
@@ -222,8 +223,9 @@ class GerenciarCacheArquivamentoUseCase {
   Future<Map<String, dynamic>> limparDadosAntigos() async {
     try {
       // Limpa arquivos antigos (mais de 6 meses)
-      final arquivosRemovidos = await _sincronizacaoService.limparArquivosAntigos();
-      
+      final arquivosRemovidos = await _sincronizacaoService
+          .limparArquivosAntigos();
+
       // Limpa rascunhos órfãos do cache
       await _cacheService.limparTodosRascunhos();
 
@@ -232,12 +234,8 @@ class GerenciarCacheArquivamentoUseCase {
         'arquivos_removidos': arquivosRemovidos,
         'cache_limpo': true,
       };
-
     } catch (e) {
-      return {
-        'sucesso': false,
-        'erro': e.toString(),
-      };
+      return {'sucesso': false, 'erro': e.toString()};
     }
   }
 

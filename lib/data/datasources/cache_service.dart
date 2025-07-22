@@ -16,16 +16,19 @@ class CacheService {
     final prefs = await SharedPreferences.getInstance();
     final fichaModel = FichaModel.fromEntity(ficha);
     final json = jsonEncode(fichaModel.toJson());
-    
+
     await prefs.setString(_keyFichaRascunho, json);
-    await prefs.setString('${_keyFichaRascunho}_timestamp', DateTime.now().toIso8601String());
+    await prefs.setString(
+      '${_keyFichaRascunho}_timestamp',
+      DateTime.now().toIso8601String(),
+    );
   }
 
   /// Recupera rascunho de ficha
   Future<Ficha?> recuperarRascunhoFicha() async {
     final prefs = await SharedPreferences.getInstance();
     final json = prefs.getString(_keyFichaRascunho);
-    
+
     if (json == null) return null;
 
     try {
@@ -39,13 +42,16 @@ class CacheService {
   }
 
   /// Salva rascunhos de amostras de uma ficha
-  Future<void> salvarRascunhoAmostras(String fichaId, List<Amostra> amostras) async {
+  Future<void> salvarRascunhoAmostras(
+    String fichaId,
+    List<Amostra> amostras,
+  ) async {
     final prefs = await SharedPreferences.getInstance();
     final amostrasJson = amostras.map((amostra) {
       final model = AmostraModel.fromEntity(amostra);
       return model.toSqliteMap();
     }).toList();
-    
+
     final json = jsonEncode(amostrasJson);
     await prefs.setString('$_keyAmostrasRascunho$fichaId', json);
   }
@@ -54,12 +60,18 @@ class CacheService {
   Future<List<Amostra>> recuperarRascunhoAmostras(String fichaId) async {
     final prefs = await SharedPreferences.getInstance();
     final json = prefs.getString('$_keyAmostrasRascunho$fichaId');
-    
+
     if (json == null) return [];
 
     try {
       final list = jsonDecode(json) as List<dynamic>;
-      return list.map((map) => AmostraModel.fromSqliteMap(map as Map<String, dynamic>).toEntity()).toList();
+      return list
+          .map(
+            (map) => AmostraModel.fromSqliteMap(
+              map as Map<String, dynamic>,
+            ).toEntity(),
+          )
+          .toList();
     } catch (e) {
       // Remove rascunho corrompido
       await limparRascunhoAmostras(fichaId);
@@ -89,9 +101,9 @@ class CacheService {
   Future<DateTime?> obterDataUltimoRascunho() async {
     final prefs = await SharedPreferences.getInstance();
     final timestamp = prefs.getString('${_keyFichaRascunho}_timestamp');
-    
+
     if (timestamp == null) return null;
-    
+
     try {
       return DateTime.parse(timestamp);
     } catch (e) {
@@ -115,11 +127,15 @@ class CacheService {
   /// Limpa todos os rascunhos
   Future<void> limparTodosRascunhos() async {
     final prefs = await SharedPreferences.getInstance();
-    final keys = prefs.getKeys().where((key) => 
-      key.startsWith(_keyFichaRascunho) || 
-      key.startsWith(_keyAmostrasRascunho)
-    ).toList();
-    
+    final keys = prefs
+        .getKeys()
+        .where(
+          (key) =>
+              key.startsWith(_keyFichaRascunho) ||
+              key.startsWith(_keyAmostrasRascunho),
+        )
+        .toList();
+
     for (final key in keys) {
       await prefs.remove(key);
     }
@@ -136,9 +152,9 @@ class CacheService {
   Future<Map<String, dynamic>> obterConfiguracoes() async {
     final prefs = await SharedPreferences.getInstance();
     final json = prefs.getString(_keyConfiguracoes);
-    
+
     if (json == null) return {};
-    
+
     try {
       return jsonDecode(json) as Map<String, dynamic>;
     } catch (e) {
@@ -150,15 +166,15 @@ class CacheService {
   Future<Map<String, dynamic>> obterEstatisticasCache() async {
     final prefs = await SharedPreferences.getInstance();
     final keys = prefs.getKeys();
-    
+
     int rascunhosFicha = 0;
     int rascunhosAmostras = 0;
-    
+
     for (final key in keys) {
       if (key.startsWith(_keyFichaRascunho)) rascunhosFicha++;
       if (key.startsWith(_keyAmostrasRascunho)) rascunhosAmostras++;
     }
-    
+
     return {
       'rascunhos_ficha': rascunhosFicha,
       'rascunhos_amostras': rascunhosAmostras,
