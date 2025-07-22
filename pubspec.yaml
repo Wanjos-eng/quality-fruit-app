@@ -43,6 +43,12 @@ dependencies:
   
   # Geração de UUIDs
   uuid: ^4.5.1
+  
+  # Cache e preferências locais
+  shared_preferences: ^2.2.2
+  
+  # Acesso aos diretórios do sistema
+  path_provider: ^2.1.1
 
 dev_dependencies:
   flutter_test:

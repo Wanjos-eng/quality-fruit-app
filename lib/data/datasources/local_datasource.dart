@@ -101,14 +101,28 @@ class LocalDatasource {
     ''');
 
     // Índices para melhor performance
-    await db.execute('CREATE INDEX idx_fichas_cliente ON $_tableFichas (cliente)');
-    await db.execute('CREATE INDEX idx_fichas_produto ON $_tableFichas (produto)');
-    await db.execute('CREATE INDEX idx_fichas_data ON $_tableFichas (data_avaliacao)');
-    await db.execute('CREATE INDEX idx_amostras_ficha ON $_tableAmostras (ficha_id)');
-    await db.execute('CREATE INDEX idx_medidas_amostra ON $_tableMedidas (amostra_id)');
+    await db.execute(
+      'CREATE INDEX idx_fichas_cliente ON $_tableFichas (cliente)',
+    );
+    await db.execute(
+      'CREATE INDEX idx_fichas_produto ON $_tableFichas (produto)',
+    );
+    await db.execute(
+      'CREATE INDEX idx_fichas_data ON $_tableFichas (data_avaliacao)',
+    );
+    await db.execute(
+      'CREATE INDEX idx_amostras_ficha ON $_tableAmostras (ficha_id)',
+    );
+    await db.execute(
+      'CREATE INDEX idx_medidas_amostra ON $_tableMedidas (amostra_id)',
+    );
     await db.execute('CREATE INDEX idx_medidas_tipo ON $_tableMedidas (tipo)');
-    await db.execute('CREATE INDEX idx_defeitos_amostra ON $_tableDefeitos (amostra_id)');
-    await db.execute('CREATE INDEX idx_defeitos_tipo ON $_tableDefeitos (tipo)');
+    await db.execute(
+      'CREATE INDEX idx_defeitos_amostra ON $_tableDefeitos (amostra_id)',
+    );
+    await db.execute(
+      'CREATE INDEX idx_defeitos_tipo ON $_tableDefeitos (tipo)',
+    );
   }
 
   /// Atualiza o esquema do banco de dados

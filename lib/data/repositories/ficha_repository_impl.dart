@@ -15,15 +15,15 @@ class FichaRepositoryImpl implements FichaRepository {
   @override
   Future<Ficha> salvar(Ficha ficha) async {
     // Gera um novo ID se não existir
-    final fichaParaSalvar = ficha.id.isEmpty 
+    final fichaParaSalvar = ficha.id.isEmpty
         ? ficha.copyWith(id: _uuid.v4())
         : ficha;
 
     final model = FichaModel.fromEntity(fichaParaSalvar);
-    
+
     // Verifica se a ficha já existe para decidir entre insert ou update
     final fichaExistente = await buscarPorId(fichaParaSalvar.id);
-    
+
     if (fichaExistente == null) {
       await _datasource.insert(_datasource.tableFichas, model.toSqliteMap());
     } else {
@@ -116,10 +116,7 @@ class FichaRepositoryImpl implements FichaRepository {
     final results = await _datasource.query(
       _datasource.tableFichas,
       where: 'data_avaliacao BETWEEN ? AND ?',
-      whereArgs: [
-        dataInicio.toIso8601String(),
-        dataFim.toIso8601String(),
-      ],
+      whereArgs: [dataInicio.toIso8601String(), dataFim.toIso8601String()],
       orderBy: 'data_avaliacao DESC',
     );
 
