@@ -219,7 +219,7 @@ class LocalDatasource {
         'ALTER TABLE $_tableFichas ADD COLUMN observacao_g TEXT',
       );
     }
-    
+
     // Migração da versão 3 para 4: adicionar tabela de amostras detalhadas
     if (oldVersion < 4) {
       await db.execute('''
@@ -268,7 +268,7 @@ class LocalDatasource {
           UNIQUE(ficha_id, letra_amostra)
         )
       ''');
-      
+
       await db.execute(
         'CREATE INDEX idx_amostras_detalhadas_ficha ON $_tableAmostrasDetalhadas (ficha_id)',
       );
