@@ -16,23 +16,23 @@ void main() {
 
     // Verify that the app title is present.
     expect(find.text('QualityFruit App'), findsOneWidget);
-    
+
     // Verify that the welcome message is present.
     expect(find.text('Bem-vindo ao QualityFruit App'), findsOneWidget);
-    
+
     // Verify that the evaluate button is present.
     expect(find.text('Avaliar Fruta'), findsOneWidget);
-    
+
     // Verify that the history button is present.
     expect(find.text('Ver Histórico'), findsOneWidget);
 
     // Tap the 'Avaliar Fruta' button and verify snackbar appears.
     await tester.tap(find.text('Avaliar Fruta'));
     await tester.pump();
-    
+
     // Wait for snackbar animation
     await tester.pump(const Duration(milliseconds: 100));
-    
+
     // Verify that the development message appears.
     expect(find.text('Funcionalidade em desenvolvimento!'), findsOneWidget);
   });
