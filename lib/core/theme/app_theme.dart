@@ -37,12 +37,10 @@ class AppTheme {
         secondary: AppColors.secondaryOrange,
         tertiary: AppColors.positiveGreen,
         surface: AppColors.backgroundWhite,
-        background: AppColors.backgroundGrayLight,
         error: AppColors.statusError,
         onPrimary: AppColors.backgroundWhite,
         onSecondary: AppColors.backgroundWhite,
         onSurface: AppColors.textPrimary,
-        onBackground: AppColors.textPrimary,
       ),
 
       // === TIPOGRAFIA ===
@@ -70,7 +68,7 @@ class AppTheme {
         elevation: elevationSmall,
         centerTitle: true,
         titleTextStyle: AppTypography.titleMedium,
-        shadowColor: AppColors.border.withOpacity(0.3),
+        shadowColor: AppColors.border.withValues(alpha: 0.3),
       ),
 
       // === BOTÕES PRINCIPAIS ===
@@ -79,7 +77,7 @@ class AppTheme {
           backgroundColor: AppColors.primaryRed,
           foregroundColor: AppColors.backgroundWhite,
           elevation: elevation,
-          shadowColor: AppColors.primaryRed.withOpacity(0.3),
+          shadowColor: AppColors.primaryRed.withValues(alpha: 0.3),
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(borderRadius),
@@ -150,7 +148,7 @@ class AppTheme {
       cardTheme: CardThemeData(
         color: AppColors.backgroundWhite,
         elevation: elevation,
-        shadowColor: AppColors.border.withOpacity(0.3),
+        shadowColor: AppColors.border.withValues(alpha: 0.3),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(borderRadius),
         ),
@@ -194,12 +192,10 @@ class AppTheme {
         secondary: AppColors.secondaryOrange,
         tertiary: AppColors.positiveGreen,
         surface: AppColors.cardDark,
-        background: AppColors.backgroundDark,
         error: AppColors.statusError,
         onPrimary: AppColors.backgroundWhite,
         onSecondary: AppColors.backgroundWhite,
         onSurface: AppColors.textDark,
-        onBackground: AppColors.textDark,
       ),
 
       // === TIPOGRAFIA MODO ESCURO ===
@@ -227,7 +223,7 @@ class AppTheme {
       cardTheme: CardThemeData(
         color: AppColors.cardDark,
         elevation: elevation,
-        shadowColor: Colors.black.withOpacity(0.5),
+        shadowColor: Colors.black.withValues(alpha: 0.5),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(borderRadius),
         ),
@@ -240,11 +236,11 @@ class AppTheme {
         fillColor: AppColors.cardDark,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(borderRadiusSmall),
-          borderSide: BorderSide(color: AppColors.textDark.withOpacity(0.3)),
+          borderSide: BorderSide(color: AppColors.textDark.withValues(alpha: 0.3)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(borderRadiusSmall),
-          borderSide: BorderSide(color: AppColors.textDark.withOpacity(0.3)),
+          borderSide: BorderSide(color: AppColors.textDark.withValues(alpha: 0.3)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(borderRadiusSmall),
@@ -254,7 +250,7 @@ class AppTheme {
           color: AppColors.textDark,
         ),
         hintStyle: AppTypography.inputHint.copyWith(
-          color: AppColors.textDark.withOpacity(0.5),
+          color: AppColors.textDark.withValues(alpha: 0.5),
         ),
       ),
     );

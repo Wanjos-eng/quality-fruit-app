@@ -10,9 +10,6 @@ class AppTypography {
   /// Fonte principal - Montserrat
   static TextStyle get _baseTextStyle => GoogleFonts.montserrat();
 
-  /// Fonte alternativa - Inter (caso Montserrat não carregue)
-  static TextStyle get _fallbackTextStyle => GoogleFonts.inter();
-
   // === TÍTULOS (18-22px, Negrito, Vermelho ou Verde) ===
 
   /// Título Principal - 22px, Negrito, Vermelho
@@ -131,7 +128,7 @@ class AppTypography {
 
   /// Texto secundário para modo escuro
   static TextStyle get bodyMediumDark =>
-      bodyMedium.copyWith(color: AppColors.textDark.withOpacity(0.7));
+      bodyMedium.copyWith(color: AppColors.textDark.withValues(alpha: 0.7));
 
   // === UTILITÁRIOS ===
 
