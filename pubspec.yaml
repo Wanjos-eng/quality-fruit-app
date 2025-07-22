@@ -37,6 +37,12 @@ dependencies:
   
   # Fontes Google (Montserrat, Inter)
   google_fonts: ^6.1.0
+  
+  # Banco de dados local SQLite
+  sqflite: ^2.3.0
+  
+  # Geração de UUIDs
+  uuid: ^4.5.1
 
 dev_dependencies:
   flutter_test:
