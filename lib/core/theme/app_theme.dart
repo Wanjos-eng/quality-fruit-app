@@ -236,11 +236,15 @@ class AppTheme {
         fillColor: AppColors.cardDark,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(borderRadiusSmall),
-          borderSide: BorderSide(color: AppColors.textDark.withValues(alpha: 0.3)),
+          borderSide: BorderSide(
+            color: AppColors.textDark.withValues(alpha: 0.3),
+          ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(borderRadiusSmall),
-          borderSide: BorderSide(color: AppColors.textDark.withValues(alpha: 0.3)),
+          borderSide: BorderSide(
+            color: AppColors.textDark.withValues(alpha: 0.3),
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(borderRadiusSmall),

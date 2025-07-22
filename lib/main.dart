@@ -262,7 +262,9 @@ class HomePage extends StatelessWidget {
                         Icon(
                           Icons.calendar_today,
                           size: 14,
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.6,
+                          ),
                         ),
                         const SizedBox(width: 4),
                         Text(date, style: theme.textTheme.bodySmall),
