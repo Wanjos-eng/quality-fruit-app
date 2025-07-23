@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../core/theme/app_colors.dart';
 import '../../domain/entities/entities.dart';
 
 /// Página para listar todas as fichas criadas
@@ -24,7 +25,7 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
   Future<void> _carregarFichas() async {
     // Simular carregamento - aqui seria a chamada para o repository
     await Future.delayed(const Duration(seconds: 1));
-    
+
     setState(() {
       _fichas = _gerarFichasExemplo();
       _isLoading = false;
@@ -73,27 +74,38 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
 
   List<Ficha> get _fichasFiltradas {
     if (_searchQuery.isEmpty) return _fichas;
-    
-    return _fichas.where((ficha) =>
-      ficha.numeroFicha.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-      ficha.cliente.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-      ficha.produto.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-      ficha.fazenda.toLowerCase().contains(_searchQuery.toLowerCase())
-    ).toList();
+
+    return _fichas
+        .where(
+          (ficha) =>
+              ficha.numeroFicha.toLowerCase().contains(
+                _searchQuery.toLowerCase(),
+              ) ||
+              ficha.cliente.toLowerCase().contains(
+                _searchQuery.toLowerCase(),
+              ) ||
+              ficha.produto.toLowerCase().contains(
+                _searchQuery.toLowerCase(),
+              ) ||
+              ficha.fazenda.toLowerCase().contains(_searchQuery.toLowerCase()),
+        )
+        .toList();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: Theme.of(context).brightness == Brightness.dark
+          ? AppColors.backgroundDark
+          : Colors.grey[50],
       appBar: AppBar(
         title: Text(
           'Minhas Fichas',
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.w600,
-          ),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
         ),
-        backgroundColor: const Color(0xFF4CAF50),
+        backgroundColor: Theme.of(context).brightness == Brightness.dark
+            ? const Color(0xFF16A34A) // darkGreen
+            : const Color(0xFF4CAF50),
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
@@ -107,18 +119,18 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
           ),
         ],
       ),
-      body: _isLoading 
+      body: _isLoading
           ? const Center(
-              child: CircularProgressIndicator(
-                color: Color(0xFF4CAF50),
-              ),
+              child: CircularProgressIndicator(color: Color(0xFF4CAF50)),
             )
           : _fichasFiltradas.isEmpty
-              ? _buildEmptyState()
-              : _buildListaFichas(),
+          ? _buildEmptyState()
+          : _buildListaFichas(),
       floatingActionButton: FloatingActionButton(
         onPressed: () => Navigator.pushNamed(context, '/criar-ficha'),
-        backgroundColor: const Color(0xFF4CAF50),
+        backgroundColor: Theme.of(context).brightness == Brightness.dark
+            ? const Color(0xFF16A34A) // darkGreen
+            : const Color(0xFF4CAF50),
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
@@ -129,14 +141,10 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.description_outlined,
-            size: 80,
-            color: Colors.grey[400],
-          ),
+          Icon(Icons.description_outlined, size: 80, color: Colors.grey[400]),
           const SizedBox(height: 16),
           Text(
-            _searchQuery.isEmpty 
+            _searchQuery.isEmpty
                 ? 'Nenhuma ficha encontrada'
                 : 'Nenhuma ficha corresponde à pesquisa',
             style: GoogleFonts.poppins(
@@ -150,10 +158,7 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
             _searchQuery.isEmpty
                 ? 'Crie sua primeira ficha de avaliação'
                 : 'Tente uma pesquisa diferente',
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              color: Colors.grey[500],
-            ),
+            style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[500]),
           ),
           if (_searchQuery.isEmpty) ...[
             const SizedBox(height: 24),
@@ -192,7 +197,7 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
             ],
           ),
         ),
-        
+
         // Barra de pesquisa
         if (_searchQuery.isNotEmpty)
           Container(
@@ -242,9 +247,7 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: () => _abrirDetalhes(ficha),
         borderRadius: BorderRadius.circular(12),
@@ -340,11 +343,7 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
               // Rodapé com ações
               Row(
                 children: [
-                  Icon(
-                    Icons.person,
-                    size: 16,
-                    color: Colors.grey[600],
-                  ),
+                  Icon(Icons.person, size: 16, color: Colors.grey[600]),
                   const SizedBox(width: 4),
                   Expanded(
                     child: Text(
@@ -385,19 +384,13 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
         ),
         Text(
           label,
-          style: GoogleFonts.poppins(
-            fontSize: 12,
-            color: Colors.grey[600],
-          ),
+          style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600]),
         ),
       ],
     );
   }
 
-  Widget _buildInfoChip({
-    required IconData icon,
-    required String label,
-  }) {
+  Widget _buildInfoChip({required IconData icon, required String label}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
@@ -411,10 +404,7 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
           const SizedBox(width: 4),
           Text(
             label,
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              color: Colors.grey[700],
-            ),
+            style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[700]),
           ),
         ],
       ),
@@ -428,17 +418,25 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
   int _contarFichasSemana() {
     final agora = DateTime.now();
     final inicioSemana = agora.subtract(Duration(days: agora.weekday - 1));
-    return _fichas.where((ficha) => 
-      ficha.criadoEm.isAfter(inicioSemana.subtract(const Duration(days: 1)))
-    ).length;
+    return _fichas
+        .where(
+          (ficha) => ficha.criadoEm.isAfter(
+            inicioSemana.subtract(const Duration(days: 1)),
+          ),
+        )
+        .length;
   }
 
   int _contarFichasMes() {
     final agora = DateTime.now();
     final inicioMes = DateTime(agora.year, agora.month, 1);
-    return _fichas.where((ficha) => 
-      ficha.criadoEm.isAfter(inicioMes.subtract(const Duration(days: 1)))
-    ).length;
+    return _fichas
+        .where(
+          (ficha) => ficha.criadoEm.isAfter(
+            inicioMes.subtract(const Duration(days: 1)),
+          ),
+        )
+        .length;
   }
 
   void _showSearchDialog() {
@@ -480,7 +478,9 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Filtros'),
-        content: const Text('Funcionalidade de filtros será implementada em breve.'),
+        content: const Text(
+          'Funcionalidade de filtros será implementada em breve.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),

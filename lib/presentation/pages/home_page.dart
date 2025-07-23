@@ -1,26 +1,65 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../core/theme/app_colors.dart';
 import 'lista_fichas_page.dart';
 import 'criar_ficha_page.dart';
 
 /// Página principal do aplicativo de controle de qualidade
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  late Map<String, int> _estatisticas;
+
+  @override
+  void initState() {
+    super.initState();
+    _carregarEstatisticas();
+  }
+
+  void _carregarEstatisticas() {
+    // Simular dados dinâmicos - em produção viria do repository
+    final agora = DateTime.now();
+    final pendentes = (agora.day % 5) + 1; // Entre 1-5 baseado no dia
+    final salvos = (agora.day % 20) + 8; // Entre 8-27 baseado no dia
+
+    setState(() {
+      _estatisticas = {
+        'pendentes': pendentes,
+        'salvos': salvos,
+        'total': pendentes + salvos,
+      };
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF4CAF50), // Verde principal
-              Color(0xFF8BC34A), // Verde claro
-              Color(0xFFCDDC39), // Verde amarelado
-            ],
-          ),
+        decoration: BoxDecoration(
+          gradient: Theme.of(context).brightness == Brightness.dark
+              ? const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFFB91C1C), // darkRed
+                    Color(0xFF16A34A), // darkGreen
+                    Color(0xFFEAB308), // darkOrange
+                  ],
+                )
+              : LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    AppColors.primaryRed, // Vermelho Pura Fruta
+                    const Color(0xFFFF5722), // Vermelho laranja
+                    const Color(0xFFFF9800), // Laranja
+                  ],
+                ),
         ),
         child: SafeArea(
           child: Padding(
@@ -35,14 +74,18 @@ class HomePage extends StatelessWidget {
                   style: GoogleFonts.poppins(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? AppColors.textDark
+                        : Colors.white,
                   ),
                 ),
                 Text(
-                  'Sistema de Controle de Qualidade',
+                  'Sistema Offline de Controle de Qualidade 🍇',
                   style: GoogleFonts.poppins(
                     fontSize: 16,
-                    color: Colors.white.withOpacity(0.9),
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? AppColors.textDark.withValues(alpha: 0.9)
+                        : Colors.white.withValues(alpha: 0.9),
                   ),
                 ),
                 const SizedBox(height: 60),
@@ -57,13 +100,19 @@ class HomePage extends StatelessWidget {
                         title: 'Nova Ficha',
                         subtitle: 'Criar nova avaliação de qualidade',
                         icon: Icons.add_circle,
-                        color: Colors.white,
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const CriarFichaPage(),
-                          ),
-                        ),
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.cardDark
+                            : Colors.white,
+                        onTap: () async {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const CriarFichaPage(),
+                            ),
+                          );
+                          // Atualizar estatísticas ao retornar
+                          _carregarEstatisticas();
+                        },
                       ),
                       const SizedBox(height: 20),
 
@@ -73,42 +122,75 @@ class HomePage extends StatelessWidget {
                         title: 'Minhas Fichas',
                         subtitle: 'Visualizar avaliações existentes',
                         icon: Icons.list_alt,
-                        color: Colors.white,
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const ListaFichasPage(),
-                          ),
-                        ),
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.cardDark
+                            : Colors.white,
+                        onTap: () async {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const ListaFichasPage(),
+                            ),
+                          );
+                          // Atualizar estatísticas ao retornar
+                          _carregarEstatisticas();
+                        },
                       ),
                       const SizedBox(height: 20),
 
                       // Card Sincronização
                       _buildActionCard(
                         context: context,
-                        title: 'Sincronizar',
-                        subtitle: 'Backup e sincronização de dados',
+                        title: 'Sincronizar com Drive',
+                        subtitle: 'Backup para Google Drive da empresa',
                         icon: Icons.cloud_sync,
-                        color: Colors.white,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.cardDark
+                            : Colors.white,
                         onTap: () => _showSyncDialog(context),
                       ),
                     ],
                   ),
                 ),
 
-                // Footer com estatísticas rápidas
+                // Status de sincronização
                 Container(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 20,
+                  ),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(15),
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? AppColors.cardDark.withValues(alpha: 0.8)
+                        : Colors.white.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildStatistic('Fichas', '0'),
-                      _buildStatistic('Esta Semana', '0'),
-                      _buildStatistic('Este Mês', '0'),
+                      _buildSyncStatus(
+                        context,
+                        'Pendentes',
+                        '${_estatisticas['pendentes'] ?? 0}',
+                        Icons.schedule,
+                        const Color(0xFFFFB74D), // Âmbar para pendentes
+                      ),
+                      _buildSyncStatus(
+                        context,
+                        'Salvos',
+                        '${_estatisticas['salvos'] ?? 0}',
+                        Icons.check_circle,
+                        const Color(0xFF81C784), // Verde suave
+                      ),
+                      _buildSyncStatus(
+                        context,
+                        'Total',
+                        '${_estatisticas['total'] ?? 0}',
+                        Icons.folder,
+                        Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.textDark
+                            : Colors.white,
+                      ),
                     ],
                   ),
                 ),
@@ -131,9 +213,7 @@ class HomePage extends StatelessWidget {
     return Card(
       elevation: 8,
       shadowColor: Colors.black26,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(20),
@@ -148,14 +228,12 @@ class HomePage extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF4CAF50),
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? const Color(0xFFB91C1C) // darkRed
+                      : AppColors.primaryRed, // Vermelho Pura Fruta
                   borderRadius: BorderRadius.circular(15),
                 ),
-                child: Icon(
-                  icon,
-                  size: 32,
-                  color: Colors.white,
-                ),
+                child: Icon(icon, size: 32, color: Colors.white),
               ),
               const SizedBox(width: 20),
               Expanded(
@@ -167,7 +245,9 @@ class HomePage extends StatelessWidget {
                       style: GoogleFonts.poppins(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xFF2E7D32),
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.textDark
+                            : AppColors.primaryRed, // Vermelho Pura Fruta
                       ),
                     ),
                     const SizedBox(height: 5),
@@ -175,15 +255,19 @@ class HomePage extends StatelessWidget {
                       subtitle,
                       style: GoogleFonts.poppins(
                         fontSize: 14,
-                        color: const Color(0xFF4CAF50),
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.textDark.withValues(alpha: 0.7)
+                            : const Color(0xFFFF5722), // Vermelho laranja
                       ),
                     ),
                   ],
                 ),
               ),
-              const Icon(
+              Icon(
                 Icons.arrow_forward_ios,
-                color: Color(0xFF4CAF50),
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? const Color(0xFFB91C1C) // darkRed
+                    : AppColors.primaryRed, // Vermelho Pura Fruta
                 size: 20,
               ),
             ],
@@ -193,25 +277,41 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildStatistic(String label, String value) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: GoogleFonts.poppins(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
+  Widget _buildSyncStatus(
+    BuildContext context,
+    String label,
+    String value,
+    IconData icon,
+    Color iconColor,
+  ) {
+    return Expanded(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: iconColor, size: 18),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: GoogleFonts.poppins(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.textDark
+                  : Colors.white,
+            ),
           ),
-        ),
-        Text(
-          label,
-          style: GoogleFonts.poppins(
-            fontSize: 12,
-            color: Colors.white.withOpacity(0.8),
+          Text(
+            label,
+            style: GoogleFonts.poppins(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.textDark.withValues(alpha: 0.7)
+                  : Colors.white.withValues(alpha: 0.7),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -219,14 +319,42 @@ class HomePage extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Sincronização'),
-        content: const Text(
-          'Funcionalidade de sincronização será implementada em breve.',
+        backgroundColor: Theme.of(context).brightness == Brightness.dark
+            ? AppColors.backgroundDark
+            : AppColors.backgroundWhite,
+        title: Text(
+          'Sincronização com Google Drive',
+          style: TextStyle(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppColors.textDark
+                : AppColors.textPrimary,
+          ),
+        ),
+        content: Text(
+          'Este sistema funciona 100% offline no seu dispositivo.\n\n'
+          'Quando conectado à internet, você pode sincronizar:\n'
+          '• Backup de todas as fichas criadas\n'
+          '• Envio para pasta específica do técnico\n'
+          '• Armazenamento no Google Drive da empresa\n'
+          '• Acesso aos dados de qualquer dispositivo\n\n'
+          'Funcionalidade em desenvolvimento.',
+          style: TextStyle(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppColors.textDark
+                : AppColors.textPrimary,
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
+            child: Text(
+              'Entendi',
+              style: TextStyle(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? const Color(0xFFEAB308) // darkOrange
+                    : AppColors.primaryRed,
+              ),
+            ),
           ),
         ],
       ),

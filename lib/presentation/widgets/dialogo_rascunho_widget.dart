@@ -25,9 +25,22 @@ class DialogoRascunhoWidget extends StatelessWidget {
     return AlertDialog(
       title: Row(
         children: [
-          Icon(Icons.edit_note, color: AppColors.secondaryOrange, size: 28),
+          Icon(
+            Icons.edit_note,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppColors.secondaryOrange.withValues(alpha: 0.8)
+                : AppColors.secondaryOrange,
+            size: 28,
+          ),
           const SizedBox(width: 12),
-          Text('Rascunho Encontrado', style: AppTypography.titleMedium),
+          Text(
+            'Rascunho Encontrado',
+            style: AppTypography.titleMedium.copyWith(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.textDark
+                  : AppColors.textPrimary,
+            ),
+          ),
         ],
       ),
       content: Column(
@@ -36,7 +49,11 @@ class DialogoRascunhoWidget extends StatelessWidget {
         children: [
           Text(
             'Foi encontrado um rascunho não salvo. Deseja recuperá-lo?',
-            style: AppTypography.bodyLarge,
+            style: AppTypography.bodyLarge.copyWith(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.textDark
+                  : AppColors.textPrimary,
+            ),
           ),
           const SizedBox(height: 16),
 
@@ -44,22 +61,29 @@ class DialogoRascunhoWidget extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.backgroundGrayLight,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.cardDark
+                  : AppColors.backgroundGrayLight,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: AppColors.secondaryOrange.withValues(alpha: 0.3),
+                color:
+                    (Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.secondaryOrange.withValues(alpha: 0.5)
+                            : AppColors.secondaryOrange)
+                        .withValues(alpha: 0.3),
               ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildInfoRow('Ficha:', 'Nº ${ficha.numeroFicha}'),
-                _buildInfoRow('Cliente:', ficha.cliente),
-                _buildInfoRow('Produto:', ficha.produto),
+                _buildInfoRow(context, 'Ficha:', 'Nº ${ficha.numeroFicha}'),
+                _buildInfoRow(context, 'Cliente:', ficha.cliente),
+                _buildInfoRow(context, 'Produto:', ficha.produto),
                 if (especialista != null)
-                  _buildInfoRow('Especialista:', especialista),
+                  _buildInfoRow(context, 'Especialista:', especialista),
                 if (dataRascunho != null)
                   _buildInfoRow(
+                    context,
                     'Salvo em:',
                     '${dataRascunho.day}/${dataRascunho.month}/${dataRascunho.year} '
                         '${dataRascunho.hour.toString().padLeft(2, '0')}:'
@@ -67,6 +91,7 @@ class DialogoRascunhoWidget extends StatelessWidget {
                   ),
                 if (tempoDecorrido != null)
                   _buildInfoRow(
+                    context,
                     'Tempo:',
                     _formatarTempo(tempoDecorrido),
                     corValor: _corTempo(tempoDecorrido),
@@ -85,6 +110,9 @@ class DialogoRascunhoWidget extends StatelessWidget {
           ),
         ],
       ),
+      backgroundColor: Theme.of(context).brightness == Brightness.dark
+          ? AppColors.backgroundDark
+          : AppColors.backgroundWhite,
       actions: [
         // Botão Manter para Depois
         TextButton(
@@ -120,14 +148,21 @@ class DialogoRascunhoWidget extends StatelessWidget {
           label: const Text('Recuperar'),
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.positiveGreen,
-            foregroundColor: AppColors.backgroundWhite,
+            foregroundColor: Theme.of(context).brightness == Brightness.dark
+                ? AppColors.textDark
+                : AppColors.backgroundWhite,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildInfoRow(String label, String valor, {Color? corValor}) {
+  Widget _buildInfoRow(
+    BuildContext context,
+    String label,
+    String valor, {
+    Color? corValor,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
@@ -139,7 +174,9 @@ class DialogoRascunhoWidget extends StatelessWidget {
               label,
               style: AppTypography.bodySmall.copyWith(
                 fontWeight: FontWeight.w600,
-                color: AppColors.textSecondary,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.textDark.withValues(alpha: 0.7)
+                    : AppColors.textSecondary,
               ),
             ),
           ),
@@ -147,7 +184,11 @@ class DialogoRascunhoWidget extends StatelessWidget {
             child: Text(
               valor,
               style: AppTypography.bodyMedium.copyWith(
-                color: corValor ?? AppColors.textPrimary,
+                color:
+                    corValor ??
+                    (Theme.of(context).brightness == Brightness.dark
+                        ? AppColors.textDark
+                        : AppColors.textPrimary),
                 fontWeight: FontWeight.w500,
               ),
             ),

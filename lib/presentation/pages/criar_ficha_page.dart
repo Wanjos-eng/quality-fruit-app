@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../core/theme/app_colors.dart';
 import '../../domain/entities/entities.dart';
 
 /// Página para criar nova ficha de avaliação
@@ -56,15 +57,17 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: Theme.of(context).brightness == Brightness.dark
+          ? AppColors.backgroundDark
+          : Colors.grey[50],
       appBar: AppBar(
         title: Text(
           'Nova Ficha de Qualidade',
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.w600,
-          ),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
         ),
-        backgroundColor: const Color(0xFF4CAF50),
+        backgroundColor: Theme.of(context).brightness == Brightness.dark
+            ? const Color(0xFF16A34A) // darkGreen
+            : const Color(0xFF4CAF50),
         foregroundColor: Colors.white,
         elevation: 0,
       ),
@@ -87,7 +90,7 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
                 const SizedBox(height: 8),
                 LinearProgressIndicator(
                   value: (_currentPage + 1) / 3,
-                  backgroundColor: Colors.white.withOpacity(0.3),
+                  backgroundColor: Colors.white.withValues(alpha: 0.3),
                   valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
               ],
@@ -114,7 +117,7 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
+                  color: Colors.grey.withValues(alpha: 0.1),
                   spreadRadius: 1,
                   blurRadius: 5,
                   offset: const Offset(0, -2),
@@ -187,10 +190,7 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
             const SizedBox(height: 8),
             Text(
               'Informações obrigatórias da ficha',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                color: Colors.grey[600],
-              ),
+              style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey[600]),
             ),
             const SizedBox(height: 24),
 
@@ -198,7 +198,8 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
               controller: _numeroFichaController,
               label: 'Número da Ficha *',
               hint: 'QF-2025-001',
-              validator: (value) => value?.isEmpty == true ? 'Campo obrigatório' : null,
+              validator: (value) =>
+                  value?.isEmpty == true ? 'Campo obrigatório' : null,
             ),
             const SizedBox(height: 16),
 
@@ -206,7 +207,8 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
               controller: _clienteController,
               label: 'Cliente *',
               hint: 'Nome do cliente',
-              validator: (value) => value?.isEmpty == true ? 'Campo obrigatório' : null,
+              validator: (value) =>
+                  value?.isEmpty == true ? 'Campo obrigatório' : null,
             ),
             const SizedBox(height: 16),
 
@@ -214,7 +216,8 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
               controller: _fazendaController,
               label: 'Fazenda *',
               hint: 'Nome da fazenda - Cidade/Estado',
-              validator: (value) => value?.isEmpty == true ? 'Campo obrigatório' : null,
+              validator: (value) =>
+                  value?.isEmpty == true ? 'Campo obrigatório' : null,
             ),
             const SizedBox(height: 16),
 
@@ -225,7 +228,8 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
                     controller: _produtoController,
                     label: 'Produto *',
                     hint: 'Ex: Uva, Manga',
-                    validator: (value) => value?.isEmpty == true ? 'Campo obrigatório' : null,
+                    validator: (value) =>
+                        value?.isEmpty == true ? 'Campo obrigatório' : null,
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -234,7 +238,8 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
                     controller: _variedadeController,
                     label: 'Variedade *',
                     hint: 'Ex: Thompson',
-                    validator: (value) => value?.isEmpty == true ? 'Campo obrigatório' : null,
+                    validator: (value) =>
+                        value?.isEmpty == true ? 'Campo obrigatório' : null,
                   ),
                 ),
               ],
@@ -245,7 +250,8 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
               controller: _origemController,
               label: 'Origem *',
               hint: 'Local de origem',
-              validator: (value) => value?.isEmpty == true ? 'Campo obrigatório' : null,
+              validator: (value) =>
+                  value?.isEmpty == true ? 'Campo obrigatório' : null,
             ),
             const SizedBox(height: 16),
 
@@ -253,7 +259,8 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
               controller: _loteController,
               label: 'Lote *',
               hint: 'Identificação do lote',
-              validator: (value) => value?.isEmpty == true ? 'Campo obrigatório' : null,
+              validator: (value) =>
+                  value?.isEmpty == true ? 'Campo obrigatório' : null,
             ),
           ],
         ),
@@ -278,10 +285,7 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
           const SizedBox(height: 8),
           Text(
             'Informações técnicas da avaliação',
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              color: Colors.grey[600],
-            ),
+            style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey[600]),
           ),
           const SizedBox(height: 24),
 
@@ -293,7 +297,8 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
                   label: 'Peso Total (kg) *',
                   hint: '1500.5',
                   keyboardType: TextInputType.number,
-                  validator: (value) => value?.isEmpty == true ? 'Campo obrigatório' : null,
+                  validator: (value) =>
+                      value?.isEmpty == true ? 'Campo obrigatório' : null,
                 ),
               ),
               const SizedBox(width: 16),
@@ -303,7 +308,8 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
                   label: 'Qtd. Amostras *',
                   hint: '7',
                   keyboardType: TextInputType.number,
-                  validator: (value) => value?.isEmpty == true ? 'Campo obrigatório' : null,
+                  validator: (value) =>
+                      value?.isEmpty == true ? 'Campo obrigatório' : null,
                 ),
               ),
             ],
@@ -314,7 +320,8 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
             controller: _responsavelAvaliacaoController,
             label: 'Responsável pela Avaliação *',
             hint: 'Nome do inspetor',
-            validator: (value) => value?.isEmpty == true ? 'Campo obrigatório' : null,
+            validator: (value) =>
+                value?.isEmpty == true ? 'Campo obrigatório' : null,
           ),
           const SizedBox(height: 16),
 
@@ -388,10 +395,7 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
           const SizedBox(height: 8),
           Text(
             'Observações específicas por amostra (A-G)',
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              color: Colors.grey[600],
-            ),
+            style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey[600]),
           ),
           const SizedBox(height: 24),
 
@@ -477,9 +481,7 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
@@ -495,7 +497,7 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
     if (_currentPage == 0 && !_formKey.currentState!.validate()) {
       return;
     }
-    
+
     _pageController.nextPage(
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
@@ -546,29 +548,29 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
       pesoTotal: double.tryParse(_pesoTotalController.text) ?? 0.0,
       quantidadeAmostras: int.tryParse(_quantidadeAmostrasController.text) ?? 7,
       responsavelAvaliacao: _responsavelAvaliacaoController.text,
-      produtorResponsavel: _produtorResponsavelController.text.isNotEmpty 
-          ? _produtorResponsavelController.text 
+      produtorResponsavel: _produtorResponsavelController.text.isNotEmpty
+          ? _produtorResponsavelController.text
           : null,
-      observacoes: _observacoesController.text.isNotEmpty 
-          ? _observacoesController.text 
+      observacoes: _observacoesController.text.isNotEmpty
+          ? _observacoesController.text
           : 'Nova ficha criada',
-      observacaoA: _observacaoAController.text.isNotEmpty 
-          ? _observacaoAController.text 
+      observacaoA: _observacaoAController.text.isNotEmpty
+          ? _observacaoAController.text
           : null,
-      observacaoB: _observacaoBController.text.isNotEmpty 
-          ? _observacaoBController.text 
+      observacaoB: _observacaoBController.text.isNotEmpty
+          ? _observacaoBController.text
           : null,
-      observacaoC: _observacaoCController.text.isNotEmpty 
-          ? _observacaoCController.text 
+      observacaoC: _observacaoCController.text.isNotEmpty
+          ? _observacaoCController.text
           : null,
-      observacaoD: _observacaoDController.text.isNotEmpty 
-          ? _observacaoDController.text 
+      observacaoD: _observacaoDController.text.isNotEmpty
+          ? _observacaoDController.text
           : null,
-      observacaoF: _observacaoFController.text.isNotEmpty 
-          ? _observacaoFController.text 
+      observacaoF: _observacaoFController.text.isNotEmpty
+          ? _observacaoFController.text
           : null,
-      observacaoG: _observacaoGController.text.isNotEmpty 
-          ? _observacaoGController.text 
+      observacaoG: _observacaoGController.text.isNotEmpty
+          ? _observacaoGController.text
           : null,
       criadoEm: DateTime.now(),
     );

@@ -1,85 +1,143 @@
 import 'package:flutter/material.dart';
 
-/// Paleta de Cores da Pura Fruta Exportadora
-/// Identidade Visual: Flat/Minimalista com alto contraste
+/// Sistema de cores adaptativo da Pura Fruta Exportadora
+/// Suporte automático para light/dark mode com cores da marca
 class AppColors {
   // === CORES PRINCIPAIS DA MARCA ===
+  
+  /// Vermelho principal Pura Fruta (#D81E05)
+  static const Color primaryRed = Color(0xFFD81E05);
+  
+  /// Laranja secundário Pura Fruta (#FF5722 ou #FF9800)
+  static const Color secondaryOrange = Color(0xFFFF5722);
+  static const Color secondaryOrangeAlt = Color(0xFFFF9800);
+  
+  // === CORES PARA DARK MODE ===
+  
+  /// Vermelho escuro para dark mode
+  static const Color primaryRedDark = Color(0xFF8B0000);
+  
+  /// Laranja escuro para dark mode  
+  static const Color secondaryOrangeDark = Color(0xFFD84315);
 
-  /// Cor Primária - Vermelho #E53935
-  static const primaryRed = Color(0xFFE53935);
-
-  /// Cor Secundária - Laranja #FF9800
-  static const secondaryOrange = Color(0xFFFF9800);
-
-  /// Destaque Positivo - Verde #43A047
-  static const positiveGreen = Color(0xFF43A047);
-
-  /// Alerta Positivo - Amarelo #FFC107
-  static const warningYellow = Color(0xFFFFC107);
-
-  // === CORES DE FUNDO ===
-
-  /// Fundo Principal - Branco
-  static const backgroundWhite = Color(0xFFFFFFFF);
-
-  /// Fundo Secundário - Cinza Claro
-  static const backgroundGrayLight = Color(0xFFF5F5F5);
-
-  // === MODO ESCURO ===
-
-  /// Fundo Modo Escuro
-  static const backgroundDark = Color(0xFF181A1B);
-
-  /// Cards Modo Escuro
-  static const cardDark = Color(0xFF2C2E2F);
-
-  /// Texto Modo Escuro
-  static const textDark = Color(0xFFFFFFFF);
-
-  // === CORES NEUTRAS ===
-
-  /// Texto Principal
-  static const textPrimary = Color(0xFF212121);
-
-  /// Texto Secundário
-  static const textSecondary = Color(0xFF757575);
-
-  /// Texto Disabled
-  static const textDisabled = Color(0xFFBDBDBD);
-
-  /// Bordas
-  static const border = Color(0xFFE0E0E0);
-
-  /// Divisores
-  static const divider = Color(0xFFEEEEEE);
-
+  // === CORES BÁSICAS ===
+  
+  /// Branco puro
+  static const Color backgroundWhite = Colors.white;
+  
+  /// Preto puro
+  static const Color backgroundBlack = Colors.black;
+  
+  /// Cinza claro para backgrounds
+  static const Color backgroundGrayLight = Color(0xFFF5F5F5);
+  
+  /// Cinza escuro para dark mode
+  static const Color backgroundGrayDark = Color(0xFF2D2D2D);
+  
+  // === CORES DE TEXTO ===
+  
+  /// Texto primário (escuro)
+  static const Color textPrimary = Color(0xFF2C2C2C);
+  
+  /// Texto secundário (cinza)
+  static const Color textSecondary = Color(0xFF666666);
+  
+  /// Texto claro (branco)
+  static const Color textLight = Colors.white;
+  
   // === CORES DE STATUS ===
+  
+  /// Verde para sucesso/positivo
+  static const Color positiveGreen = Color(0xFF4CAF50);
+  
+  /// Vermelho para erro/negativo  
+  static const Color statusError = Color(0xFFF44336);
+  
+  /// Amarelo para aviso
+  static const Color warningYellow = Color(0xFFFF9800);
 
-  /// Status Finalizada (Verde)
-  static const statusCompleted = positiveGreen;
-
-  /// Status Em Andamento (Laranja)
-  static const statusInProgress = secondaryOrange;
-
-  /// Status Erro (Vermelho)
-  static const statusError = primaryRed;
-
-  /// Status Sucesso (Verde)
-  static const statusSuccess = positiveGreen;
-
-  // === GRADIENTES ===
-
-  /// Gradiente Vermelho-Laranja para abas ativas
-  static const gradientRedOrange = LinearGradient(
-    colors: [primaryRed, secondaryOrange],
-    begin: Alignment.centerLeft,
-    end: Alignment.centerRight,
-  );
-
-  /// Gradiente Verde para elementos positivos
-  static const gradientGreen = LinearGradient(
-    colors: [positiveGreen, Color(0xFF66BB6A)],
+  // === CORES ADICIONAIS (COMPATIBILIDADE) ===
+  
+  /// Cor de borda
+  static const Color border = Color(0xFFE0E0E0);
+  
+  /// Cor de divider
+  static const Color divider = Color(0xFFE0E0E0);
+  
+  /// Cor de texto desabilitado
+  static const Color textDisabled = Color(0xFFBDBDBD);
+  
+  /// Cor de texto escuro
+  static const Color textDark = Color(0xFFFFFFFF);
+  
+  /// Cor de card escuro
+  static const Color cardDark = Color(0xFF2D2D2D);
+  
+  /// Cor de background escuro
+  static const Color backgroundDark = Color(0xFF1E1E1E);
+  
+  /// Gradiente vermelho-laranja
+  static const LinearGradient gradientRedOrange = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
+    colors: [primaryRed, secondaryOrange],
   );
+
+  // === MÉTODOS ADAPTATIVOS ===
+  
+  /// Retorna gradiente principal adaptativo baseado no tema
+  static List<Color> getMainGradient(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return isDark 
+      ? [primaryRedDark, secondaryOrangeDark]
+      : [primaryRed, secondaryOrange];
+  }
+  
+  /// Retorna cor de card adaptativa baseada no tema
+  static Color getCardColor(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return isDark ? backgroundGrayDark : backgroundWhite;
+  }
+  
+  /// Retorna cor de background adaptativa baseada no tema
+  static Color getBackgroundColor(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return isDark ? backgroundBlack : backgroundWhite;
+  }
+  
+  /// Retorna cor de texto primário adaptativa baseada no tema
+  static Color getPrimaryTextColor(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return isDark ? textLight : textPrimary;
+  }
+  
+  /// Retorna cor de texto secundário adaptativa baseada no tema
+  static Color getSecondaryTextColor(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return isDark ? Color(0xFFB0B0B0) : textSecondary;
+  }
+  
+  /// Retorna cor de ícone primário adaptativa baseada no tema
+  static Color getPrimaryIconColor(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return isDark ? primaryRedDark : primaryRed;
+  }
+  
+  /// Retorna cor de ícone secundário adaptativa baseada no tema
+  static Color getSecondaryIconColor(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return isDark ? secondaryOrangeDark : secondaryOrange;
+  }
+  
+  /// Retorna cor de diálogo adaptativa baseada no tema
+  static Color getDialogBackgroundColor(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return isDark ? Color(0xFF1E1E1E) : backgroundWhite;
+  }
+  
+  /// Retorna cor de divider adaptativa baseada no tema
+  static Color getDividerColor(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return isDark ? Color(0xFF444444) : Color(0xFFE0E0E0);
+  }
 }
