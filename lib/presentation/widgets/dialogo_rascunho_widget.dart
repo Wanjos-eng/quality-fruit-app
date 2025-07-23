@@ -147,10 +147,10 @@ class DialogoRascunhoWidget extends StatelessWidget {
           icon: const Icon(Icons.restore, size: 18),
           label: const Text('Recuperar'),
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.positiveGreen,
-            foregroundColor: Theme.of(context).brightness == Brightness.dark
-                ? AppColors.textDark
-                : AppColors.backgroundWhite,
+            backgroundColor: Theme.of(context).brightness == Brightness.dark
+                ? AppColors.darkGreen
+                : AppColors.positiveGreen,
+            foregroundColor: Colors.white,
           ),
         ),
       ],

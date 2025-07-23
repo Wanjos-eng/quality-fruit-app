@@ -59,15 +59,15 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
     return Scaffold(
       backgroundColor: Theme.of(context).brightness == Brightness.dark
           ? AppColors.backgroundDark
-          : Colors.grey[50],
+          : AppColors.backgroundGrayLight,
       appBar: AppBar(
         title: Text(
           'Nova Ficha de Qualidade',
           style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
         ),
         backgroundColor: Theme.of(context).brightness == Brightness.dark
-            ? const Color(0xFF16A34A) // darkGreen
-            : const Color(0xFF4CAF50),
+            ? AppColors.darkGreen
+            : AppColors.positiveGreen,
         foregroundColor: Colors.white,
         elevation: 0,
       ),
@@ -76,13 +76,17 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
           // Indicador de progresso
           Container(
             padding: const EdgeInsets.all(16),
-            color: const Color(0xFF4CAF50),
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppColors.cardDark
+                : AppColors.positiveGreen,
             child: Column(
               children: [
                 Text(
                   'Passo ${_currentPage + 1} de 3',
                   style: GoogleFonts.poppins(
-                    color: Colors.white,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? AppColors.textDark
+                        : Colors.white,
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
                   ),
@@ -114,7 +118,9 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.cardDark
+                  : Colors.white,
               boxShadow: [
                 BoxShadow(
                   color: Colors.grey.withValues(alpha: 0.1),
@@ -132,12 +138,18 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
                       onPressed: _previousPage,
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        side: const BorderSide(color: Color(0xFF4CAF50)),
+                        side: BorderSide(
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? AppColors.darkGreen
+                              : AppColors.positiveGreen,
+                        ),
                       ),
                       child: Text(
                         'Anterior',
                         style: GoogleFonts.poppins(
-                          color: const Color(0xFF4CAF50),
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? AppColors.darkGreen
+                              : AppColors.positiveGreen,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -148,7 +160,10 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
                   child: ElevatedButton(
                     onPressed: _currentPage == 2 ? _salvarFicha : _nextPage,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4CAF50),
+                      backgroundColor:
+                          Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.darkGreen
+                          : AppColors.positiveGreen,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -184,13 +199,20 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
               style: GoogleFonts.poppins(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: const Color(0xFF2E7D32),
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.textDark
+                    : AppColors.positiveGreen,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               'Informações obrigatórias da ficha',
-              style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey[600]),
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.textDark.withValues(alpha: 0.7)
+                    : AppColors.textSecondary,
+              ),
             ),
             const SizedBox(height: 24),
 
@@ -279,13 +301,20 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
             style: GoogleFonts.poppins(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: const Color(0xFF2E7D32),
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.textDark
+                  : AppColors.positiveGreen,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             'Informações técnicas da avaliação',
-            style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey[600]),
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.textDark.withValues(alpha: 0.7)
+                  : AppColors.textSecondary,
+            ),
           ),
           const SizedBox(height: 24),
 
@@ -343,7 +372,12 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.calendar_today, color: Color(0xFF4CAF50)),
+                  Icon(
+                    Icons.calendar_today,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? AppColors.darkGreen
+                        : AppColors.positiveGreen,
+                  ),
                   const SizedBox(width: 12),
                   Text(
                     'Data da Avaliação: ${_dataAvaliacao.day}/${_dataAvaliacao.month}/${_dataAvaliacao.year}',
@@ -389,13 +423,20 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
             style: GoogleFonts.poppins(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: const Color(0xFF2E7D32),
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.textDark
+                  : AppColors.positiveGreen,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             'Observações específicas por amostra (A-G)',
-            style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey[600]),
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.textDark.withValues(alpha: 0.7)
+                  : AppColors.textSecondary,
+            ),
           ),
           const SizedBox(height: 24),
 
@@ -412,7 +453,9 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
             style: GoogleFonts.poppins(
               fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: const Color(0xFF2E7D32),
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.textDark.withValues(alpha: 0.9)
+                  : AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 16),
@@ -484,7 +527,12 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+          borderSide: BorderSide(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppColors.darkGreen
+                : AppColors.positiveGreen,
+            width: 2,
+          ),
         ),
       ),
       keyboardType: keyboardType,

@@ -42,24 +42,8 @@ class _HomePageState extends State<HomePage> {
       body: Container(
         decoration: BoxDecoration(
           gradient: Theme.of(context).brightness == Brightness.dark
-              ? const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFFB91C1C), // darkRed
-                    Color(0xFF16A34A), // darkGreen
-                    Color(0xFFEAB308), // darkOrange
-                  ],
-                )
-              : LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    AppColors.primaryRed, // Vermelho Pura Fruta
-                    const Color(0xFFFF5722), // Vermelho laranja
-                    const Color(0xFFFF9800), // Laranja
-                  ],
-                ),
+              ? AppColors.gradientDark
+              : AppColors.gradientBrand,
         ),
         child: SafeArea(
           child: Padding(
@@ -229,8 +213,8 @@ class _HomePageState extends State<HomePage> {
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: Theme.of(context).brightness == Brightness.dark
-                      ? const Color(0xFFB91C1C) // darkRed
-                      : AppColors.primaryRed, // Vermelho Pura Fruta
+                      ? AppColors.darkRed
+                      : AppColors.primaryRed,
                   borderRadius: BorderRadius.circular(15),
                 ),
                 child: Icon(icon, size: 32, color: Colors.white),
@@ -247,7 +231,7 @@ class _HomePageState extends State<HomePage> {
                         fontWeight: FontWeight.bold,
                         color: Theme.of(context).brightness == Brightness.dark
                             ? AppColors.textDark
-                            : AppColors.primaryRed, // Vermelho Pura Fruta
+                            : AppColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 5),
@@ -257,7 +241,7 @@ class _HomePageState extends State<HomePage> {
                         fontSize: 14,
                         color: Theme.of(context).brightness == Brightness.dark
                             ? AppColors.textDark.withValues(alpha: 0.7)
-                            : const Color(0xFFFF5722), // Vermelho laranja
+                            : AppColors.textSecondary,
                       ),
                     ),
                   ],
@@ -266,8 +250,8 @@ class _HomePageState extends State<HomePage> {
               Icon(
                 Icons.arrow_forward_ios,
                 color: Theme.of(context).brightness == Brightness.dark
-                    ? const Color(0xFFB91C1C) // darkRed
-                    : AppColors.primaryRed, // Vermelho Pura Fruta
+                    ? AppColors.darkRed
+                    : AppColors.primaryRed,
                 size: 20,
               ),
             ],

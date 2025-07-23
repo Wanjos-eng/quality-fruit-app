@@ -97,15 +97,15 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
     return Scaffold(
       backgroundColor: Theme.of(context).brightness == Brightness.dark
           ? AppColors.backgroundDark
-          : Colors.grey[50],
+          : AppColors.backgroundGrayLight,
       appBar: AppBar(
         title: Text(
           'Minhas Fichas',
           style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
         ),
         backgroundColor: Theme.of(context).brightness == Brightness.dark
-            ? const Color(0xFF16A34A) // darkGreen
-            : const Color(0xFF4CAF50),
+            ? AppColors.darkGreen
+            : AppColors.positiveGreen,
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
@@ -120,8 +120,12 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
         ],
       ),
       body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFF4CAF50)),
+          ? Center(
+              child: CircularProgressIndicator(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.darkGreen
+                    : AppColors.positiveGreen,
+              ),
             )
           : _fichasFiltradas.isEmpty
           ? _buildEmptyState()
@@ -129,8 +133,8 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
       floatingActionButton: FloatingActionButton(
         onPressed: () => Navigator.pushNamed(context, '/criar-ficha'),
         backgroundColor: Theme.of(context).brightness == Brightness.dark
-            ? const Color(0xFF16A34A) // darkGreen
-            : const Color(0xFF4CAF50),
+            ? AppColors.darkGreen
+            : AppColors.positiveGreen,
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
@@ -167,7 +171,9 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
               icon: const Icon(Icons.add),
               label: const Text('Criar Nova Ficha'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4CAF50),
+                backgroundColor: Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.darkGreen
+                    : AppColors.positiveGreen,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
@@ -187,7 +193,9 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
         // Header com estatísticas
         Container(
           padding: const EdgeInsets.all(16),
-          color: Colors.white,
+          color: Theme.of(context).brightness == Brightness.dark
+              ? AppColors.cardDark
+              : Colors.white,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -202,23 +210,37 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
         if (_searchQuery.isNotEmpty)
           Container(
             padding: const EdgeInsets.all(16),
-            color: Colors.orange[50],
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppColors.surfaceDark
+                : AppColors.secondaryOrange.withValues(alpha: 0.1),
             child: Row(
               children: [
-                Icon(Icons.search, color: Colors.orange[700]),
+                Icon(
+                  Icons.search,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.darkOrange
+                      : AppColors.secondaryOrange,
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     'Pesquisando por: "$_searchQuery"',
                     style: GoogleFonts.poppins(
-                      color: Colors.orange[700],
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.textDark
+                          : AppColors.secondaryOrange,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
                 IconButton(
                   onPressed: () => setState(() => _searchQuery = ''),
-                  icon: Icon(Icons.clear, color: Colors.orange[700]),
+                  icon: Icon(
+                    Icons.clear,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? AppColors.darkOrange
+                        : AppColors.secondaryOrange,
+                  ),
                 ),
               ],
             ),
@@ -228,7 +250,9 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
         Expanded(
           child: RefreshIndicator(
             onRefresh: _carregarFichas,
-            color: const Color(0xFF4CAF50),
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppColors.darkGreen
+                : AppColors.positiveGreen,
             child: ListView.builder(
               padding: const EdgeInsets.all(16),
               itemCount: _fichasFiltradas.length,
@@ -265,7 +289,9 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF4CAF50),
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.darkGreen
+                          : AppColors.positiveGreen,
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
@@ -295,7 +321,9 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
                 style: GoogleFonts.poppins(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: const Color(0xFF2E7D32),
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.textDark
+                      : AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 4),
@@ -379,12 +407,19 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
           style: GoogleFonts.poppins(
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: const Color(0xFF2E7D32),
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppColors.darkGreen
+                : AppColors.positiveGreen,
           ),
         ),
         Text(
           label,
-          style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600]),
+          style: GoogleFonts.poppins(
+            fontSize: 12,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppColors.textDark.withValues(alpha: 0.7)
+                : AppColors.textSecondary,
+          ),
         ),
       ],
     );
@@ -394,17 +429,30 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.grey[100],
+        color: Theme.of(context).brightness == Brightness.dark
+            ? AppColors.surfaceDark
+            : AppColors.backgroundGrayLight,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: Colors.grey[600]),
+          Icon(
+            icon,
+            size: 14,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppColors.textDark.withValues(alpha: 0.7)
+                : AppColors.textSecondary,
+          ),
           const SizedBox(width: 4),
           Text(
             label,
-            style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[700]),
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.textDark.withValues(alpha: 0.8)
+                  : AppColors.textSecondary,
+            ),
           ),
         ],
       ),
@@ -538,7 +586,12 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                leading: const Icon(Icons.edit, color: Color(0xFF4CAF50)),
+                leading: Icon(
+                  Icons.edit,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.darkGreen
+                      : AppColors.positiveGreen,
+                ),
                 title: const Text('Editar'),
                 onTap: () {
                   Navigator.pop(context);
