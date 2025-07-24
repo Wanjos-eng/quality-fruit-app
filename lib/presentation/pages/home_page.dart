@@ -42,7 +42,7 @@ class _HomePageState extends State<HomePage> {
       body: Container(
         decoration: BoxDecoration(
           gradient: Theme.of(context).brightness == Brightness.dark
-              ? AppColors.gradientDark
+              ? AppColors.gradientDarkIntense
               : AppColors.gradientBrand,
         ),
         child: SafeArea(
@@ -335,7 +335,8 @@ class _HomePageState extends State<HomePage> {
               'Entendi',
               style: TextStyle(
                 color: Theme.of(context).brightness == Brightness.dark
-                    ? const Color(0xFFEAB308) // darkOrange
+                    ? AppColors
+                          .darkOrange // Usando cor padrão sem amarelo
                     : AppColors.primaryRed,
               ),
             ),

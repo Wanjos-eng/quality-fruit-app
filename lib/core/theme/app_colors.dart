@@ -26,19 +26,19 @@ class AppColors {
   /// Verde mais suave para tema claro
   static const Color lightGreen = Color(0xFF7BC662);
 
-  /// Laranja mais suave para tema claro
-  static const Color lightOrange = Color(0xFFFFCC4D);
+  /// Laranja mais suave para tema claro (sem amarelo)
+  static const Color lightOrange = Color(0xFFFF6B35);
 
   // === VARIAÇÕES PARA TEMA ESCURO ===
 
   /// Vermelho mais escuro para tema escuro
-  static const Color darkRed = Color(0xFFB91C1C);
+  static const Color darkRed = Color(0xFF8B0000);
 
   /// Verde mais escuro para tema escuro
   static const Color darkGreen = Color(0xFF16A34A);
 
-  /// Laranja mais escuro para tema escuro
-  static const Color darkOrange = Color(0xFFEAB308);
+  /// Laranja mais escuro para tema escuro (sem amarelo)
+  static const Color darkOrange = Color(0xFFFF4500);
 
   // === CORES DE FUNDO ===
 
@@ -93,37 +93,41 @@ class AppColors {
   /// Status Sucesso (Verde)
   static const Color statusSuccess = positiveGreen;
 
-  // === GRADIENTES MODERNOS ===
+  // === GRADIENTES PURA FRUTA EXPORTADORA ===
 
-  /// Gradiente principal da marca (Vermelho → Verde → Laranja)
+  /// 1. Gradiente Principal da Marca (Escuro)
   static const LinearGradient gradientBrand = LinearGradient(
-    colors: [primaryRed, positiveGreen, secondaryOrange],
+    colors: [Color(0xFF8B0000), Color(0xFFFF4500)], // Dark Red → Orange Red
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    stops: [0.0, 0.5, 1.0],
   );
 
-  /// Gradiente tema claro (tons suaves)
-  static const LinearGradient gradientLight = LinearGradient(
-    colors: [lightRed, lightGreen, lightOrange],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    stops: [0.0, 0.5, 1.0],
-  );
-
-  /// Gradiente tema escuro (tons escuros)
+  /// 2. Gradiente Tema Escuro
   static const LinearGradient gradientDark = LinearGradient(
-    colors: [darkRed, darkGreen, darkOrange],
+    colors: [Color(0xFF8B0000), Color(0xFFFF4500)], // Dark Red → Orange Red
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    stops: [0.0, 0.5, 1.0],
   );
 
-  /// Gradiente Vermelho-Laranja para abas ativas
+  /// 3. Gradiente Escuro Intenso (HomePage)
+  static const LinearGradient gradientDarkIntense = LinearGradient(
+    colors: [Color(0xFF660000), Color(0xFFCC3300)], // Very Dark Red → Dark Red
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  );
+
+  /// 4. Gradiente Logo Original (Vermelho → Laranja)
   static const LinearGradient gradientRedOrange = LinearGradient(
-    colors: [primaryRed, secondaryOrange],
+    colors: [Color(0xFFD81E05), Color(0xFFFDB813)], // Cores exatas da logo
     begin: Alignment.centerLeft,
     end: Alignment.centerRight,
+  );
+
+  /// 5. Gradiente Tema Claro
+  static const LinearGradient gradientLight = LinearGradient(
+    colors: [Color(0xFFE85A47), Color(0xFFFF6B35)], // Light Red → Light Orange
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
   );
 
   /// Gradiente Verde para elementos positivos
@@ -133,10 +137,10 @@ class AppColors {
     end: Alignment.bottomRight,
   );
 
-  // === CORES AUXILIARES MODERNAS ===
+  // === CORES AUXILIARES PURA FRUTA (sem amarelo) ===
 
-  /// Cor de alerta/warning - Amarelo âmbar
-  static const Color warningYellow = Color(0xFFFBBF24);
+  /// Cor de alerta/warning - Laranja (sem amarelo)
+  static const Color warningYellow = Color(0xFFFF8C00);
 
   /// Cor de informação - Azul
   static const Color infoBlue = Color(0xFF3B82F6);
