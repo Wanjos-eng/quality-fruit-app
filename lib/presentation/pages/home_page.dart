@@ -42,11 +42,12 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return ResponsiveScaffold(
       // === CONFIGURAÇÕES RESPONSIVAS ===
-      applySafeArea: false, // Gerenciamos SafeArea manualmente para preservar gradiente
+      applySafeArea:
+          false, // Gerenciamos SafeArea manualmente para preservar gradiente
       centerContentOnTablet: true,
       tabletMaxContentWidth: 1000.0,
-      customPadding: EdgeInsets.zero, // Sem padding padrão para preservar gradiente
-      
+      customPadding:
+          EdgeInsets.zero, // Sem padding padrão para preservar gradiente
       // === BODY RESPONSIVO ===
       body: _buildContent(context),
       mobileBody: _buildMobileLayout(context),
@@ -62,32 +63,30 @@ class _HomePageState extends State<HomePage> {
   /// Layout para dispositivos mobile (preserva design original)
   Widget _buildMobileLayout(BuildContext context) {
     return Container(
-        decoration: BoxDecoration(
-          gradient: Theme.of(context).brightness == Brightness.dark
-              ? AppColors.gradientDarkIntense
-              : AppColors.gradientBrand,
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header
-                _buildHeader(context, isTablet: false),
-                const SizedBox(height: 60),
+      decoration: BoxDecoration(
+        gradient: Theme.of(context).brightness == Brightness.dark
+            ? AppColors.gradientDarkIntense
+            : AppColors.gradientBrand,
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              _buildHeader(context, isTablet: false),
+              const SizedBox(height: 60),
 
-                // Cards de ação principal
-                Expanded(
-                  child: _buildActionCards(context, isTablet: false),
-                ),
+              // Cards de ação principal
+              Expanded(child: _buildActionCards(context, isTablet: false)),
 
-                // Status de sincronização
-                _buildStatistics(context, isTablet: false),
-              ],
-            ),
+              // Status de sincronização
+              _buildStatistics(context, isTablet: false),
+            ],
           ),
         ),
+      ),
     );
   }
 
@@ -107,7 +106,7 @@ class _HomePageState extends State<HomePage> {
             children: [
               // Header responsivo
               _buildHeader(context, isTablet: true),
-              
+
               SizedBox(height: ResponsiveThemeValues.sectionSpacing(context)),
 
               // Conteúdo principal em duas colunas
@@ -120,9 +119,11 @@ class _HomePageState extends State<HomePage> {
                       flex: 2,
                       child: _buildActionCards(context, isTablet: true),
                     ),
-                    
-                    SizedBox(width: ResponsiveThemeValues.sectionSpacing(context)),
-                    
+
+                    SizedBox(
+                      width: ResponsiveThemeValues.sectionSpacing(context),
+                    ),
+
                     // Coluna direita - Estatísticas
                     Expanded(
                       flex: 1,
@@ -196,7 +197,9 @@ class _HomePageState extends State<HomePage> {
                   onTap: () async {
                     await Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const CriarFichaPage()),
+                      MaterialPageRoute(
+                        builder: (context) => const CriarFichaPage(),
+                      ),
                     );
                     _carregarEstatisticas();
                   },
@@ -215,7 +218,9 @@ class _HomePageState extends State<HomePage> {
                   onTap: () async {
                     await Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const ListaFichasPage()),
+                      MaterialPageRoute(
+                        builder: (context) => const ListaFichasPage(),
+                      ),
                     );
                     _carregarEstatisticas();
                   },
@@ -223,9 +228,9 @@ class _HomePageState extends State<HomePage> {
               ),
             ],
           ),
-          
+
           SizedBox(height: ResponsiveThemeValues.elementSpacing(context)),
-          
+
           // Segunda linha - Sincronização
           _buildActionCard(
             context: context,
@@ -271,7 +276,9 @@ class _HomePageState extends State<HomePage> {
             onTap: () async {
               await Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const ListaFichasPage()),
+                MaterialPageRoute(
+                  builder: (context) => const ListaFichasPage(),
+                ),
               );
               _carregarEstatisticas();
             },
@@ -318,15 +325,31 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             SizedBox(height: ResponsiveThemeValues.elementSpacing(context)),
-            _buildStatCard(context, 'Pendentes', '${_estatisticas['pendentes'] ?? 0}', 
-                Icons.schedule, const Color(0xFFFFB74D)),
+            _buildStatCard(
+              context,
+              'Pendentes',
+              '${_estatisticas['pendentes'] ?? 0}',
+              Icons.schedule,
+              const Color(0xFFFFB74D),
+            ),
             SizedBox(height: ResponsiveThemeValues.elementSpacing(context)),
-            _buildStatCard(context, 'Salvos', '${_estatisticas['salvos'] ?? 0}', 
-                Icons.check_circle, const Color(0xFF81C784)),
+            _buildStatCard(
+              context,
+              'Salvos',
+              '${_estatisticas['salvos'] ?? 0}',
+              Icons.check_circle,
+              const Color(0xFF81C784),
+            ),
             SizedBox(height: ResponsiveThemeValues.elementSpacing(context)),
-            _buildStatCard(context, 'Total', '${_estatisticas['total'] ?? 0}', 
-                Icons.folder, Theme.of(context).brightness == Brightness.dark 
-                    ? AppColors.textDark : Colors.white),
+            _buildStatCard(
+              context,
+              'Total',
+              '${_estatisticas['total'] ?? 0}',
+              Icons.folder,
+              Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.textDark
+                  : Colors.white,
+            ),
           ],
         ),
       );
@@ -343,13 +366,29 @@ class _HomePageState extends State<HomePage> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _buildSyncStatus(context, 'Pendentes', '${_estatisticas['pendentes'] ?? 0}', 
-                Icons.schedule, const Color(0xFFFFB74D)),
-            _buildSyncStatus(context, 'Salvos', '${_estatisticas['salvos'] ?? 0}', 
-                Icons.check_circle, const Color(0xFF81C784)),
-            _buildSyncStatus(context, 'Total', '${_estatisticas['total'] ?? 0}', 
-                Icons.folder, Theme.of(context).brightness == Brightness.dark 
-                    ? AppColors.textDark : Colors.white),
+            _buildSyncStatus(
+              context,
+              'Pendentes',
+              '${_estatisticas['pendentes'] ?? 0}',
+              Icons.schedule,
+              const Color(0xFFFFB74D),
+            ),
+            _buildSyncStatus(
+              context,
+              'Salvos',
+              '${_estatisticas['salvos'] ?? 0}',
+              Icons.check_circle,
+              const Color(0xFF81C784),
+            ),
+            _buildSyncStatus(
+              context,
+              'Total',
+              '${_estatisticas['total'] ?? 0}',
+              Icons.folder,
+              Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.textDark
+                  : Colors.white,
+            ),
           ],
         ),
       );
@@ -357,8 +396,13 @@ class _HomePageState extends State<HomePage> {
   }
 
   /// Card de estatística individual para tablets
-  Widget _buildStatCard(BuildContext context, String label, String value, 
-      IconData icon, Color iconColor) {
+  Widget _buildStatCard(
+    BuildContext context,
+    String label,
+    String value,
+    IconData icon,
+    Color iconColor,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
