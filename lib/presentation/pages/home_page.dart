@@ -69,20 +69,72 @@ class _HomePageState extends State<HomePage> {
             : AppColors.gradientBrand,
       ),
       child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
+        child: ResponsivePadding(
+          mobile: EdgeInsets.symmetric(
+            horizontal: ResponsiveUtils.responsiveValue(
+              context,
+              mobile: 16.0,
+              mobileSmall: 12.0,
+            ),
+          ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header
-              _buildHeader(context, isTablet: false),
-              const SizedBox(height: 60),
+              // === CABEÇALHO FIXO ===
+              Container(
+                padding: EdgeInsets.symmetric(
+                  vertical:
+                      ResponsiveThemeValues.elementSpacing(context) * 0.75,
+                ),
+                child: _buildHeader(context, isTablet: false),
+              ),
 
-              // Cards de ação principal
-              Expanded(child: _buildActionCards(context, isTablet: false)),
+              // === ÁREA CENTRAL FLEXÍVEL E ROLÁVEL ===
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: EdgeInsets.only(
+                    bottom: ResponsiveUtils.responsiveValue(
+                      context,
+                      mobile: 20.0,
+                      mobileSmall: 16.0,
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        height: ResponsiveUtils.responsiveValue(
+                          context,
+                          mobile: 40.0,
+                          mobileSmall: 24.0,
+                        ),
+                      ),
 
-              // Status de sincronização
-              _buildStatistics(context, isTablet: false),
+                      // Cards de ação principal
+                      _buildActionCards(context, isTablet: false),
+
+                      SizedBox(
+                        height: ResponsiveUtils.responsiveValue(
+                          context,
+                          mobile: 40.0,
+                          mobileSmall: 30.0,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // === RODAPÉ FIXO (BARRA DE STATUS) ===
+              Container(
+                padding: EdgeInsets.only(
+                  bottom: ResponsiveUtils.responsiveValue(
+                    context,
+                    mobile: 20.0,
+                    mobileSmall: 16.0,
+                  ),
+                ),
+                child: _buildStatistics(context, isTablet: false),
+              ),
             ],
           ),
         ),
@@ -144,32 +196,53 @@ class _HomePageState extends State<HomePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(height: isTablet ? 20 : 40),
-        Text(
-          'QualityFruit',
-          style: GoogleFonts.poppins(
-            fontSize: ResponsiveUtils.responsiveValue(
-              context,
-              mobile: 32,
-              tablet: 40,
-            ),
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).brightness == Brightness.dark
-                ? AppColors.textDark
-                : Colors.white,
-          ),
+        SizedBox(
+          height: isTablet
+              ? ResponsiveThemeValues.elementSpacing(context) * 0.5
+              : ResponsiveThemeValues.elementSpacing(context) * 0.25,
         ),
-        Text(
-          'Sistema Offline de Controle de Qualidade 🍇',
-          style: GoogleFonts.poppins(
-            fontSize: ResponsiveUtils.responsiveValue(
-              context,
-              mobile: 16,
-              tablet: 18,
-            ),
-            color: Theme.of(context).brightness == Brightness.dark
-                ? AppColors.textDark.withValues(alpha: 0.9)
-                : Colors.white.withValues(alpha: 0.9),
+
+        // Alinhamento usando valores globais do sistema responsivo
+        ResponsivePadding(
+          mobile: EdgeInsets.only(
+            left: ResponsiveThemeValues.elementSpacing(context) * 0.25,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'QualityFruit',
+                style: GoogleFonts.poppins(
+                  fontSize: ResponsiveUtils.responsiveValue(
+                    context,
+                    mobile: 28.0,
+                    mobileSmall: 24.0,
+                    tablet: 32.0,
+                  ),
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.textDark
+                      : Colors.white,
+                ),
+              ),
+              SizedBox(
+                height: ResponsiveThemeValues.elementSpacing(context) * 0.125,
+              ),
+              Text(
+                'Sistema Offline de Controle de Qualidade 🍇',
+                style: GoogleFonts.poppins(
+                  fontSize: ResponsiveUtils.responsiveValue(
+                    context,
+                    mobile: 14.0,
+                    mobileSmall: 12.0,
+                    tablet: 16.0,
+                  ),
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.textDark.withValues(alpha: 0.9)
+                      : Colors.white.withValues(alpha: 0.9),
+                ),
+              ),
+            ],
           ),
         ),
       ],
@@ -264,7 +337,13 @@ class _HomePageState extends State<HomePage> {
               _carregarEstatisticas();
             },
           ),
-          const SizedBox(height: 20),
+          SizedBox(
+            height: ResponsiveUtils.responsiveValue(
+              context,
+              mobile: 20.0,
+              mobileSmall: 16.0,
+            ),
+          ),
           _buildActionCard(
             context: context,
             title: 'Minhas Fichas',
@@ -283,7 +362,13 @@ class _HomePageState extends State<HomePage> {
               _carregarEstatisticas();
             },
           ),
-          const SizedBox(height: 20),
+          SizedBox(
+            height: ResponsiveUtils.responsiveValue(
+              context,
+              mobile: 20.0,
+              mobileSmall: 16.0,
+            ),
+          ),
           _buildActionCard(
             context: context,
             title: 'Sincronizar com Drive',
@@ -356,7 +441,18 @@ class _HomePageState extends State<HomePage> {
     } else {
       // Layout horizontal para mobile (original)
       return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+        padding: EdgeInsets.symmetric(
+          horizontal: ResponsiveUtils.responsiveValue(
+            context,
+            mobile: 24.0,
+            mobileSmall: 16.0,
+          ),
+          vertical: ResponsiveUtils.responsiveValue(
+            context,
+            mobile: 20.0,
+            mobileSmall: 16.0,
+          ),
+        ),
         decoration: BoxDecoration(
           color: Theme.of(context).brightness == Brightness.dark
               ? AppColors.cardDark.withValues(alpha: 0.8)
@@ -404,7 +500,18 @@ class _HomePageState extends State<HomePage> {
     Color iconColor,
   ) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: EdgeInsets.symmetric(
+        horizontal: ResponsiveUtils.responsiveValue(
+          context,
+          tablet: 16.0,
+          mobile: 14.0,
+        ),
+        vertical: ResponsiveUtils.responsiveValue(
+          context,
+          tablet: 12.0,
+          mobile: 10.0,
+        ),
+      ),
       decoration: BoxDecoration(
         color: Theme.of(context).brightness == Brightness.dark
             ? AppColors.backgroundDark.withValues(alpha: 0.3)
@@ -413,8 +520,22 @@ class _HomePageState extends State<HomePage> {
       ),
       child: Row(
         children: [
-          Icon(icon, color: iconColor, size: 24),
-          const SizedBox(width: 12),
+          Icon(
+            icon,
+            color: iconColor,
+            size: ResponsiveUtils.responsiveValue(
+              context,
+              tablet: 24.0,
+              mobile: 22.0,
+            ),
+          ),
+          SizedBox(
+            width: ResponsiveUtils.responsiveValue(
+              context,
+              tablet: 12.0,
+              mobile: 10.0,
+            ),
+          ),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -422,7 +543,11 @@ class _HomePageState extends State<HomePage> {
                 Text(
                   value,
                   style: GoogleFonts.poppins(
-                    fontSize: 20,
+                    fontSize: ResponsiveUtils.responsiveValue(
+                      context,
+                      tablet: 20.0,
+                      mobile: 18.0,
+                    ),
                     fontWeight: FontWeight.w700,
                     color: Theme.of(context).brightness == Brightness.dark
                         ? AppColors.textDark
@@ -432,7 +557,11 @@ class _HomePageState extends State<HomePage> {
                 Text(
                   label,
                   style: GoogleFonts.poppins(
-                    fontSize: 12,
+                    fontSize: ResponsiveUtils.responsiveValue(
+                      context,
+                      tablet: 12.0,
+                      mobile: 11.0,
+                    ),
                     fontWeight: FontWeight.w500,
                     color: Theme.of(context).brightness == Brightness.dark
                         ? AppColors.textDark.withValues(alpha: 0.7)
@@ -456,14 +585,24 @@ class _HomePageState extends State<HomePage> {
     required VoidCallback onTap,
   }) {
     return Card(
-      elevation: 8,
+      elevation: ResponsiveUtils.responsiveValue(
+        context,
+        mobile: 8.0,
+        mobileSmall: 6.0,
+      ),
       shadowColor: Colors.black26,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(20),
         child: Container(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(
+            ResponsiveUtils.responsiveValue(
+              context,
+              mobile: 24.0,
+              mobileSmall: 20.0,
+            ),
+          ),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
             color: color,
@@ -471,16 +610,36 @@ class _HomePageState extends State<HomePage> {
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(
+                  ResponsiveUtils.responsiveValue(
+                    context,
+                    mobile: 16.0,
+                    mobileSmall: 12.0,
+                  ),
+                ),
                 decoration: BoxDecoration(
                   color: Theme.of(context).brightness == Brightness.dark
                       ? AppColors.darkRed
                       : AppColors.primaryRed,
                   borderRadius: BorderRadius.circular(15),
                 ),
-                child: Icon(icon, size: 32, color: Colors.white),
+                child: Icon(
+                  icon,
+                  size: ResponsiveUtils.responsiveValue(
+                    context,
+                    mobile: 32.0,
+                    mobileSmall: 28.0,
+                  ),
+                  color: Colors.white,
+                ),
               ),
-              const SizedBox(width: 20),
+              SizedBox(
+                width: ResponsiveUtils.responsiveValue(
+                  context,
+                  mobile: 20.0,
+                  mobileSmall: 16.0,
+                ),
+              ),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -488,7 +647,11 @@ class _HomePageState extends State<HomePage> {
                     Text(
                       title,
                       style: GoogleFonts.poppins(
-                        fontSize: 20,
+                        fontSize: ResponsiveUtils.responsiveValue(
+                          context,
+                          mobile: 20.0,
+                          mobileSmall: 18.0,
+                        ),
                         fontWeight: FontWeight.bold,
                         color: Theme.of(context).brightness == Brightness.dark
                             ? AppColors.textDark
@@ -499,7 +662,11 @@ class _HomePageState extends State<HomePage> {
                     Text(
                       subtitle,
                       style: GoogleFonts.poppins(
-                        fontSize: 14,
+                        fontSize: ResponsiveUtils.responsiveValue(
+                          context,
+                          mobile: 14.0,
+                          mobileSmall: 12.0,
+                        ),
                         color: Theme.of(context).brightness == Brightness.dark
                             ? AppColors.textDark.withValues(alpha: 0.7)
                             : AppColors.textSecondary,
@@ -513,7 +680,11 @@ class _HomePageState extends State<HomePage> {
                 color: Theme.of(context).brightness == Brightness.dark
                     ? AppColors.darkRed
                     : AppColors.primaryRed,
-                size: 20,
+                size: ResponsiveUtils.responsiveValue(
+                  context,
+                  mobile: 20.0,
+                  mobileSmall: 18.0,
+                ),
               ),
             ],
           ),
@@ -533,12 +704,30 @@ class _HomePageState extends State<HomePage> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: iconColor, size: 18),
-          const SizedBox(height: 6),
+          Icon(
+            icon,
+            color: iconColor,
+            size: ResponsiveUtils.responsiveValue(
+              context,
+              mobile: 18.0,
+              mobileSmall: 16.0,
+            ),
+          ),
+          SizedBox(
+            height: ResponsiveUtils.responsiveValue(
+              context,
+              mobile: 6.0,
+              mobileSmall: 4.0,
+            ),
+          ),
           Text(
             value,
             style: GoogleFonts.poppins(
-              fontSize: 20,
+              fontSize: ResponsiveUtils.responsiveValue(
+                context,
+                mobile: 20.0,
+                mobileSmall: 18.0,
+              ),
               fontWeight: FontWeight.w700,
               color: Theme.of(context).brightness == Brightness.dark
                   ? AppColors.textDark
@@ -548,7 +737,11 @@ class _HomePageState extends State<HomePage> {
           Text(
             label,
             style: GoogleFonts.poppins(
-              fontSize: 11,
+              fontSize: ResponsiveUtils.responsiveValue(
+                context,
+                mobile: 11.0,
+                mobileSmall: 10.0,
+              ),
               fontWeight: FontWeight.w500,
               color: Theme.of(context).brightness == Brightness.dark
                   ? AppColors.textDark.withValues(alpha: 0.7)
