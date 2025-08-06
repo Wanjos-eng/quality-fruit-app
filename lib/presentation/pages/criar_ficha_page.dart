@@ -4,6 +4,9 @@ import '../../core/theme/app_colors.dart';
 import '../../responsive/responsive.dart';
 import '../../core/theme/responsive_theme_extensions.dart';
 import '../../domain/entities/entities.dart';
+import '../../domain/usecases/salvar_ficha_usecase.dart';
+import '../../data/repositories/ficha_repository_impl.dart';
+import '../../data/datasources/local_datasource.dart';
 
 /// Página para criar nova ficha de avaliação
 class CriarFichaPage extends StatefulWidget {
@@ -17,6 +20,11 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
   final _formKey = GlobalKey<FormState>();
   final _pageController = PageController();
   int _currentPage = 0;
+
+  // === DEPENDÊNCIAS PARA SALVAR FICHA ===
+  late final LocalDatasource _localDatasource;
+  late final FichaRepositoryImpl _fichaRepository;
+  late final SalvarFichaUseCase _salvarFichaUseCase;
 
   // Controllers dos campos obrigatórios
   final _numeroFichaController = TextEditingController();
@@ -46,6 +54,12 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
   @override
   void initState() {
     super.initState();
+
+    // === INICIALIZAR DEPENDÊNCIAS ===
+    _localDatasource = LocalDatasource();
+    _fichaRepository = FichaRepositoryImpl(_localDatasource);
+    _salvarFichaUseCase = SalvarFichaUseCase(_fichaRepository);
+
     // Gerar número da ficha automaticamente
     _numeroFichaController.text = _gerarNumeroFicha();
     _quantidadeAmostrasController.text = '7'; // Padrão A,B,C,D,E,F,G
@@ -59,9 +73,10 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
   @override
   Widget build(BuildContext context) {
     return ResponsiveScaffold(
-      applySafeArea: true,
+      applySafeArea: false,
       centerContentOnTablet: true,
       tabletMaxContentWidth: 800.0,
+      customPadding: EdgeInsets.zero,
       body: _buildContent(context),
       mobileBody: _buildMobileLayout(context),
       tabletBody: _buildTabletLayout(context),
@@ -75,77 +90,102 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
 
   /// Layout para dispositivos mobile
   Widget _buildMobileLayout(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).brightness == Brightness.dark
-          ? AppColors.backgroundDark
-          : AppColors.backgroundGrayLight,
-      appBar: _buildAppBar(context, isTablet: false),
-      body: Column(
-        children: [
-          // Indicador de progresso
-          _buildProgressIndicator(context, isTablet: false),
-          
-          // Conteúdo das páginas
-          Expanded(
-            child: PageView(
-              controller: _pageController,
-              onPageChanged: (page) => setState(() => _currentPage = page),
-              children: [
-                _buildDadosBasicosPage(isTablet: false),
-                _buildDadosComplementaresPage(isTablet: false),
-                _buildObservacoesPage(isTablet: false),
-              ],
-            ),
-          ),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: Theme.of(context).brightness == Brightness.dark
+            ? AppColors.gradientDarkIntense
+            : AppColors.gradientBrand,
+      ),
+      child: SafeArea(
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: _buildAppBar(context, isTablet: false),
+          body: Column(
+            children: [
+              // Indicador de progresso
+              _buildProgressIndicator(context, isTablet: false),
 
-          // Botões de navegação
-          _buildNavigationButtons(context, isTablet: false),
-        ],
+              // Conteúdo das páginas
+              Expanded(
+                child: PageView(
+                  controller: _pageController,
+                  physics:
+                      const NeverScrollableScrollPhysics(), // Desabilita deslizar
+                  onPageChanged: (page) => setState(() => _currentPage = page),
+                  children: [
+                    _buildDadosBasicosPage(isTablet: false),
+                    _buildDadosComplementaresPage(isTablet: false),
+                    _buildObservacoesPage(isTablet: false),
+                  ],
+                ),
+              ),
+
+              // Botões de navegação
+              _buildNavigationButtons(context, isTablet: false),
+            ],
+          ),
+        ),
       ),
     );
   }
 
   /// Layout para dispositivos tablet
   Widget _buildTabletLayout(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).brightness == Brightness.dark
-          ? AppColors.backgroundDark
-          : AppColors.backgroundGrayLight,
-      appBar: _buildAppBar(context, isTablet: true),
-      body: ResponsivePadding(
-        tablet: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 24.0),
-        child: Column(
-          children: [
-            // Indicador de progresso
-            _buildProgressIndicator(context, isTablet: true),
-            
-            SizedBox(height: ResponsiveThemeValues.sectionSpacing(context)),
-            
-            // Conteúdo das páginas
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                onPageChanged: (page) => setState(() => _currentPage = page),
-                children: [
-                  _buildDadosBasicosPage(isTablet: true),
-                  _buildDadosComplementaresPage(isTablet: true),
-                  _buildObservacoesPage(isTablet: true),
-                ],
-              ),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: Theme.of(context).brightness == Brightness.dark
+            ? AppColors.gradientDarkIntense
+            : AppColors.gradientBrand,
+      ),
+      child: SafeArea(
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: _buildAppBar(context, isTablet: true),
+          body: ResponsivePadding(
+            tablet: const EdgeInsets.symmetric(
+              horizontal: 40.0,
+              vertical: 24.0,
             ),
+            child: Column(
+              children: [
+                // Indicador de progresso
+                _buildProgressIndicator(context, isTablet: true),
 
-            SizedBox(height: ResponsiveThemeValues.elementSpacing(context)),
+                SizedBox(height: ResponsiveThemeValues.sectionSpacing(context)),
 
-            // Botões de navegação
-            _buildNavigationButtons(context, isTablet: true),
-          ],
+                // Conteúdo das páginas
+                Expanded(
+                  child: PageView(
+                    controller: _pageController,
+                    physics:
+                        const NeverScrollableScrollPhysics(), // Desabilita deslizar
+                    onPageChanged: (page) =>
+                        setState(() => _currentPage = page),
+                    children: [
+                      _buildDadosBasicosPage(isTablet: true),
+                      _buildDadosComplementaresPage(isTablet: true),
+                      _buildObservacoesPage(isTablet: true),
+                    ],
+                  ),
+                ),
+
+                SizedBox(height: ResponsiveThemeValues.elementSpacing(context)),
+
+                // Botões de navegação
+                _buildNavigationButtons(context, isTablet: true),
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
 
   /// AppBar responsiva
-  PreferredSizeWidget _buildAppBar(BuildContext context, {bool isTablet = false}) {
+  PreferredSizeWidget _buildAppBar(
+    BuildContext context, {
+    bool isTablet = false,
+  }) {
     return AppBar(
       title: Text(
         'Nova Ficha de Qualidade',
@@ -156,44 +196,48 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
             mobile: 18.0,
             tablet: 20.0,
           ),
+          color: Colors.white,
         ),
       ),
-      backgroundColor: Theme.of(context).brightness == Brightness.dark
-          ? AppColors.darkGreen
-          : AppColors.positiveGreen,
+      backgroundColor: Colors.transparent,
       foregroundColor: Colors.white,
       elevation: 0,
+      iconTheme: const IconThemeData(color: Colors.white),
     );
   }
 
   /// Indicador de progresso responsivo
-  Widget _buildProgressIndicator(BuildContext context, {bool isTablet = false}) {
+  Widget _buildProgressIndicator(
+    BuildContext context, {
+    bool isTablet = false,
+  }) {
     return Container(
       padding: ResponsiveThemeValues.cardPadding(context),
-      color: Theme.of(context).brightness == Brightness.dark
-          ? AppColors.cardDark
-          : AppColors.positiveGreen,
       child: Column(
         children: [
           Text(
             'Passo ${_currentPage + 1} de 3',
             style: GoogleFonts.poppins(
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? AppColors.textDark
-                  : Colors.white,
+              color: Colors.white,
               fontSize: ResponsiveUtils.responsiveValue(
                 context,
                 mobile: 16.0,
                 tablet: 18.0,
               ),
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
             ),
           ),
           SizedBox(height: ResponsiveThemeValues.elementSpacing(context) * 0.5),
           LinearProgressIndicator(
             value: (_currentPage + 1) / 3,
             backgroundColor: Colors.white.withValues(alpha: 0.3),
-            valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+            valueColor: AlwaysStoppedAnimation<Color>(
+              Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.darkRed
+                  : AppColors.primaryRed,
+            ),
+            borderRadius: BorderRadius.circular(10),
+            minHeight: 6,
           ),
         ],
       ),
@@ -201,22 +245,12 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
   }
 
   /// Botões de navegação responsivos
-  Widget _buildNavigationButtons(BuildContext context, {bool isTablet = false}) {
+  Widget _buildNavigationButtons(
+    BuildContext context, {
+    bool isTablet = false,
+  }) {
     return Container(
       padding: ResponsiveThemeValues.cardPadding(context),
-      decoration: BoxDecoration(
-        color: Theme.of(context).brightness == Brightness.dark
-            ? AppColors.cardDark
-            : Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.1),
-            spreadRadius: 1,
-            blurRadius: 5,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
       child: Row(
         children: [
           if (_currentPage > 0)
@@ -232,17 +266,17 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
                     ),
                   ),
                   side: BorderSide(
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? AppColors.darkGreen
-                        : AppColors.positiveGreen,
+                    color: Colors.white.withValues(alpha: 0.8),
+                    width: 2,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
                 child: Text(
                   'Anterior',
                   style: GoogleFonts.poppins(
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? AppColors.darkGreen
-                        : AppColors.positiveGreen,
+                    color: Colors.white,
                     fontWeight: FontWeight.w600,
                     fontSize: ResponsiveUtils.responsiveValue(
                       context,
@@ -253,15 +287,16 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
                 ),
               ),
             ),
-          if (_currentPage > 0) 
+          if (_currentPage > 0)
             SizedBox(width: ResponsiveThemeValues.elementSpacing(context)),
           Expanded(
             child: ElevatedButton(
               onPressed: _currentPage == 2 ? _salvarFicha : _nextPage,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.darkGreen
-                    : AppColors.positiveGreen,
+                    ? AppColors.darkRed
+                    : AppColors.primaryRed,
+                foregroundColor: Colors.white,
                 padding: EdgeInsets.symmetric(
                   vertical: ResponsiveUtils.responsiveValue(
                     context,
@@ -270,8 +305,9 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
                   ),
                 ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(12),
                 ),
+                elevation: 0,
               ),
               child: Text(
                 _currentPage == 2 ? 'Salvar Ficha' : 'Próximo',
@@ -295,11 +331,7 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
   Widget _buildDadosBasicosPage({bool isTablet = false}) {
     return SingleChildScrollView(
       padding: EdgeInsets.all(
-        ResponsiveUtils.responsiveValue(
-          context,
-          mobile: 16.0,
-          tablet: 24.0,
-        ),
+        ResponsiveUtils.responsiveValue(context, mobile: 16.0, tablet: 24.0),
       ),
       child: Form(
         key: _formKey,
@@ -315,12 +347,12 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
                   tablet: 28.0,
                 ),
                 fontWeight: FontWeight.bold,
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.textDark
-                    : AppColors.positiveGreen,
+                color: Colors.white,
               ),
             ),
-            SizedBox(height: ResponsiveThemeValues.elementSpacing(context) * 0.5),
+            SizedBox(
+              height: ResponsiveThemeValues.elementSpacing(context) * 0.5,
+            ),
             Text(
               'Informações obrigatórias da ficha',
               style: GoogleFonts.poppins(
@@ -329,9 +361,7 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
                   mobile: 16.0,
                   tablet: 18.0,
                 ),
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.textDark.withValues(alpha: 0.7)
-                    : AppColors.textSecondary,
+                color: Colors.white.withValues(alpha: 0.9),
               ),
             ),
             const SizedBox(height: 24),
@@ -413,11 +443,7 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
   Widget _buildDadosComplementaresPage({bool isTablet = false}) {
     return SingleChildScrollView(
       padding: EdgeInsets.all(
-        ResponsiveUtils.responsiveValue(
-          context,
-          mobile: 16.0,
-          tablet: 24.0,
-        ),
+        ResponsiveUtils.responsiveValue(context, mobile: 16.0, tablet: 24.0),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -431,9 +457,7 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
                 tablet: 28.0,
               ),
               fontWeight: FontWeight.bold,
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? AppColors.textDark
-                  : AppColors.positiveGreen,
+              color: Colors.white,
             ),
           ),
           SizedBox(height: ResponsiveThemeValues.elementSpacing(context) * 0.5),
@@ -441,9 +465,7 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
             'Informações técnicas da avaliação',
             style: GoogleFonts.poppins(
               fontSize: 16,
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? AppColors.textDark.withValues(alpha: 0.7)
-                  : AppColors.textSecondary,
+              color: Colors.white.withValues(alpha: 0.9),
             ),
           ),
           const SizedBox(height: 24),
@@ -545,11 +567,7 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
   Widget _buildObservacoesPage({bool isTablet = false}) {
     return SingleChildScrollView(
       padding: EdgeInsets.all(
-        ResponsiveUtils.responsiveValue(
-          context,
-          mobile: 16.0,
-          tablet: 24.0,
-        ),
+        ResponsiveUtils.responsiveValue(context, mobile: 16.0, tablet: 24.0),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -559,9 +577,7 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
             style: GoogleFonts.poppins(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? AppColors.textDark
-                  : AppColors.positiveGreen,
+              color: Colors.white,
             ),
           ),
           const SizedBox(height: 8),
@@ -569,9 +585,7 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
             'Observações específicas por amostra (A-G)',
             style: GoogleFonts.poppins(
               fontSize: 16,
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? AppColors.textDark.withValues(alpha: 0.7)
-                  : AppColors.textSecondary,
+              color: Colors.white.withValues(alpha: 0.9),
             ),
           ),
           const SizedBox(height: 24),
@@ -589,9 +603,7 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
             style: GoogleFonts.poppins(
               fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? AppColors.textDark.withValues(alpha: 0.9)
-                  : AppColors.textPrimary,
+              color: Colors.white.withValues(alpha: 0.95),
             ),
           ),
           const SizedBox(height: 16),
@@ -670,21 +682,142 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
             width: 2,
           ),
         ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppColors.darkRed
+                : AppColors.primaryRed,
+            width: 2,
+          ),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppColors.darkRed
+                : AppColors.primaryRed,
+            width: 2,
+          ),
+        ),
+        errorStyle: GoogleFonts.poppins(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? AppColors.darkRed
+              : AppColors.primaryRed,
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+        ),
+        prefixIcon: validator != null
+            ? Icon(
+                Icons.star,
+                size: 8,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.darkRed
+                    : AppColors.primaryRed,
+              )
+            : null,
       ),
       keyboardType: keyboardType,
       validator: validator,
       maxLines: maxLines,
+      style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w500),
     );
   }
 
   void _nextPage() {
-    if (_currentPage == 0 && !_formKey.currentState!.validate()) {
-      return;
+    // Validação específica para cada página
+    if (_currentPage == 0) {
+      // Página 1: Dados Básicos - todos os campos são obrigatórios
+      if (!_formKey.currentState!.validate()) {
+        _mostrarDialogoValidacao(
+          'Campos Obrigatórios',
+          'Preencha todos os campos obrigatórios dos Dados Básicos para continuar.',
+          Icons.warning_amber_rounded,
+        );
+        return;
+      }
+    } else if (_currentPage == 1) {
+      // Página 2: Dados Complementares - validar campos obrigatórios
+      if (_pesoTotalController.text.trim().isEmpty ||
+          _quantidadeAmostrasController.text.trim().isEmpty ||
+          _responsavelAvaliacaoController.text.trim().isEmpty) {
+        _mostrarDialogoValidacao(
+          'Campos Obrigatórios',
+          'Preencha todos os campos obrigatórios dos Dados Complementares para continuar.',
+          Icons.warning_amber_rounded,
+        );
+        return;
+      }
     }
 
     _pageController.nextPage(
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
+    );
+  }
+
+  void _mostrarDialogoValidacao(
+    String titulo,
+    String mensagem,
+    IconData icone,
+  ) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Icon(
+                icone,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.darkRed
+                    : AppColors.primaryRed,
+                size: 28,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  titulo,
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 18,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            mensagem,
+            style: GoogleFonts.poppins(fontSize: 16, height: 1.4),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: Text(
+                'Entendi',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w600,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.darkRed
+                      : AppColors.primaryRed,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -707,75 +840,247 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
     }
   }
 
-  void _salvarFicha() {
-    if (!_formKey.currentState!.validate()) {
+  void _salvarFicha() async {
+    // Validar campos obrigatórios manualmente (pois não estamos na página do Form)
+    // Página 1: Dados Básicos
+    if (_numeroFichaController.text.trim().isEmpty ||
+        _clienteController.text.trim().isEmpty ||
+        _fazendaController.text.trim().isEmpty ||
+        _produtoController.text.trim().isEmpty ||
+        _variedadeController.text.trim().isEmpty ||
+        _origemController.text.trim().isEmpty ||
+        _loteController.text.trim().isEmpty) {
       _pageController.animateToPage(
         0,
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
+      _mostrarDialogoValidacao(
+        'Campos Obrigatórios',
+        'Preencha todos os campos obrigatórios dos Dados Básicos para salvar a ficha.',
+        Icons.warning_amber_rounded,
+      );
       return;
     }
 
-    // Criar a ficha
-    final ficha = Ficha(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      numeroFicha: _numeroFichaController.text,
-      dataAvaliacao: _dataAvaliacao,
-      cliente: _clienteController.text,
-      fazenda: _fazendaController.text,
-      ano: _ano,
-      produto: _produtoController.text,
-      variedade: _variedadeController.text,
-      origem: _origemController.text,
-      lote: _loteController.text,
-      pesoTotal: double.tryParse(_pesoTotalController.text) ?? 0.0,
-      quantidadeAmostras: int.tryParse(_quantidadeAmostrasController.text) ?? 7,
-      responsavelAvaliacao: _responsavelAvaliacaoController.text,
-      produtorResponsavel: _produtorResponsavelController.text.isNotEmpty
-          ? _produtorResponsavelController.text
-          : null,
-      observacoes: _observacoesController.text.isNotEmpty
-          ? _observacoesController.text
-          : 'Nova ficha criada',
-      observacaoA: _observacaoAController.text.isNotEmpty
-          ? _observacaoAController.text
-          : null,
-      observacaoB: _observacaoBController.text.isNotEmpty
-          ? _observacaoBController.text
-          : null,
-      observacaoC: _observacaoCController.text.isNotEmpty
-          ? _observacaoCController.text
-          : null,
-      observacaoD: _observacaoDController.text.isNotEmpty
-          ? _observacaoDController.text
-          : null,
-      observacaoF: _observacaoFController.text.isNotEmpty
-          ? _observacaoFController.text
-          : null,
-      observacaoG: _observacaoGController.text.isNotEmpty
-          ? _observacaoGController.text
-          : null,
-      criadoEm: DateTime.now(),
-    );
+    // Página 2: Dados Complementares
+    if (_pesoTotalController.text.trim().isEmpty ||
+        _quantidadeAmostrasController.text.trim().isEmpty ||
+        _responsavelAvaliacaoController.text.trim().isEmpty) {
+      _pageController.animateToPage(
+        1,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+      _mostrarDialogoValidacao(
+        'Campos Obrigatórios',
+        'Preencha todos os campos obrigatórios dos Dados Complementares para salvar a ficha.',
+        Icons.warning_amber_rounded,
+      );
+      return;
+    }
 
-    // Mostrar diálogo de sucesso
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Sucesso!'),
-        content: Text('Ficha ${ficha.numeroFicha} criada com sucesso!'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context); // Fechar diálogo
-              Navigator.pop(context); // Voltar para home
-            },
-            child: const Text('OK'),
+    try {
+      // Mostrar loading
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
           ),
-        ],
-      ),
-    );
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(height: 16),
+              Text(
+                'Salvando ficha...',
+                style: GoogleFonts.poppins(fontSize: 16),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      // Criar a ficha
+      final ficha = Ficha(
+        id: '', // O repository gerará o ID
+        numeroFicha: _numeroFichaController.text.trim(),
+        dataAvaliacao: _dataAvaliacao,
+        cliente: _clienteController.text.trim(),
+        fazenda: _fazendaController.text.trim(),
+        ano: _ano,
+        produto: _produtoController.text.trim(),
+        variedade: _variedadeController.text.trim(),
+        origem: _origemController.text.trim(),
+        lote: _loteController.text.trim(),
+        pesoTotal: double.tryParse(_pesoTotalController.text.trim()) ?? 0.0,
+        quantidadeAmostras:
+            int.tryParse(_quantidadeAmostrasController.text.trim()) ?? 7,
+        responsavelAvaliacao: _responsavelAvaliacaoController.text.trim(),
+        produtorResponsavel:
+            _produtorResponsavelController.text.trim().isNotEmpty
+            ? _produtorResponsavelController.text.trim()
+            : null,
+        observacoes: _observacoesController.text.trim().isNotEmpty
+            ? _observacoesController.text.trim()
+            : 'Nova ficha criada',
+        observacaoA: _observacaoAController.text.trim().isNotEmpty
+            ? _observacaoAController.text.trim()
+            : null,
+        observacaoB: _observacaoBController.text.trim().isNotEmpty
+            ? _observacaoBController.text.trim()
+            : null,
+        observacaoC: _observacaoCController.text.trim().isNotEmpty
+            ? _observacaoCController.text.trim()
+            : null,
+        observacaoD: _observacaoDController.text.trim().isNotEmpty
+            ? _observacaoDController.text.trim()
+            : null,
+        observacaoF: _observacaoFController.text.trim().isNotEmpty
+            ? _observacaoFController.text.trim()
+            : null,
+        observacaoG: _observacaoGController.text.trim().isNotEmpty
+            ? _observacaoGController.text.trim()
+            : null,
+        criadoEm: DateTime.now(),
+      );
+
+      // === SALVAR NO BANCO DE DADOS ===
+      final fichaSalva = await _salvarFichaUseCase.call(ficha);
+
+      // Verificar se o widget ainda está montado
+      if (!mounted) return;
+
+      // Fechar loading
+      Navigator.pop(context);
+
+      // Mostrar diálogo de sucesso
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Icon(
+                Icons.check_circle_rounded,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.darkGreen
+                    : AppColors.positiveGreen,
+                size: 28,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Sucesso!',
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 18,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            'Ficha ${fichaSalva.numeroFicha} salva com sucesso no banco de dados!\n\nID: ${fichaSalva.id}',
+            style: GoogleFonts.poppins(fontSize: 16, height: 1.4),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Fechar diálogo
+                Navigator.pop(context); // Voltar para home
+              },
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: Text(
+                'OK',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w600,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.darkGreen
+                      : AppColors.positiveGreen,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    } catch (e) {
+      // Verificar se o widget ainda está montado
+      if (!mounted) return;
+
+      // Fechar loading se estiver aberto
+      Navigator.pop(context);
+
+      // Mostrar erro
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Icon(
+                Icons.error_rounded,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.darkRed
+                    : AppColors.primaryRed,
+                size: 28,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Erro ao Salvar',
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 18,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            'Ocorreu um erro ao salvar a ficha:\n\n${e.toString()}',
+            style: GoogleFonts.poppins(fontSize: 16, height: 1.4),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: Text(
+                'Tentar Novamente',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w600,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.darkRed
+                      : AppColors.primaryRed,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   @override

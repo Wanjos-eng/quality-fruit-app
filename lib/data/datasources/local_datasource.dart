@@ -4,7 +4,8 @@ import 'package:path/path.dart';
 /// Datasource local para gerenciar o banco de dados SQLite
 class LocalDatasource {
   static const _databaseName = 'quality_fruit.db';
-  static const _databaseVersion = 4;
+  static const _databaseVersion =
+      6; // Incrementado para corrigir schema completo
 
   // Tabelas
   static const _tableFichas = 'fichas';
@@ -14,6 +15,16 @@ class LocalDatasource {
   static const _tableDefeitos = 'defeitos';
 
   static Database? _database;
+
+  /// Método para resetar completamente a base de dados (útil durante desenvolvimento)
+  Future<void> resetDatabase() async {
+    await _database?.close();
+    _database = null;
+
+    final databasesPath = await getDatabasesPath();
+    final path = join(databasesPath, _databaseName);
+    await deleteDatabase(path);
+  }
 
   /// Retorna a instância do banco de dados (Singleton)
   Future<Database> get database async {
@@ -40,8 +51,8 @@ class LocalDatasource {
     await db.execute('''
       CREATE TABLE $_tableFichas (
         id TEXT PRIMARY KEY,
-        numero_ficha TEXT UNIQUE NOT NULL,
-        data_avaliacao TEXT NOT NULL,
+        numeroFicha TEXT UNIQUE NOT NULL,
+        dataAvaliacao INTEGER NOT NULL,
         cliente TEXT NOT NULL,
         fazenda TEXT NOT NULL,
         ano INTEGER NOT NULL,
@@ -49,19 +60,19 @@ class LocalDatasource {
         variedade TEXT NOT NULL,
         origem TEXT NOT NULL,
         lote TEXT NOT NULL,
-        peso_total REAL NOT NULL,
-        quantidade_amostras INTEGER NOT NULL,
-        responsavel_avaliacao TEXT NOT NULL,
-        produtor_responsavel TEXT,
+        pesoTotal REAL NOT NULL,
+        quantidadeAmostras INTEGER NOT NULL,
+        responsavelAvaliacao TEXT NOT NULL,
+        produtorResponsavel TEXT,
         observacoes TEXT,
-        observacao_a TEXT,
-        observacao_b TEXT,
-        observacao_c TEXT,
-        observacao_d TEXT,
-        observacao_f TEXT,
-        observacao_g TEXT,
-        criado_em TEXT NOT NULL,
-        atualizado_em TEXT
+        observacaoA TEXT,
+        observacaoB TEXT,
+        observacaoC TEXT,
+        observacaoD TEXT,
+        observacaoF TEXT,
+        observacaoG TEXT,
+        criadoEm INTEGER NOT NULL,
+        atualizadoEm INTEGER
       )
     ''');
 
@@ -69,14 +80,14 @@ class LocalDatasource {
     await db.execute('''
       CREATE TABLE $_tableAmostras (
         id TEXT PRIMARY KEY,
-        ficha_id TEXT NOT NULL,
-        numero_amostra INTEGER NOT NULL,
+        fichaId TEXT NOT NULL,
+        numeroAmostra INTEGER NOT NULL,
         peso REAL NOT NULL,
         observacoes TEXT,
-        criado_em TEXT NOT NULL,
-        atualizado_em TEXT,
-        FOREIGN KEY (ficha_id) REFERENCES $_tableFichas (id) ON DELETE CASCADE,
-        UNIQUE(ficha_id, numero_amostra)
+        criadoEm TEXT NOT NULL,
+        atualizadoEm TEXT,
+        FOREIGN KEY (fichaId) REFERENCES $_tableFichas (id) ON DELETE CASCADE,
+        UNIQUE(fichaId, numeroAmostra)
       )
     ''');
 
@@ -84,13 +95,13 @@ class LocalDatasource {
     await db.execute('''
       CREATE TABLE $_tableMedidas (
         id TEXT PRIMARY KEY,
-        amostra_id TEXT NOT NULL,
+        amostraId TEXT NOT NULL,
         tipo TEXT NOT NULL,
         valor REAL NOT NULL,
         observacoes TEXT,
-        criado_em TEXT NOT NULL,
-        atualizado_em TEXT,
-        FOREIGN KEY (amostra_id) REFERENCES $_tableAmostras (id) ON DELETE CASCADE
+        criadoEm TEXT NOT NULL,
+        atualizadoEm TEXT,
+        FOREIGN KEY (amostraId) REFERENCES $_tableAmostras (id) ON DELETE CASCADE
       )
     ''');
 
@@ -98,15 +109,15 @@ class LocalDatasource {
     await db.execute('''
       CREATE TABLE $_tableDefeitos (
         id TEXT PRIMARY KEY,
-        amostra_id TEXT NOT NULL,
+        amostraId TEXT NOT NULL,
         tipo TEXT NOT NULL,
         gravidade TEXT NOT NULL,
         descricao TEXT NOT NULL,
-        porcentagem_afetada REAL,
+        porcentagemAfetada REAL,
         observacoes TEXT,
-        criado_em TEXT NOT NULL,
-        atualizado_em TEXT,
-        FOREIGN KEY (amostra_id) REFERENCES $_tableAmostras (id) ON DELETE CASCADE
+        criadoEm TEXT NOT NULL,
+        atualizadoEm TEXT,
+        FOREIGN KEY (amostraId) REFERENCES $_tableAmostras (id) ON DELETE CASCADE
       )
     ''');
 
@@ -114,47 +125,47 @@ class LocalDatasource {
     await db.execute('''
       CREATE TABLE $_tableAmostrasDetalhadas (
         id TEXT PRIMARY KEY,
-        ficha_id TEXT NOT NULL,
-        letra_amostra TEXT NOT NULL,
+        fichaId TEXT NOT NULL,
+        letraAmostra TEXT NOT NULL,
         data TEXT,
-        caixa_marca TEXT,
+        caixaMarca TEXT,
         classe TEXT,
         area TEXT,
         variedade TEXT,
-        peso_bruto_kg REAL,
-        sacola_cumbuca TEXT,
-        caixa_cumbuca_alta TEXT,
-        aparencia_calibro_0a7 TEXT,
-        cor_umd TEXT,
-        peso_embalagem REAL,
-        peso_liquido_kg REAL,
-        baga_mm REAL,
+        pesoBrutoKg REAL,
+        sacolaCumbuca TEXT,
+        caixaCumbucaAlta TEXT,
+        aparenciaCalibre0a7 TEXT,
+        corUmd TEXT,
+        pesoEmbalagem REAL,
+        pesoLiquidoKg REAL,
+        bagaMm REAL,
         brix REAL,
-        brix_media REAL,
-        teia_aranha REAL,
+        brixMedia REAL,
+        teiaAranha REAL,
         aranha REAL,
         amassada REAL,
-        aquosa_cor_baga REAL,
-        cacho_duro REAL,
-        cacho_ralo_banguelo REAL,
+        aquosaCorBaga REAL,
+        cachoDuro REAL,
+        cachoRaloBanguelo REAL,
         cicatriz REAL,
-        corpo_estranho REAL,
-        desgrane_percentual REAL,
-        mosca_fruta REAL,
+        corpoEstranho REAL,
+        desgranePercentual REAL,
+        moscaFruta REAL,
         murcha REAL,
         oidio REAL,
         podre REAL,
-        queimado_sol REAL,
+        queimadoSol REAL,
         rachada REAL,
         sacarose REAL,
         translucido REAL,
         glomerella REAL,
         traca REAL,
         observacoes TEXT,
-        criado_em TEXT NOT NULL,
-        atualizado_em TEXT,
-        FOREIGN KEY (ficha_id) REFERENCES $_tableFichas (id) ON DELETE CASCADE,
-        UNIQUE(ficha_id, letra_amostra)
+        criadoEm TEXT NOT NULL,
+        atualizadoEm TEXT,
+        FOREIGN KEY (fichaId) REFERENCES $_tableFichas (id) ON DELETE CASCADE,
+        UNIQUE(fichaId, letraAmostra)
       )
     ''');
 
@@ -166,17 +177,17 @@ class LocalDatasource {
       'CREATE INDEX idx_fichas_produto ON $_tableFichas (produto)',
     );
     await db.execute(
-      'CREATE INDEX idx_fichas_data ON $_tableFichas (data_avaliacao)',
+      'CREATE INDEX idx_fichas_data ON $_tableFichas (dataAvaliacao)',
     );
     await db.execute(
-      'CREATE INDEX idx_amostras_ficha ON $_tableAmostras (ficha_id)',
+      'CREATE INDEX idx_amostras_ficha ON $_tableAmostras (fichaId)',
     );
     await db.execute(
-      'CREATE INDEX idx_medidas_amostra ON $_tableMedidas (amostra_id)',
+      'CREATE INDEX idx_medidas_amostra ON $_tableMedidas (amostraId)',
     );
     await db.execute('CREATE INDEX idx_medidas_tipo ON $_tableMedidas (tipo)');
     await db.execute(
-      'CREATE INDEX idx_defeitos_amostra ON $_tableDefeitos (amostra_id)',
+      'CREATE INDEX idx_defeitos_amostra ON $_tableDefeitos (amostraId)',
     );
     await db.execute(
       'CREATE INDEX idx_defeitos_tipo ON $_tableDefeitos (tipo)',
@@ -270,11 +281,108 @@ class LocalDatasource {
       ''');
 
       await db.execute(
-        'CREATE INDEX idx_amostras_detalhadas_ficha ON $_tableAmostrasDetalhadas (ficha_id)',
+        'CREATE INDEX idx_amostras_detalhadas_ficha ON $_tableAmostrasDetalhadas (fichaId)',
       );
       await db.execute(
-        'CREATE INDEX idx_amostras_detalhadas_letra ON $_tableAmostrasDetalhadas (letra_amostra)',
+        'CREATE INDEX idx_amostras_detalhadas_letra ON $_tableAmostrasDetalhadas (letraAmostra)',
       );
+    }
+
+    // Migração da versão 4 para 5: corrigir nomes das colunas para camelCase
+    if (oldVersion < 5) {
+      // Recriar tabela fichas com nomes corretos das colunas
+      await db.execute('DROP TABLE IF EXISTS ${_tableFichas}_backup');
+
+      // Criar tabela backup (se existir dados)
+      try {
+        await db.execute('''
+          CREATE TABLE ${_tableFichas}_backup AS 
+          SELECT * FROM $_tableFichas
+        ''');
+      } catch (e) {
+        // Tabela pode não existir ainda
+      }
+
+      // Remover tabela original
+      await db.execute('DROP TABLE IF EXISTS $_tableFichas');
+
+      // Recriar tabela com schema correto (camelCase para compatibilidade com modelo)
+      await db.execute('''
+        CREATE TABLE $_tableFichas (
+          id TEXT PRIMARY KEY,
+          numeroFicha TEXT UNIQUE NOT NULL,
+          dataAvaliacao INTEGER NOT NULL,
+          cliente TEXT NOT NULL,
+          fazenda TEXT NOT NULL,
+          ano INTEGER NOT NULL,
+          produto TEXT NOT NULL,
+          variedade TEXT NOT NULL,
+          origem TEXT NOT NULL,
+          lote TEXT NOT NULL,
+          pesoTotal REAL NOT NULL,
+          quantidadeAmostras INTEGER NOT NULL,
+          responsavelAvaliacao TEXT NOT NULL,
+          produtorResponsavel TEXT,
+          observacoes TEXT,
+          observacaoA TEXT,
+          observacaoB TEXT,
+          observacaoC TEXT,
+          observacaoD TEXT,
+          observacaoF TEXT,
+          observacaoG TEXT,
+          criadoEm INTEGER NOT NULL,
+          atualizadoEm INTEGER
+        )
+      ''');
+
+      // Remover tabela backup
+      await db.execute('DROP TABLE IF EXISTS ${_tableFichas}_backup');
+    }
+
+    // Migração da versão 5 para 6: recriar todas as tabelas com camelCase consistente
+    if (oldVersion < 6) {
+      // Fazer backup de todas as tabelas
+      await db.execute(
+        'DROP TABLE IF EXISTS ${_tableAmostrasDetalhadas}_backup',
+      );
+      await db.execute('DROP TABLE IF EXISTS ${_tableDefeitos}_backup');
+      await db.execute('DROP TABLE IF EXISTS ${_tableMedidas}_backup');
+      await db.execute('DROP TABLE IF EXISTS ${_tableAmostras}_backup');
+
+      // Backup das tabelas existentes (se existirem)
+      try {
+        await db.execute(
+          'CREATE TABLE ${_tableAmostrasDetalhadas}_backup AS SELECT * FROM $_tableAmostrasDetalhadas',
+        );
+        await db.execute(
+          'CREATE TABLE ${_tableDefeitos}_backup AS SELECT * FROM $_tableDefeitos',
+        );
+        await db.execute(
+          'CREATE TABLE ${_tableMedidas}_backup AS SELECT * FROM $_tableMedidas',
+        );
+        await db.execute(
+          'CREATE TABLE ${_tableAmostras}_backup AS SELECT * FROM $_tableAmostras',
+        );
+      } catch (e) {
+        // Tabelas podem não existir ainda
+      }
+
+      // Remover tabelas antigas
+      await db.execute('DROP TABLE IF EXISTS $_tableDefeitos');
+      await db.execute('DROP TABLE IF EXISTS $_tableMedidas');
+      await db.execute('DROP TABLE IF EXISTS $_tableAmostras');
+      await db.execute('DROP TABLE IF EXISTS $_tableAmostrasDetalhadas');
+
+      // Recriar todas as tabelas com camelCase correto (chamando _onCreate)
+      await _onCreate(db, 6);
+
+      // Remover backups
+      await db.execute(
+        'DROP TABLE IF EXISTS ${_tableAmostrasDetalhadas}_backup',
+      );
+      await db.execute('DROP TABLE IF EXISTS ${_tableDefeitos}_backup');
+      await db.execute('DROP TABLE IF EXISTS ${_tableMedidas}_backup');
+      await db.execute('DROP TABLE IF EXISTS ${_tableAmostras}_backup');
     }
   }
 
