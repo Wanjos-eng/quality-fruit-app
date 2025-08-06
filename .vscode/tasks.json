@@ -10,9 +10,20 @@
 			],
 			"group": "build",
 			"isBackground": true,
-			"problemMatcher": [
-				"$flutter"
+			"options": {
+				"cwd": "${workspaceFolder}"
+			}
+		},
+		{
+			"label": "Flutter: Hot Reload Dev",
+			"type": "shell",
+			"command": "flutter",
+			"args": [
+				"run",
+				"--hot"
 			],
+			"group": "build",
+			"isBackground": true,
 			"options": {
 				"cwd": "${workspaceFolder}"
 			}
