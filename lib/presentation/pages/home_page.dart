@@ -456,7 +456,7 @@ class _HomePageState extends State<HomePage> {
         decoration: BoxDecoration(
           color: Theme.of(context).brightness == Brightness.dark
               ? AppColors.cardDark.withValues(alpha: 0.8)
-              : Colors.white.withValues(alpha: 0.08),
+              : Colors.white.withValues(alpha: 0.25),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
