@@ -43,3 +43,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Arquivos locais - não incluir no repositório
+.github/
+FAZENDA_IMPLEMENTATION.md
