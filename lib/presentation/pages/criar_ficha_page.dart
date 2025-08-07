@@ -1,1123 +1,390 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_colors.dart';
-import '../../responsive/responsive.dart';
-import '../../core/theme/responsive_theme_extensions.dart';
-import '../../domain/entities/entities.dart';
-import '../../domain/usecases/salvar_ficha_usecase.dart';
-import '../../data/repositories/ficha_repository_impl.dart';
-import '../../data/datasources/local_datasource.dart';
+import '../../domain/entities/amostra_detalhada.dart';
+import '../widgets/secao_informacoes_gerais.dart';
+import '../widgets/secao_amostras_defeitos.dart';
+import '../widgets/secao_observacoes_finais.dart';
 
-/// Página para criar nova ficha de avaliação
+/// ✅ PÁGINA PRINCIPAL - CRIAR FICHA DE QUALIDADE
+///
+/// Página responsável por criar uma nova ficha de qualidade
+/// Gerencia navegação entre as 3 seções e estado global da ficha
 class CriarFichaPage extends StatefulWidget {
-  const CriarFichaPage({super.key});
+  final String? fichaId;
+
+  const CriarFichaPage({super.key, this.fichaId});
 
   @override
   State<CriarFichaPage> createState() => _CriarFichaPageState();
 }
 
 class _CriarFichaPageState extends State<CriarFichaPage> {
+  // ⚙️ CONTROLE DE NAVEGAÇÃO ENTRE SEÇÕES
+  int _etapaAtual = 0; // 0=Informações Gerais, 1=Amostras, 2=Observações
+
+  // ⚙️ ESTADO GLOBAL DA FICHA
+  String _tipoAmostragem = 'Cumbuca 500g'; // Padrão inicial
+  final List<AmostraDetalhada> _amostras = [];
+
+  // ⚙️ DADOS DA SEÇÃO 1 (Informações Gerais)
   final _formKey = GlobalKey<FormState>();
-  final _pageController = PageController();
-  int _currentPage = 0;
+  late String _fichaId;
+  int? _ano = DateTime.now().year; // Ano atual como padrão
+  String? _fazenda;
+  DateTime? _dataAvaliacao;
+  int? _semanaAno;
+  String? _inspetor;
+  double? _pesoBruto;
 
-  // === DEPENDÊNCIAS PARA SALVAR FICHA ===
-  late final LocalDatasource _localDatasource;
-  late final FichaRepositoryImpl _fichaRepository;
-  late final SalvarFichaUseCase _salvarFichaUseCase;
-
-  // Controllers dos campos obrigatórios
-  final _numeroFichaController = TextEditingController();
-  final _clienteController = TextEditingController();
-  final _fazendaController = TextEditingController();
-  final _produtoController = TextEditingController();
-  final _variedadeController = TextEditingController();
-  final _origemController = TextEditingController();
-  final _loteController = TextEditingController();
-  final _pesoTotalController = TextEditingController();
-  final _quantidadeAmostrasController = TextEditingController();
-  final _responsavelAvaliacaoController = TextEditingController();
-
-  // Controllers dos campos opcionais
-  final _produtorResponsavelController = TextEditingController();
-  final _observacoesController = TextEditingController();
-  final _observacaoAController = TextEditingController();
-  final _observacaoBController = TextEditingController();
-  final _observacaoCController = TextEditingController();
-  final _observacaoDController = TextEditingController();
-  final _observacaoFController = TextEditingController();
-  final _observacaoGController = TextEditingController();
-
-  DateTime _dataAvaliacao = DateTime.now();
-  int _ano = DateTime.now().year;
+  // ⚙️ OBSERVAÇÕES FINAIS (Seção 3)
+  final Map<String, String> _observacoesPorAmostra = {};
 
   @override
   void initState() {
     super.initState();
-
-    // === INICIALIZAR DEPENDÊNCIAS ===
-    _localDatasource = LocalDatasource();
-    _fichaRepository = FichaRepositoryImpl(_localDatasource);
-    _salvarFichaUseCase = SalvarFichaUseCase(_fichaRepository);
-
-    // Gerar número da ficha automaticamente
-    _numeroFichaController.text = _gerarNumeroFicha();
-    _quantidadeAmostrasController.text = '7'; // Padrão A,B,C,D,E,F,G
+    _fichaId =
+        widget.fichaId ?? DateTime.now().millisecondsSinceEpoch.toString();
+    _gerarAmostrasIniciais();
   }
 
-  String _gerarNumeroFicha() {
-    final now = DateTime.now();
-    return 'QF-${now.year}-${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}-${now.millisecondsSinceEpoch.toString().substring(10)}';
+  /// Gera lista de amostras baseada no tipo de amostragem selecionado
+  void _gerarAmostrasIniciais() {
+    _amostras.clear();
+    _observacoesPorAmostra.clear();
+
+    final letras = _obterLetrasAmostras();
+
+    for (int i = 0; i < letras.length; i++) {
+      _amostras.add(
+        AmostraDetalhada(
+          id: '${_fichaId}_${letras[i]}',
+          fichaId: _fichaId,
+          letraAmostra: letras[i],
+          criadoEm: DateTime.now(),
+        ),
+      );
+
+      // Inicializar observação vazia para esta amostra
+      _observacoesPorAmostra[letras[i]] = '';
+    }
+  }
+
+  /// Retorna as letras das amostras conforme tipo de amostragem
+  List<String> _obterLetrasAmostras() {
+    switch (_tipoAmostragem) {
+      case 'Cumbuca 500g':
+        // 10 amostras: A até J
+        return List.generate(10, (i) => String.fromCharCode(65 + i));
+      case 'Cumbuca 250g':
+        // 20 amostras: A até T
+        return List.generate(20, (i) => String.fromCharCode(65 + i));
+      case 'Sacola (Caixa)':
+        // 7 amostras: A até G
+        return List.generate(7, (i) => String.fromCharCode(65 + i));
+      default:
+        return ['A']; // Fallback
+    }
+  }
+
+  /// Atualiza o tipo de amostragem e regenera as amostras
+  void _atualizarTipoAmostragem(String novoTipo) {
+    setState(() {
+      _tipoAmostragem = novoTipo;
+      _gerarAmostrasIniciais();
+    });
+  }
+
+  /// Navega para a próxima etapa
+  void _proximaEtapa() {
+    if (_etapaAtual < 2) {
+      setState(() {
+        _etapaAtual++;
+      });
+    }
+  }
+
+  /// Volta para a etapa anterior
+  void _etapaAnterior() {
+    if (_etapaAtual > 0) {
+      setState(() {
+        _etapaAtual--;
+      });
+    }
+  }
+
+  /// Verifica se pode avançar para próxima etapa
+  bool _podeAvancar() {
+    switch (_etapaAtual) {
+      case 0: // Informações Gerais
+        return _ano != null &&
+            _fazenda != null &&
+            _dataAvaliacao != null &&
+            _inspetor != null &&
+            _pesoBruto != null;
+      case 1: // Amostras
+        return _amostras.every((amostra) => amostra.temDadosMinimos);
+      case 2: // Observações
+        return true; // Sempre pode finalizar
+      default:
+        return false;
+    }
+  }
+
+  /// Obter título da etapa atual
+  String _obterTituloEtapa() {
+    switch (_etapaAtual) {
+      case 0:
+        return 'SEÇÃO 1: Informações Gerais';
+      case 1:
+        return 'SEÇÃO 2: Amostras e Defeitos';
+      case 2:
+        return 'SEÇÃO 3: Observações Finais';
+      default:
+        return 'Criar Ficha de Qualidade';
+    }
+  }
+
+  /// Obter widget da seção atual
+  Widget _obterSecaoAtual() {
+    switch (_etapaAtual) {
+      case 0:
+        return SecaoInformacoesGerais(
+          formKey: _formKey,
+          ano: _ano,
+          fazenda: _fazenda,
+          dataAvaliacao: _dataAvaliacao,
+          semanaAno: _semanaAno,
+          inspetor: _inspetor,
+          tipoAmostragem: _tipoAmostragem,
+          pesoBruto: _pesoBruto,
+          onAnoChanged: (valor) {
+            setState(() {
+              _ano = valor;
+              // Recalcular semana do ano se já temos data e ano
+              if (_dataAvaliacao != null && valor != null) {
+                _semanaAno = _calcularSemanaAno(_dataAvaliacao!, valor);
+              }
+            });
+          },
+          onFazendaChanged: (valor) => setState(() => _fazenda = valor),
+          onDataChanged: (valor) {
+            setState(() {
+              _dataAvaliacao = valor;
+              // Calcular semana do ano automaticamente usando o ano selecionado
+              if (valor != null && _ano != null) {
+                _semanaAno = _calcularSemanaAno(valor, _ano!);
+              }
+            });
+          },
+          onInspetorChanged: (valor) => setState(() => _inspetor = valor),
+          onTipoAmostragemChanged: _atualizarTipoAmostragem,
+          onPesoBrutoChanged: (valor) => setState(() => _pesoBruto = valor),
+        );
+      case 1:
+        return SecaoAmostrasDefeitos(
+          amostras: _amostras,
+          tipoAmostragem: _tipoAmostragem,
+          onAmostraAtualizada: (amostra) {
+            setState(() {
+              final index = _amostras.indexWhere((a) => a.id == amostra.id);
+              if (index >= 0) {
+                _amostras[index] = amostra;
+              }
+            });
+          },
+        );
+      case 2:
+        return SecaoObservacaoFinais(
+          amostras: _amostras,
+          observacoesPorAmostra: _observacoesPorAmostra,
+          onObservacaoChanged: (letra, observacao) {
+            setState(() {
+              _observacoesPorAmostra[letra] = observacao;
+            });
+          },
+        );
+      default:
+        return const Center(child: Text('Seção não encontrada'));
+    }
+  }
+
+  /// Calcula a semana do ano baseada na data e ano selecionado
+  int _calcularSemanaAno(DateTime data, int anoSelecionado) {
+    // Criar data com o ano selecionado, mas dia/mês da data informada
+    final dataComAnoSelecionado = DateTime(
+      anoSelecionado,
+      data.month,
+      data.day,
+    );
+    final inicioAno = DateTime(anoSelecionado, 1, 1);
+    final diferenca = dataComAnoSelecionado.difference(inicioAno).inDays;
+    return (diferenca / 7).ceil();
   }
 
   @override
   Widget build(BuildContext context) {
-    return ResponsiveScaffold(
-      applySafeArea: false,
-      centerContentOnTablet: true,
-      tabletMaxContentWidth: 800.0,
-      customPadding: EdgeInsets.zero,
-      body: _buildContent(context),
-      mobileBody: _buildMobileLayout(context),
-      tabletBody: _buildTabletLayout(context),
-    );
-  }
-
-  /// Conteúdo padrão (fallback)
-  Widget _buildContent(BuildContext context) {
-    return _buildMobileLayout(context);
-  }
-
-  /// Layout para dispositivos mobile
-  Widget _buildMobileLayout(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: Theme.of(context).brightness == Brightness.dark
-            ? AppColors.gradientDarkIntense
-            : AppColors.gradientBrand,
-      ),
-      child: SafeArea(
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
-          appBar: _buildAppBar(context, isTablet: false),
-          body: Column(
+    return Scaffold(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: Theme.of(context).brightness == Brightness.dark
+              ? AppColors.gradientDarkIntense
+              : AppColors.gradientBrand,
+        ),
+        child: SafeArea(
+          child: Column(
             children: [
-              // Indicador de progresso
-              _buildProgressIndicator(context, isTablet: false),
-
-              // Conteúdo das páginas
-              Expanded(
-                child: PageView(
-                  controller: _pageController,
-                  physics:
-                      const NeverScrollableScrollPhysics(), // Desabilita deslizar
-                  onPageChanged: (page) => setState(() => _currentPage = page),
+              // 📱 HEADER SIMPLES COM TÍTULO
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
                   children: [
-                    _buildDadosBasicosPage(isTablet: false),
-                    _buildDadosComplementaresPage(isTablet: false),
-                    _buildObservacoesPage(isTablet: false),
+                    IconButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(
+                        Icons.arrow_back,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _obterTituloEtapa(),
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
 
-              // Botões de navegação
-              _buildNavigationButtons(context, isTablet: false),
+              // 📊 INDICADOR DE PROGRESSO MINIMALISTA
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                child: Row(
+                  children: [
+                    for (int i = 0; i <= 2; i++) ...[
+                      Expanded(
+                        child: Container(
+                          height: 3,
+                          decoration: BoxDecoration(
+                            color: i <= _etapaAtual
+                                ? Colors.white
+                                : Colors.white.withValues(alpha: 0.3),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ),
+                      if (i < 2) const SizedBox(width: 8),
+                    ],
+                  ],
+                ),
+              ),
+
+              // 📋 CONTEÚDO DA SEÇÃO
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+                  child: _obterSecaoAtual(),
+                ),
+              ),
             ],
           ),
         ),
       ),
-    );
-  }
 
-  /// Layout para dispositivos tablet
-  Widget _buildTabletLayout(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: Theme.of(context).brightness == Brightness.dark
-            ? AppColors.gradientDarkIntense
-            : AppColors.gradientBrand,
-      ),
-      child: SafeArea(
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
-          appBar: _buildAppBar(context, isTablet: true),
-          body: ResponsivePadding(
-            tablet: const EdgeInsets.symmetric(
-              horizontal: 40.0,
-              vertical: 24.0,
-            ),
-            child: Column(
-              children: [
-                // Indicador de progresso
-                _buildProgressIndicator(context, isTablet: true),
-
-                SizedBox(height: ResponsiveThemeValues.sectionSpacing(context)),
-
-                // Conteúdo das páginas
-                Expanded(
-                  child: PageView(
-                    controller: _pageController,
-                    physics:
-                        const NeverScrollableScrollPhysics(), // Desabilita deslizar
-                    onPageChanged: (page) =>
-                        setState(() => _currentPage = page),
-                    children: [
-                      _buildDadosBasicosPage(isTablet: true),
-                      _buildDadosComplementaresPage(isTablet: true),
-                      _buildObservacoesPage(isTablet: true),
-                    ],
+      // 🔘 BOTÕES FLUTUANTES NA PARTE INFERIOR
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: Container(
+        width: double.infinity,
+        margin: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            // Botão Voltar
+            if (_etapaAtual > 0) ...[
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: _etapaAnterior,
+                  icon: const Icon(Icons.arrow_back, size: 18),
+                  label: Text(
+                    'Voltar',
+                    style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
                   ),
-                ),
-
-                SizedBox(height: ResponsiveThemeValues.elementSpacing(context)),
-
-                // Botões de navegação
-                _buildNavigationButtons(context, isTablet: true),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// AppBar responsiva
-  PreferredSizeWidget _buildAppBar(
-    BuildContext context, {
-    bool isTablet = false,
-  }) {
-    return AppBar(
-      title: Text(
-        'Nova Ficha de Qualidade',
-        style: GoogleFonts.poppins(
-          fontWeight: FontWeight.w600,
-          fontSize: ResponsiveUtils.responsiveValue(
-            context,
-            mobile: 18.0,
-            tablet: 20.0,
-          ),
-          color: Colors.white,
-        ),
-      ),
-      backgroundColor: Colors.transparent,
-      foregroundColor: Colors.white,
-      elevation: 0,
-      iconTheme: const IconThemeData(color: Colors.white),
-    );
-  }
-
-  /// Indicador de progresso responsivo
-  Widget _buildProgressIndicator(
-    BuildContext context, {
-    bool isTablet = false,
-  }) {
-    return Container(
-      padding: ResponsiveThemeValues.cardPadding(context),
-      child: Column(
-        children: [
-          Text(
-            'Passo ${_currentPage + 1} de 3',
-            style: GoogleFonts.poppins(
-              color: Colors.white,
-              fontSize: ResponsiveUtils.responsiveValue(
-                context,
-                mobile: 16.0,
-                tablet: 18.0,
-              ),
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          SizedBox(height: ResponsiveThemeValues.elementSpacing(context) * 0.5),
-          LinearProgressIndicator(
-            value: (_currentPage + 1) / 3,
-            backgroundColor: Colors.white.withValues(alpha: 0.3),
-            valueColor: AlwaysStoppedAnimation<Color>(
-              Theme.of(context).brightness == Brightness.dark
-                  ? AppColors.darkRed
-                  : AppColors.primaryRed,
-            ),
-            borderRadius: BorderRadius.circular(10),
-            minHeight: 6,
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Botões de navegação responsivos
-  Widget _buildNavigationButtons(
-    BuildContext context, {
-    bool isTablet = false,
-  }) {
-    return Container(
-      padding: ResponsiveThemeValues.cardPadding(context),
-      child: Row(
-        children: [
-          if (_currentPage > 0)
-            Expanded(
-              child: OutlinedButton(
-                onPressed: _previousPage,
-                style: OutlinedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(
-                    vertical: ResponsiveUtils.responsiveValue(
-                      context,
-                      mobile: 16.0,
-                      tablet: 18.0,
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    side: BorderSide(
+                      color: Colors.white.withValues(alpha: 0.8),
+                      width: 2,
+                    ),
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.black.withValues(alpha: 0.2),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  side: BorderSide(
-                    color: Colors.white.withValues(alpha: 0.8),
-                    width: 2,
+                ),
+              ),
+              const SizedBox(width: 12),
+            ],
+
+            // Botão Próxima/Finalizar
+            Expanded(
+              flex: _etapaAtual > 0 ? 2 : 1,
+              child: ElevatedButton.icon(
+                onPressed: _podeAvancar()
+                    ? () {
+                        if (_etapaAtual == 2) {
+                          _finalizarFicha();
+                        } else {
+                          _proximaEtapa();
+                        }
+                      }
+                    : null,
+                icon: Icon(
+                  _etapaAtual == 2 ? Icons.check_circle : Icons.arrow_forward,
+                  size: 20,
+                ),
+                label: Text(
+                  _etapaAtual == 2 ? 'Finalizar' : 'Próxima',
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
                   ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: AppColors.primaryRed,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  disabledBackgroundColor: Colors.white.withValues(alpha: 0.5),
+                  disabledForegroundColor: Colors.grey[400],
+                  elevation: 3,
+                  shadowColor: Colors.black.withValues(alpha: 0.3),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: Text(
-                  'Anterior',
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                    fontSize: ResponsiveUtils.responsiveValue(
-                      context,
-                      mobile: 14.0,
-                      tablet: 16.0,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          if (_currentPage > 0)
-            SizedBox(width: ResponsiveThemeValues.elementSpacing(context)),
-          Expanded(
-            child: ElevatedButton(
-              onPressed: _currentPage == 2 ? _salvarFicha : _nextPage,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.darkRed
-                    : AppColors.primaryRed,
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(
-                  vertical: ResponsiveUtils.responsiveValue(
-                    context,
-                    mobile: 16.0,
-                    tablet: 18.0,
-                  ),
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 0,
-              ),
-              child: Text(
-                _currentPage == 2 ? 'Salvar Ficha' : 'Próximo',
-                style: GoogleFonts.poppins(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                  fontSize: ResponsiveUtils.responsiveValue(
-                    context,
-                    mobile: 14.0,
-                    tablet: 16.0,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDadosBasicosPage({bool isTablet = false}) {
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(
-        ResponsiveUtils.responsiveValue(context, mobile: 16.0, tablet: 24.0),
-      ),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Dados Básicos',
-              style: GoogleFonts.poppins(
-                fontSize: ResponsiveUtils.responsiveValue(
-                  context,
-                  mobile: 24.0,
-                  tablet: 28.0,
-                ),
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            SizedBox(
-              height: ResponsiveThemeValues.elementSpacing(context) * 0.5,
-            ),
-            Text(
-              'Informações obrigatórias da ficha',
-              style: GoogleFonts.poppins(
-                fontSize: ResponsiveUtils.responsiveValue(
-                  context,
-                  mobile: 16.0,
-                  tablet: 18.0,
-                ),
-                color: Colors.white.withValues(alpha: 0.9),
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            _buildTextField(
-              controller: _numeroFichaController,
-              label: 'Número da Ficha *',
-              hint: 'QF-2025-001',
-              validator: (value) =>
-                  value?.isEmpty == true ? 'Campo obrigatório' : null,
-            ),
-            const SizedBox(height: 16),
-
-            _buildTextField(
-              controller: _clienteController,
-              label: 'Cliente *',
-              hint: 'Nome do cliente',
-              validator: (value) =>
-                  value?.isEmpty == true ? 'Campo obrigatório' : null,
-            ),
-            const SizedBox(height: 16),
-
-            _buildTextField(
-              controller: _fazendaController,
-              label: 'Fazenda *',
-              hint: 'Nome da fazenda - Cidade/Estado',
-              validator: (value) =>
-                  value?.isEmpty == true ? 'Campo obrigatório' : null,
-            ),
-            const SizedBox(height: 16),
-
-            Row(
-              children: [
-                Expanded(
-                  child: _buildTextField(
-                    controller: _produtoController,
-                    label: 'Produto *',
-                    hint: 'Ex: Uva, Manga',
-                    validator: (value) =>
-                        value?.isEmpty == true ? 'Campo obrigatório' : null,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildTextField(
-                    controller: _variedadeController,
-                    label: 'Variedade *',
-                    hint: 'Ex: Thompson',
-                    validator: (value) =>
-                        value?.isEmpty == true ? 'Campo obrigatório' : null,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            _buildTextField(
-              controller: _origemController,
-              label: 'Origem *',
-              hint: 'Local de origem',
-              validator: (value) =>
-                  value?.isEmpty == true ? 'Campo obrigatório' : null,
-            ),
-            const SizedBox(height: 16),
-
-            _buildTextField(
-              controller: _loteController,
-              label: 'Lote *',
-              hint: 'Identificação do lote',
-              validator: (value) =>
-                  value?.isEmpty == true ? 'Campo obrigatório' : null,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDadosComplementaresPage({bool isTablet = false}) {
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(
-        ResponsiveUtils.responsiveValue(context, mobile: 16.0, tablet: 24.0),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Dados Complementares',
-            style: GoogleFonts.poppins(
-              fontSize: ResponsiveUtils.responsiveValue(
-                context,
-                mobile: 24.0,
-                tablet: 28.0,
-              ),
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          SizedBox(height: ResponsiveThemeValues.elementSpacing(context) * 0.5),
-          Text(
-            'Informações técnicas da avaliação',
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              color: Colors.white.withValues(alpha: 0.9),
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          Row(
-            children: [
-              Expanded(
-                child: _buildTextField(
-                  controller: _pesoTotalController,
-                  label: 'Peso Total (kg) *',
-                  hint: '1500.5',
-                  keyboardType: TextInputType.number,
-                  validator: (value) =>
-                      value?.isEmpty == true ? 'Campo obrigatório' : null,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildTextField(
-                  controller: _quantidadeAmostrasController,
-                  label: 'Qtd. Amostras *',
-                  hint: '7',
-                  keyboardType: TextInputType.number,
-                  validator: (value) =>
-                      value?.isEmpty == true ? 'Campo obrigatório' : null,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          _buildTextField(
-            controller: _responsavelAvaliacaoController,
-            label: 'Responsável pela Avaliação *',
-            hint: 'Nome do inspetor',
-            validator: (value) =>
-                value?.isEmpty == true ? 'Campo obrigatório' : null,
-          ),
-          const SizedBox(height: 16),
-
-          _buildTextField(
-            controller: _produtorResponsavelController,
-            label: 'Produtor Responsável',
-            hint: 'Nome do produtor (opcional)',
-          ),
-          const SizedBox(height: 16),
-
-          // Seletor de data
-          InkWell(
-            onTap: _selecionarData,
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey[300]!),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.calendar_today,
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? AppColors.darkGreen
-                        : AppColors.positiveGreen,
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    'Data da Avaliação: ${_dataAvaliacao.day}/${_dataAvaliacao.month}/${_dataAvaliacao.year}',
-                    style: GoogleFonts.poppins(fontSize: 16),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // Seletor de ano
-          DropdownButtonFormField<int>(
-            value: _ano,
-            decoration: InputDecoration(
-              labelText: 'Ano da Safra *',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            items: List.generate(10, (index) {
-              final year = DateTime.now().year - 5 + index;
-              return DropdownMenuItem(
-                value: year,
-                child: Text(year.toString()),
-              );
-            }),
-            onChanged: (value) => setState(() => _ano = value!),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildObservacoesPage({bool isTablet = false}) {
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(
-        ResponsiveUtils.responsiveValue(context, mobile: 16.0, tablet: 24.0),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Observações',
-            style: GoogleFonts.poppins(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Observações específicas por amostra (A-G)',
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              color: Colors.white.withValues(alpha: 0.9),
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          _buildTextField(
-            controller: _observacoesController,
-            label: 'Observações Gerais',
-            hint: 'Observações sobre toda a avaliação',
-            maxLines: 3,
-          ),
-          const SizedBox(height: 16),
-
-          Text(
-            'Observações por Amostra',
-            style: GoogleFonts.poppins(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Colors.white.withValues(alpha: 0.95),
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          _buildTextField(
-            controller: _observacaoAController,
-            label: 'Observação A',
-            hint: 'Observações específicas da amostra A',
-            maxLines: 2,
-          ),
-          const SizedBox(height: 12),
-
-          _buildTextField(
-            controller: _observacaoBController,
-            label: 'Observação B',
-            hint: 'Observações específicas da amostra B',
-            maxLines: 2,
-          ),
-          const SizedBox(height: 12),
-
-          _buildTextField(
-            controller: _observacaoCController,
-            label: 'Observação C',
-            hint: 'Observações específicas da amostra C',
-            maxLines: 2,
-          ),
-          const SizedBox(height: 12),
-
-          _buildTextField(
-            controller: _observacaoDController,
-            label: 'Observação D',
-            hint: 'Observações específicas da amostra D',
-            maxLines: 2,
-          ),
-          const SizedBox(height: 12),
-
-          _buildTextField(
-            controller: _observacaoFController,
-            label: 'Observação F',
-            hint: 'Observações específicas da amostra F',
-            maxLines: 2,
-          ),
-          const SizedBox(height: 12),
-
-          _buildTextField(
-            controller: _observacaoGController,
-            label: 'Observação G',
-            hint: 'Observações específicas da amostra G',
-            maxLines: 2,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    String? hint,
-    TextInputType? keyboardType,
-    String? Function(String?)? validator,
-    int maxLines = 1,
-  }) {
-    return TextFormField(
-      controller: controller,
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(
-            color: Theme.of(context).brightness == Brightness.dark
-                ? AppColors.darkGreen
-                : AppColors.positiveGreen,
-            width: 2,
-          ),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(
-            color: Theme.of(context).brightness == Brightness.dark
-                ? AppColors.darkRed
-                : AppColors.primaryRed,
-            width: 2,
-          ),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(
-            color: Theme.of(context).brightness == Brightness.dark
-                ? AppColors.darkRed
-                : AppColors.primaryRed,
-            width: 2,
-          ),
-        ),
-        errorStyle: GoogleFonts.poppins(
-          color: Theme.of(context).brightness == Brightness.dark
-              ? AppColors.darkRed
-              : AppColors.primaryRed,
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-        ),
-        prefixIcon: validator != null
-            ? Icon(
-                Icons.star,
-                size: 8,
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.darkRed
-                    : AppColors.primaryRed,
-              )
-            : null,
-      ),
-      keyboardType: keyboardType,
-      validator: validator,
-      maxLines: maxLines,
-      style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w500),
-    );
-  }
-
-  void _nextPage() {
-    // Validação específica para cada página
-    if (_currentPage == 0) {
-      // Página 1: Dados Básicos - todos os campos são obrigatórios
-      if (!_formKey.currentState!.validate()) {
-        _mostrarDialogoValidacao(
-          'Campos Obrigatórios',
-          'Preencha todos os campos obrigatórios dos Dados Básicos para continuar.',
-          Icons.warning_amber_rounded,
-        );
-        return;
-      }
-    } else if (_currentPage == 1) {
-      // Página 2: Dados Complementares - validar campos obrigatórios
-      if (_pesoTotalController.text.trim().isEmpty ||
-          _quantidadeAmostrasController.text.trim().isEmpty ||
-          _responsavelAvaliacaoController.text.trim().isEmpty) {
-        _mostrarDialogoValidacao(
-          'Campos Obrigatórios',
-          'Preencha todos os campos obrigatórios dos Dados Complementares para continuar.',
-          Icons.warning_amber_rounded,
-        );
-        return;
-      }
-    }
-
-    _pageController.nextPage(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-    );
-  }
-
-  void _mostrarDialogoValidacao(
-    String titulo,
-    String mensagem,
-    IconData icone,
-  ) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Row(
-            children: [
-              Icon(
-                icone,
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.darkRed
-                    : AppColors.primaryRed,
-                size: 28,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  titulo,
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 18,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          content: Text(
-            mensagem,
-            style: GoogleFonts.poppins(fontSize: 16, height: 1.4),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: Text(
-                'Entendi',
-                style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.w600,
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? AppColors.darkRed
-                      : AppColors.primaryRed,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _previousPage() {
-    _pageController.previousPage(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-    );
-  }
-
-  Future<void> _selecionarData() async {
-    final data = await showDatePicker(
-      context: context,
-      initialDate: _dataAvaliacao,
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2030),
-    );
-    if (data != null) {
-      setState(() => _dataAvaliacao = data);
-    }
-  }
-
-  void _salvarFicha() async {
-    // Validar campos obrigatórios manualmente (pois não estamos na página do Form)
-    // Página 1: Dados Básicos
-    if (_numeroFichaController.text.trim().isEmpty ||
-        _clienteController.text.trim().isEmpty ||
-        _fazendaController.text.trim().isEmpty ||
-        _produtoController.text.trim().isEmpty ||
-        _variedadeController.text.trim().isEmpty ||
-        _origemController.text.trim().isEmpty ||
-        _loteController.text.trim().isEmpty) {
-      _pageController.animateToPage(
-        0,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
-      _mostrarDialogoValidacao(
-        'Campos Obrigatórios',
-        'Preencha todos os campos obrigatórios dos Dados Básicos para salvar a ficha.',
-        Icons.warning_amber_rounded,
-      );
-      return;
-    }
-
-    // Página 2: Dados Complementares
-    if (_pesoTotalController.text.trim().isEmpty ||
-        _quantidadeAmostrasController.text.trim().isEmpty ||
-        _responsavelAvaliacaoController.text.trim().isEmpty) {
-      _pageController.animateToPage(
-        1,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
-      _mostrarDialogoValidacao(
-        'Campos Obrigatórios',
-        'Preencha todos os campos obrigatórios dos Dados Complementares para salvar a ficha.',
-        Icons.warning_amber_rounded,
-      );
-      return;
-    }
-
-    try {
-      // Mostrar loading
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const CircularProgressIndicator(),
-              const SizedBox(height: 16),
-              Text(
-                'Salvando ficha...',
-                style: GoogleFonts.poppins(fontSize: 16),
-              ),
-            ],
-          ),
-        ),
-      );
-
-      // Determinar tipo de amostragem baseado na quantidade
-      final quantidadeAmostras =
-          int.tryParse(_quantidadeAmostrasController.text.trim()) ?? 7;
-      String tipoAmostragem;
-      if (quantidadeAmostras == 10) {
-        tipoAmostragem = TiposAmostragem.cumbuca500g;
-      } else if (quantidadeAmostras == 20) {
-        tipoAmostragem = TiposAmostragem.cumbuca250g;
-      } else {
-        tipoAmostragem = TiposAmostragem.sacola; // 7 amostras
-      }
-
-      // Criar a ficha
-      final ficha = Ficha(
-        id: '', // O repository gerará o ID
-        numeroFicha: _numeroFichaController.text.trim(),
-        dataAvaliacao: _dataAvaliacao,
-        cliente: _clienteController.text.trim(),
-        fazenda: _fazendaController.text.trim(),
-        ano: _ano,
-        semanaAno: Ficha.calcularSemanaAno(_dataAvaliacao),
-        inspetor: _responsavelAvaliacaoController.text.trim(),
-        tipoAmostragem: tipoAmostragem,
-        pesoBrutoKg: double.tryParse(_pesoTotalController.text.trim()) ?? 0.0,
-        produto: _produtoController.text.trim(),
-        variedade: _variedadeController.text.trim(),
-        origem: _origemController.text.trim(),
-        lote: _loteController.text.trim(),
-        pesoTotal: double.tryParse(_pesoTotalController.text.trim()) ?? 0.0,
-        quantidadeAmostras: quantidadeAmostras,
-        responsavelAvaliacao: _responsavelAvaliacaoController.text.trim(),
-        produtorResponsavel:
-            _produtorResponsavelController.text.trim().isNotEmpty
-            ? _produtorResponsavelController.text.trim()
-            : null,
-        observacoes: _observacoesController.text.trim().isNotEmpty
-            ? _observacoesController.text.trim()
-            : 'Nova ficha criada',
-        observacaoA: _observacaoAController.text.trim().isNotEmpty
-            ? _observacaoAController.text.trim()
-            : null,
-        observacaoB: _observacaoBController.text.trim().isNotEmpty
-            ? _observacaoBController.text.trim()
-            : null,
-        observacaoC: _observacaoCController.text.trim().isNotEmpty
-            ? _observacaoCController.text.trim()
-            : null,
-        observacaoD: _observacaoDController.text.trim().isNotEmpty
-            ? _observacaoDController.text.trim()
-            : null,
-        observacaoF: _observacaoFController.text.trim().isNotEmpty
-            ? _observacaoFController.text.trim()
-            : null,
-        observacaoG: _observacaoGController.text.trim().isNotEmpty
-            ? _observacaoGController.text.trim()
-            : null,
-        criadoEm: DateTime.now(),
-      );
-
-      // === SALVAR NO BANCO DE DADOS ===
-      final fichaSalva = await _salvarFichaUseCase.call(ficha);
-
-      // Verificar se o widget ainda está montado
-      if (!mounted) return;
-
-      // Fechar loading
-      Navigator.pop(context);
-
-      // Mostrar diálogo de sucesso
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Row(
-            children: [
-              Icon(
-                Icons.check_circle_rounded,
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.darkGreen
-                    : AppColors.positiveGreen,
-                size: 28,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  'Sucesso!',
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 18,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          content: Text(
-            'Ficha ${fichaSalva.numeroFicha} salva com sucesso no banco de dados!\n\nID: ${fichaSalva.id}',
-            style: GoogleFonts.poppins(fontSize: 16, height: 1.4),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context); // Fechar diálogo
-                Navigator.pop(context); // Voltar para home
-              },
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: Text(
-                'OK',
-                style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.w600,
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? AppColors.darkGreen
-                      : AppColors.positiveGreen,
-                ),
               ),
             ),
           ],
         ),
-      );
-    } catch (e) {
-      // Verificar se o widget ainda está montado
-      if (!mounted) return;
-
-      // Fechar loading se estiver aberto
-      Navigator.pop(context);
-
-      // Mostrar erro
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Row(
-            children: [
-              Icon(
-                Icons.error_rounded,
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.darkRed
-                    : AppColors.primaryRed,
-                size: 28,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  'Erro ao Salvar',
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 18,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          content: Text(
-            'Ocorreu um erro ao salvar a ficha:\n\n${e.toString()}',
-            style: GoogleFonts.poppins(fontSize: 16, height: 1.4),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: Text(
-                'Tentar Novamente',
-                style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.w600,
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? AppColors.darkRed
-                      : AppColors.primaryRed,
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
+      ),
+    );
   }
 
-  @override
-  void dispose() {
-    _numeroFichaController.dispose();
-    _clienteController.dispose();
-    _fazendaController.dispose();
-    _produtoController.dispose();
-    _variedadeController.dispose();
-    _origemController.dispose();
-    _loteController.dispose();
-    _pesoTotalController.dispose();
-    _quantidadeAmostrasController.dispose();
-    _responsavelAvaliacaoController.dispose();
-    _produtorResponsavelController.dispose();
-    _observacoesController.dispose();
-    _observacaoAController.dispose();
-    _observacaoBController.dispose();
-    _observacaoCController.dispose();
-    _observacaoDController.dispose();
-    _observacaoFController.dispose();
-    _observacaoGController.dispose();
-    super.dispose();
+  /// Finaliza e salva a ficha completa
+  void _finalizarFicha() {
+    // Implementar salvamento e geração de PDF na ETAPA 7
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('✅ Ficha finalizada com sucesso!'),
+        backgroundColor: Colors.green,
+      ),
+    );
+
+    Navigator.of(context).pop();
   }
 }

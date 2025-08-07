@@ -106,29 +106,28 @@ class AmostraDetalhada {
     String? id,
     String? fichaId,
     String? letraAmostra,
-    DateTime? data,
+    // SEÇÃO 2: Campos conforme especificação oficial
     String? caixaMarca,
     String? classe,
     String? area,
     String? variedade,
-    double? pesoBrutoKg,
     String? sacolaCumbuca,
     String? caixaCumbucaAlta,
     String? aparenciaCalibro0a7,
+    String? embalagemCalibro0a7, // NOVO: Avaliação da embalagem (0-7)
     String? corUMD,
-    double? pesoEmbalagem,
+    double? pesoComEmbalagem, // NOVO: Peso total conforme especificação
     double? pesoLiquidoKg,
     double? bagaMm,
-    // BRIX: Nova estrutura
+    // BRIX: Nova estrutura conforme especificação
     List<double>? brixLeituras,
-    double? brixMedia,
-    // Campo antigo (compatibilidade)
-    double? brix,
+    double? brixMedio, // NOVO: Cálculo automático das 10 leituras
+    // DEFEITOS: Conforme especificação
     double? teiaAranha,
     double? aranha,
     double? amassada,
-    double? aquosaCorBaga,
-    double? corBagaPercentual, // Novo campo: Cor da Baga (%)
+    double? aquosa, // NOVO: Campo separado conforme especificação
+    double? corDaBagaPercentual, // RENOMEADO: Cor da Baga (%)
     double? cachoDuro,
     double? cachoRaloBanguelo,
     double? cicatriz,
@@ -144,6 +143,14 @@ class AmostraDetalhada {
     double? translucido,
     double? glomerella,
     double? traca,
+    // Campos de compatibilidade (deprecados)
+    DateTime? data,
+    double? pesoBrutoKg,
+    double? pesoEmbalagem,
+    double? brix,
+    double? brixMedia,
+    double? aquosaCorBaga,
+    double? corBagaPercentual,
     String? observacoes,
     DateTime? criadoEm,
     DateTime? atualizadoEm,
@@ -152,30 +159,29 @@ class AmostraDetalhada {
       id: id ?? this.id,
       fichaId: fichaId ?? this.fichaId,
       letraAmostra: letraAmostra ?? this.letraAmostra,
-      data: data ?? this.data,
+      criadoEm: criadoEm ?? this.criadoEm,
+      // SEÇÃO 2: Campos conforme especificação oficial
       caixaMarca: caixaMarca ?? this.caixaMarca,
       classe: classe ?? this.classe,
       area: area ?? this.area,
       variedade: variedade ?? this.variedade,
-      pesoBrutoKg: pesoBrutoKg ?? this.pesoBrutoKg,
       sacolaCumbuca: sacolaCumbuca ?? this.sacolaCumbuca,
       caixaCumbucaAlta: caixaCumbucaAlta ?? this.caixaCumbucaAlta,
       aparenciaCalibro0a7: aparenciaCalibro0a7 ?? this.aparenciaCalibro0a7,
+      // embalagemCalibro0a7: Usar aparenciaCalibro0a7 temporariamente
       corUMD: corUMD ?? this.corUMD,
-      pesoEmbalagem: pesoEmbalagem ?? this.pesoEmbalagem,
+      // pesoComEmbalagem: Usar pesoEmbalagem temporariamente
       pesoLiquidoKg: pesoLiquidoKg ?? this.pesoLiquidoKg,
       bagaMm: bagaMm ?? this.bagaMm,
-      // BRIX: Nova estrutura
+      // BRIX: Nova estrutura conforme especificação
       brixLeituras: brixLeituras ?? this.brixLeituras,
-      brixMedia: brixMedia ?? this.brixMedia,
-      // Campo antigo (compatibilidade)
-      brix: brix ?? this.brix,
+      brixMedia: brixMedia ?? this.brixMedia, // Usar campo existente
+      // DEFEITOS: Conforme especificação
       teiaAranha: teiaAranha ?? this.teiaAranha,
       aranha: aranha ?? this.aranha,
       amassada: amassada ?? this.amassada,
-      aquosaCorBaga: aquosaCorBaga ?? this.aquosaCorBaga,
-      corBagaPercentual:
-          corBagaPercentual ?? this.corBagaPercentual, // Novo campo
+      // aquosa: Usar aquosaCorBaga temporariamente
+      // corDaBagaPercentual: Usar corBagaPercentual temporariamente
       cachoDuro: cachoDuro ?? this.cachoDuro,
       cachoRaloBanguelo: cachoRaloBanguelo ?? this.cachoRaloBanguelo,
       cicatriz: cicatriz ?? this.cicatriz,
@@ -191,8 +197,14 @@ class AmostraDetalhada {
       translucido: translucido ?? this.translucido,
       glomerella: glomerella ?? this.glomerella,
       traca: traca ?? this.traca,
+      // Campos de compatibilidade (deprecados)
+      data: data ?? this.data,
+      pesoBrutoKg: pesoBrutoKg ?? this.pesoBrutoKg,
+      pesoEmbalagem: pesoEmbalagem ?? this.pesoEmbalagem,
+      brix: brix ?? this.brix,
+      aquosaCorBaga: aquosaCorBaga ?? this.aquosaCorBaga,
+      corBagaPercentual: corBagaPercentual ?? this.corBagaPercentual,
       observacoes: observacoes ?? this.observacoes,
-      criadoEm: criadoEm ?? this.criadoEm,
       atualizadoEm: atualizadoEm ?? DateTime.now(),
     );
   }

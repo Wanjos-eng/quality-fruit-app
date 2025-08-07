@@ -420,7 +420,7 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
               Row(
                 children: [
                   Text(
-                    '${ficha.fazenda}',
+                    ficha.fazenda,
                     style: GoogleFonts.poppins(
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
