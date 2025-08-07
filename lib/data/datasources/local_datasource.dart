@@ -5,7 +5,7 @@ import 'package:path/path.dart';
 class LocalDatasource {
   static const _databaseName = 'quality_fruit.db';
   static const _databaseVersion =
-      6; // Incrementado para corrigir schema completo
+      7; // Incrementado para adicionar novos campos SEÇÃO 2
 
   // Tabelas
   static const _tableFichas = 'fichas';
@@ -64,6 +64,10 @@ class LocalDatasource {
         quantidadeAmostras INTEGER NOT NULL,
         responsavelAvaliacao TEXT NOT NULL,
         produtorResponsavel TEXT,
+        semanaAno TEXT, -- Novo campo: Semana/Ano (calculado automaticamente)
+        inspetor TEXT, -- Novo campo: Inspetor
+        tipoAmostragem TEXT, -- Novo campo: Tipo de Amostragem
+        pesoBrutoKg REAL, -- Novo campo: Peso Bruto (Kg)
         observacoes TEXT,
         observacaoA TEXT,
         observacaoB TEXT,
@@ -140,8 +144,10 @@ class LocalDatasource {
         pesoEmbalagem REAL,
         pesoLiquidoKg REAL,
         bagaMm REAL,
+        brix_leituras TEXT, -- Armazena como string separada por vírgulas
         brix REAL,
         brixMedia REAL,
+        cor_baga_percentual REAL, -- Novo campo: Cor da Baga (%)
         teiaAranha REAL,
         aranha REAL,
         amassada REAL,
@@ -383,6 +389,25 @@ class LocalDatasource {
       await db.execute('DROP TABLE IF EXISTS ${_tableDefeitos}_backup');
       await db.execute('DROP TABLE IF EXISTS ${_tableMedidas}_backup');
       await db.execute('DROP TABLE IF EXISTS ${_tableAmostras}_backup');
+    }
+
+    // Migração da versão 6 para 7: adicionar novos campos SEÇÃO 1 e SEÇÃO 2
+    if (oldVersion < 7) {
+      // SEÇÃO 1: Adicionar novos campos na tabela fichas
+      await db.execute('ALTER TABLE $_tableFichas ADD COLUMN semanaAno TEXT');
+      await db.execute('ALTER TABLE $_tableFichas ADD COLUMN inspetor TEXT');
+      await db.execute(
+        'ALTER TABLE $_tableFichas ADD COLUMN tipoAmostragem TEXT',
+      );
+      await db.execute('ALTER TABLE $_tableFichas ADD COLUMN pesoBrutoKg REAL');
+
+      // SEÇÃO 2: Adicionar novos campos na tabela amostras_detalhadas
+      await db.execute(
+        'ALTER TABLE $_tableAmostrasDetalhadas ADD COLUMN brix_leituras TEXT',
+      );
+      await db.execute(
+        'ALTER TABLE $_tableAmostrasDetalhadas ADD COLUMN cor_baga_percentual REAL',
+      );
     }
   }
 

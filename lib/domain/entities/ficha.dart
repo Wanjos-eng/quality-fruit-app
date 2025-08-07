@@ -5,15 +5,22 @@ class Ficha {
   final String numeroFicha;
   final DateTime dataAvaliacao;
   final String cliente;
-  final String fazenda; // Fazenda onde foi coletada a fruta
-  final int ano; // Ano da avaliação (campo da planilha física)
+  // SEÇÃO 1: INFORMAÇÕES GERAIS
+  final int ano; // Ano da análise (ex: 2025)
+  final String fazenda; // Fazenda (sigla) - ex: "PV", "JP"
+  final int semanaAno; // Semana do ano (calculado automaticamente)
+  final String inspetor; // Nome do inspetor
+  final String tipoAmostragem; // Cumbuca 500g, Cumbuca 250g, Sacola (Caixa)
+  final double pesoBrutoKg; // Peso bruto com embalagem em kg
+
+  // Campos antigos mantidos para compatibilidade
   final String produto; // Tipo de fruta
   final String variedade;
   final String origem;
   final String lote;
-  final double pesoTotal; // Em kg
+  final double pesoTotal; // Em kg (será pesoBrutoKg futuramente)
   final int quantidadeAmostras;
-  final String responsavelAvaliacao; // Inspetor
+  final String responsavelAvaliacao; // Inspetor (será deprecated)
   final String? produtorResponsavel; // Produtor/Responsável da planilha
   final String observacoes;
 
@@ -33,8 +40,14 @@ class Ficha {
     required this.numeroFicha,
     required this.dataAvaliacao,
     required this.cliente,
-    required this.fazenda,
+    // SEÇÃO 1: Campos obrigatórios
     required this.ano,
+    required this.fazenda,
+    required this.semanaAno,
+    required this.inspetor,
+    required this.tipoAmostragem,
+    required this.pesoBrutoKg,
+    // Campos antigos (mantidos para compatibilidade)
     required this.produto,
     required this.variedade,
     required this.origem,
@@ -60,8 +73,14 @@ class Ficha {
     String? numeroFicha,
     DateTime? dataAvaliacao,
     String? cliente,
-    String? fazenda,
+    // SEÇÃO 1: Novos campos
     int? ano,
+    String? fazenda,
+    int? semanaAno,
+    String? inspetor,
+    String? tipoAmostragem,
+    double? pesoBrutoKg,
+    // Campos antigos
     String? produto,
     String? variedade,
     String? origem,
@@ -85,8 +104,14 @@ class Ficha {
       numeroFicha: numeroFicha ?? this.numeroFicha,
       dataAvaliacao: dataAvaliacao ?? this.dataAvaliacao,
       cliente: cliente ?? this.cliente,
-      fazenda: fazenda ?? this.fazenda,
+      // SEÇÃO 1: Novos campos
       ano: ano ?? this.ano,
+      fazenda: fazenda ?? this.fazenda,
+      semanaAno: semanaAno ?? this.semanaAno,
+      inspetor: inspetor ?? this.inspetor,
+      tipoAmostragem: tipoAmostragem ?? this.tipoAmostragem,
+      pesoBrutoKg: pesoBrutoKg ?? this.pesoBrutoKg,
+      // Campos antigos
       produto: produto ?? this.produto,
       variedade: variedade ?? this.variedade,
       origem: origem ?? this.origem,
@@ -196,4 +221,71 @@ class Ficha {
   String toString() {
     return 'Ficha(id: $id, numeroFicha: $numeroFicha, produto: $produto, cliente: $cliente, fazenda: $fazenda, ano: $ano)';
   }
+
+  /// Calcula a semana do ano com base na data de avaliação
+  static int calcularSemanaAno(DateTime data) {
+    final primeiroJaneiro = DateTime(data.year, 1, 1);
+    final diferencaDias = data.difference(primeiroJaneiro).inDays;
+    return (diferencaDias / 7).ceil();
+  }
+}
+
+/// Constantes para os tipos de amostragem da Ficha de Qualidade
+class TiposAmostragem {
+  static const String cumbuca500g = 'Cumbuca 500g';
+  static const String cumbuca250g = 'Cumbuca 250g';
+  static const String sacola = 'Sacola (Caixa)';
+
+  static const List<String> opcoes = [cumbuca500g, cumbuca250g, sacola];
+
+  /// Retorna a quantidade de amostras baseada no tipo
+  static int quantidadeAmostrasPorTipo(String tipo) {
+    switch (tipo) {
+      case cumbuca500g:
+        return 10; // A até J
+      case cumbuca250g:
+        return 20; // A até T
+      case sacola:
+        return 7; // A até G (padrão, pode ser editável)
+      default:
+        return 7;
+    }
+  }
+
+  /// Retorna as letras das amostras baseada no tipo
+  static List<String> letrasAmostrasPorTipo(String tipo) {
+    const letras = [
+      'A',
+      'B',
+      'C',
+      'D',
+      'E',
+      'F',
+      'G',
+      'H',
+      'I',
+      'J',
+      'K',
+      'L',
+      'M',
+      'N',
+      'O',
+      'P',
+      'Q',
+      'R',
+      'S',
+      'T',
+    ];
+
+    final quantidade = quantidadeAmostrasPorTipo(tipo);
+    return letras.take(quantidade).toList();
+  }
+}
+
+/// Constantes para as fazendas (siglas)
+class FazendasSiglas {
+  static const String purraVerde = 'PV';
+  static const String joaoPaulo = 'JP';
+
+  static const List<String> opcoes = [purraVerde, joaoPaulo];
 }

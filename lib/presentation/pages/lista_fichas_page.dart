@@ -36,40 +36,57 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
 
   List<Ficha> _gerarFichasExemplo() {
     // Gerar algumas fichas de exemplo
+    final agora = DateTime.now();
     return [
       Ficha(
         id: '1',
         numeroFicha: 'QF-2025-001',
-        dataAvaliacao: DateTime.now().subtract(const Duration(days: 1)),
+        dataAvaliacao: agora.subtract(const Duration(days: 1)),
         cliente: 'Exportadora São Paulo',
-        fazenda: 'Fazenda São José - Franca/SP',
+        // SEÇÃO 1: Novos campos obrigatórios
         ano: 2025,
+        fazenda: 'PV', // Fazenda Pura Verde
+        semanaAno: Ficha.calcularSemanaAno(
+          agora.subtract(const Duration(days: 1)),
+        ),
+        inspetor: 'João Silva',
+        tipoAmostragem: TiposAmostragem.cumbuca500g,
+        pesoBrutoKg: 1500.5,
+        // Campos antigos (mantidos para compatibilidade)
         produto: 'Uva',
         variedade: 'Thompson Seedless',
         origem: 'São Paulo - Brasil',
         lote: 'SP-2025-001',
         pesoTotal: 1500.5,
-        quantidadeAmostras: 7,
+        quantidadeAmostras: 10, // Cumbuca 500g = 10 amostras
         responsavelAvaliacao: 'João Silva',
         observacoes: 'Primeira avaliação da safra 2025',
-        criadoEm: DateTime.now().subtract(const Duration(days: 1)),
+        criadoEm: agora.subtract(const Duration(days: 1)),
       ),
       Ficha(
         id: '2',
         numeroFicha: 'QF-2025-002',
-        dataAvaliacao: DateTime.now().subtract(const Duration(days: 3)),
+        dataAvaliacao: agora.subtract(const Duration(days: 3)),
         cliente: 'Importadora Rio',
-        fazenda: 'Fazenda Nossa Senhora - Ribeirão Preto/SP',
+        // SEÇÃO 1: Novos campos obrigatórios
         ano: 2025,
+        fazenda: 'JP', // Fazenda João Paulo
+        semanaAno: Ficha.calcularSemanaAno(
+          agora.subtract(const Duration(days: 3)),
+        ),
+        inspetor: 'Maria Santos',
+        tipoAmostragem: TiposAmostragem.cumbuca250g,
+        pesoBrutoKg: 2300.0,
+        // Campos antigos (mantidos para compatibilidade)
         produto: 'Manga',
         variedade: 'Tommy Atkins',
         origem: 'São Paulo - Brasil',
         lote: 'RP-2025-001',
         pesoTotal: 2300.0,
-        quantidadeAmostras: 5,
+        quantidadeAmostras: 20, // Cumbuca 250g = 20 amostras
         responsavelAvaliacao: 'Maria Santos',
         observacoes: 'Qualidade excelente',
-        criadoEm: DateTime.now().subtract(const Duration(days: 3)),
+        criadoEm: agora.subtract(const Duration(days: 3)),
       ),
     ];
   }
@@ -399,6 +416,36 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 4),
+              // SEÇÃO 1: Mostrar tipo de amostragem e fazenda
+              Row(
+                children: [
+                  Text(
+                    '${ficha.fazenda}',
+                    style: GoogleFonts.poppins(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.darkGreen
+                          : AppColors.positiveGreen,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      ficha.tipoAmostragem,
+                      style: GoogleFonts.poppins(
+                        fontSize: 10,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.textDark.withValues(alpha: 0.7)
+                            : Colors.grey[600],
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
               Text(
                 '${ficha.produto} - ${ficha.variedade}',
                 style: GoogleFonts.poppins(
@@ -417,7 +464,7 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
               Row(
                 children: [
                   Text(
-                    '${ficha.pesoTotal.toStringAsFixed(1)}kg',
+                    '${ficha.pesoBrutoKg.toStringAsFixed(1)}kg',
                     style: GoogleFonts.poppins(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -655,14 +702,63 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
                 ),
               ),
               const SizedBox(height: 4),
-              Text(
-                ficha.fazenda,
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? AppColors.textDark.withValues(alpha: 0.8)
-                      : Colors.grey[700],
-                ),
+              // SEÇÃO 1: Informações principais da ficha
+              Row(
+                children: [
+                  Text(
+                    'Fazenda: ${ficha.fazenda}',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.darkGreen
+                          : AppColors.positiveGreen,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Text(
+                    'Semana: ${ficha.semanaAno}',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.textDark.withValues(alpha: 0.8)
+                          : Colors.grey[700],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(
+                    Icons.science,
+                    size: 16,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? AppColors.darkGreen
+                        : AppColors.positiveGreen,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    ficha.tipoAmostragem,
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.darkGreen
+                          : AppColors.positiveGreen,
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    'Inspetor: ${ficha.inspetor}',
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.textDark.withValues(alpha: 0.7)
+                          : Colors.grey[600],
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 12),
 
@@ -702,7 +798,7 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        '${ficha.pesoTotal.toStringAsFixed(1)} kg',
+                        '${ficha.pesoBrutoKg.toStringAsFixed(1)} kg (bruto)',
                         style: GoogleFonts.poppins(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -727,11 +823,11 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
               ),
               const SizedBox(height: 12),
 
-              // Responsável
+              // Responsável (nova estrutura)
               Row(
                 children: [
                   Icon(
-                    Icons.person,
+                    Icons.assignment_ind,
                     size: 16,
                     color: Theme.of(context).brightness == Brightness.dark
                         ? AppColors.textDark.withValues(alpha: 0.7)
@@ -740,7 +836,7 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
-                      ficha.responsavelAvaliacao,
+                      'Inspetor: ${ficha.inspetor}',
                       style: GoogleFonts.poppins(
                         fontSize: 12,
                         color: Theme.of(context).brightness == Brightness.dark
@@ -825,11 +921,30 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // SEÇÃO 1: Informações Gerais
+            const Text(
+              'SEÇÃO 1: INFORMAÇÕES GERAIS',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            ),
+            const SizedBox(height: 8),
             Text('Cliente: ${ficha.cliente}'),
+            Text('Ano: ${ficha.ano}'),
             Text('Fazenda: ${ficha.fazenda}'),
+            Text('Semana do ano: ${ficha.semanaAno}'),
+            Text('Inspetor: ${ficha.inspetor}'),
+            Text('Tipo de amostragem: ${ficha.tipoAmostragem}'),
+            Text('Peso bruto: ${ficha.pesoBrutoKg.toStringAsFixed(1)} kg'),
+            const SizedBox(height: 12),
+            // Informações do produto
+            const Text(
+              'PRODUTO',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            ),
+            const SizedBox(height: 8),
             Text('Produto: ${ficha.produto} - ${ficha.variedade}'),
-            Text('Peso: ${ficha.pesoTotal.toStringAsFixed(1)} kg'),
-            Text('Responsável: ${ficha.responsavelAvaliacao}'),
+            Text('Origem: ${ficha.origem}'),
+            Text('Lote: ${ficha.lote}'),
+            Text('Quantidade de amostras: ${ficha.quantidadeAmostras}'),
           ],
         ),
         actions: [

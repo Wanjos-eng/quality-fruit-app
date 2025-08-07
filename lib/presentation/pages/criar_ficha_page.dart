@@ -903,6 +903,18 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
         ),
       );
 
+      // Determinar tipo de amostragem baseado na quantidade
+      final quantidadeAmostras =
+          int.tryParse(_quantidadeAmostrasController.text.trim()) ?? 7;
+      String tipoAmostragem;
+      if (quantidadeAmostras == 10) {
+        tipoAmostragem = TiposAmostragem.cumbuca500g;
+      } else if (quantidadeAmostras == 20) {
+        tipoAmostragem = TiposAmostragem.cumbuca250g;
+      } else {
+        tipoAmostragem = TiposAmostragem.sacola; // 7 amostras
+      }
+
       // Criar a ficha
       final ficha = Ficha(
         id: '', // O repository gerará o ID
@@ -911,13 +923,16 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
         cliente: _clienteController.text.trim(),
         fazenda: _fazendaController.text.trim(),
         ano: _ano,
+        semanaAno: Ficha.calcularSemanaAno(_dataAvaliacao),
+        inspetor: _responsavelAvaliacaoController.text.trim(),
+        tipoAmostragem: tipoAmostragem,
+        pesoBrutoKg: double.tryParse(_pesoTotalController.text.trim()) ?? 0.0,
         produto: _produtoController.text.trim(),
         variedade: _variedadeController.text.trim(),
         origem: _origemController.text.trim(),
         lote: _loteController.text.trim(),
         pesoTotal: double.tryParse(_pesoTotalController.text.trim()) ?? 0.0,
-        quantidadeAmostras:
-            int.tryParse(_quantidadeAmostrasController.text.trim()) ?? 7,
+        quantidadeAmostras: quantidadeAmostras,
         responsavelAvaliacao: _responsavelAvaliacaoController.text.trim(),
         produtorResponsavel:
             _produtorResponsavelController.text.trim().isNotEmpty

@@ -19,8 +19,10 @@ class AmostraDetalhadaModel {
   final double? pesoEmbalagem;
   final double? pesoLiquidoKg;
   final double? bagaMm;
+  final List<double>? brixLeituras;
   final double? brix;
   final double? brixMedia;
+  final double? corBagaPercentual;
   final double? teiaAranha;
   final double? aranha;
   final double? amassada;
@@ -62,8 +64,10 @@ class AmostraDetalhadaModel {
     this.pesoEmbalagem,
     this.pesoLiquidoKg,
     this.bagaMm,
+    this.brixLeituras,
     this.brix,
     this.brixMedia,
+    this.corBagaPercentual,
     this.teiaAranha,
     this.aranha,
     this.amassada,
@@ -106,8 +110,10 @@ class AmostraDetalhadaModel {
       pesoEmbalagem: amostra.pesoEmbalagem,
       pesoLiquidoKg: amostra.pesoLiquidoKg,
       bagaMm: amostra.bagaMm,
+      brixLeituras: amostra.brixLeituras,
       brix: amostra.brix,
       brixMedia: amostra.brixMedia,
+      corBagaPercentual: amostra.corBagaPercentual,
       teiaAranha: amostra.teiaAranha,
       aranha: amostra.aranha,
       amassada: amostra.amassada,
@@ -152,8 +158,10 @@ class AmostraDetalhadaModel {
       pesoEmbalagem: pesoEmbalagem,
       pesoLiquidoKg: pesoLiquidoKg,
       bagaMm: bagaMm,
+      brixLeituras: brixLeituras,
       brix: brix,
       brixMedia: brixMedia,
+      corBagaPercentual: corBagaPercentual,
       teiaAranha: teiaAranha,
       aranha: aranha,
       amassada: amassada,
@@ -198,8 +206,12 @@ class AmostraDetalhadaModel {
       'peso_embalagem': pesoEmbalagem,
       'peso_liquido_kg': pesoLiquidoKg,
       'baga_mm': bagaMm,
+      'brix_leituras': brixLeituras?.join(
+        ',',
+      ), // Armazena como string separada por vírgulas
       'brix': brix,
       'brix_media': brixMedia,
+      'cor_baga_percentual': corBagaPercentual,
       'teia_aranha': teiaAranha,
       'aranha': aranha,
       'amassada': amassada,
@@ -244,8 +256,15 @@ class AmostraDetalhadaModel {
       pesoEmbalagem: map['peso_embalagem'] as double?,
       pesoLiquidoKg: map['peso_liquido_kg'] as double?,
       bagaMm: map['baga_mm'] as double?,
+      brixLeituras: map['brix_leituras'] != null
+          ? (map['brix_leituras'] as String)
+                .split(',')
+                .map((e) => double.parse(e.trim()))
+                .toList()
+          : null,
       brix: map['brix'] as double?,
       brixMedia: map['brix_media'] as double?,
+      corBagaPercentual: map['cor_baga_percentual'] as double?,
       teiaAranha: map['teia_aranha'] as double?,
       aranha: map['aranha'] as double?,
       amassada: map['amassada'] as double?,
@@ -290,8 +309,12 @@ class AmostraDetalhadaModel {
       pesoEmbalagem: json['peso_embalagem']?.toDouble(),
       pesoLiquidoKg: json['peso_liquido_kg']?.toDouble(),
       bagaMm: json['baga_mm']?.toDouble(),
+      brixLeituras: json['brix_leituras'] != null
+          ? List<double>.from(json['brix_leituras'])
+          : null,
       brix: json['brix']?.toDouble(),
       brixMedia: json['brix_media']?.toDouble(),
+      corBagaPercentual: json['cor_baga_percentual']?.toDouble(),
       teiaAranha: json['teia_aranha']?.toDouble(),
       aranha: json['aranha']?.toDouble(),
       amassada: json['amassada']?.toDouble(),

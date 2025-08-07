@@ -18,15 +18,22 @@ class AmostraDetalhada {
   final String? corUMD; // U=uniforme, M=média, D=desuniforme
   final double? pesoEmbalagem;
   final double? pesoLiquidoKg;
-  final double? bagaMm;
+  final double? bagaMm; // Formato "16-18" (menor-maior calibre)
+
+  // BRIX: Nova estrutura conforme especificação
+  final List<double>? brixLeituras; // 10 leituras manuais de Brix
+  final double? brixMedia; // Calculado automaticamente das 10 leituras
+
+  // Campo antigo (mantido para compatibilidade)
   final double? brix;
-  final double? brixMedia;
 
   // Defeitos e problemas (percentuais ou contagens)
   final double? teiaAranha;
   final double? aranha;
   final double? amassada;
-  final double? aquosaCorBaga;
+  final double? aquosaCorBaga; // Mantido para compatibilidade
+  final double?
+  corBagaPercentual; // Novo campo: Cor da Baga (%) - múltiplos de 5%
   final double? cachoDuro;
   final double? cachoRaloBanguelo;
   final double? cicatriz;
@@ -65,12 +72,16 @@ class AmostraDetalhada {
     this.pesoEmbalagem,
     this.pesoLiquidoKg,
     this.bagaMm,
-    this.brix,
+    // BRIX: Nova estrutura
+    this.brixLeituras,
     this.brixMedia,
+    // Campo antigo (compatibilidade)
+    this.brix,
     this.teiaAranha,
     this.aranha,
     this.amassada,
     this.aquosaCorBaga,
+    this.corBagaPercentual, // Novo campo: Cor da Baga (%)
     this.cachoDuro,
     this.cachoRaloBanguelo,
     this.cicatriz,
@@ -108,12 +119,16 @@ class AmostraDetalhada {
     double? pesoEmbalagem,
     double? pesoLiquidoKg,
     double? bagaMm,
-    double? brix,
+    // BRIX: Nova estrutura
+    List<double>? brixLeituras,
     double? brixMedia,
+    // Campo antigo (compatibilidade)
+    double? brix,
     double? teiaAranha,
     double? aranha,
     double? amassada,
     double? aquosaCorBaga,
+    double? corBagaPercentual, // Novo campo: Cor da Baga (%)
     double? cachoDuro,
     double? cachoRaloBanguelo,
     double? cicatriz,
@@ -150,12 +165,17 @@ class AmostraDetalhada {
       pesoEmbalagem: pesoEmbalagem ?? this.pesoEmbalagem,
       pesoLiquidoKg: pesoLiquidoKg ?? this.pesoLiquidoKg,
       bagaMm: bagaMm ?? this.bagaMm,
-      brix: brix ?? this.brix,
+      // BRIX: Nova estrutura
+      brixLeituras: brixLeituras ?? this.brixLeituras,
       brixMedia: brixMedia ?? this.brixMedia,
+      // Campo antigo (compatibilidade)
+      brix: brix ?? this.brix,
       teiaAranha: teiaAranha ?? this.teiaAranha,
       aranha: aranha ?? this.aranha,
       amassada: amassada ?? this.amassada,
       aquosaCorBaga: aquosaCorBaga ?? this.aquosaCorBaga,
+      corBagaPercentual:
+          corBagaPercentual ?? this.corBagaPercentual, // Novo campo
       cachoDuro: cachoDuro ?? this.cachoDuro,
       cachoRaloBanguelo: cachoRaloBanguelo ?? this.cachoRaloBanguelo,
       cicatriz: cicatriz ?? this.cicatriz,
@@ -175,6 +195,19 @@ class AmostraDetalhada {
       criadoEm: criadoEm ?? this.criadoEm,
       atualizadoEm: atualizadoEm ?? DateTime.now(),
     );
+  }
+
+  /// Calcula a média automática das leituras de Brix
+  double? get brixMediaCalculada {
+    if (brixLeituras == null || brixLeituras!.isEmpty) return null;
+
+    final somaTotal = brixLeituras!.fold(0.0, (sum, leitura) => sum + leitura);
+    return somaTotal / brixLeituras!.length;
+  }
+
+  /// Verifica se as 10 leituras de Brix estão completas
+  bool get brixLeiturasCompletas {
+    return brixLeituras != null && brixLeituras!.length == 10;
   }
 
   /// Verifica se a amostra tem dados mínimos para salvamento
@@ -278,6 +311,56 @@ class FichaFisicaConstants {
   // Range para Aparência/Calibre
   static const int minCalibre = 0;
   static const int maxCalibre = 7;
+
+  // SEÇÃO 2: Variedades de uva (conforme especificação)
+  static const List<String> variedadesUva = [
+    'ARRA15',
+    'AUTUMNCRISP',
+    'CRIMSON',
+    'BRS ISIS',
+    'BRS VITÓRIA',
+    'BRS MELODIA',
+    'KRISSY',
+    'MELANIE',
+    'MELODY',
+    'MOSCATO',
+    'NUBIA',
+    'RED GLOBE',
+    'SUGAR CRISP',
+    'SUGRAONE',
+    'SWEET GLOBE',
+    'TIMCO',
+    'TIMPSON',
+    'Outros', // Opção para campo livre
+  ];
+
+  // Opções para Classe
+  static const List<String> opcoesClasse = ['Clamshell', 'Open', 'Sacola'];
+
+  // Opções para Cor da Baga em percentual (múltiplos de 5%)
+  static const List<double> opcoesCorBagaPercentual = [
+    0.0,
+    5.0,
+    10.0,
+    15.0,
+    20.0,
+    25.0,
+    30.0,
+    35.0,
+    40.0,
+    45.0,
+    50.0,
+    55.0,
+    60.0,
+    65.0,
+    70.0,
+    75.0,
+    80.0,
+    85.0,
+    90.0,
+    95.0,
+    100.0,
+  ];
 
   // Letras das amostras
   static const List<String> letrasAmostras = [
