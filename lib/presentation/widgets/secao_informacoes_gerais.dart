@@ -16,7 +16,6 @@ class SecaoInformacoesGerais extends StatelessWidget {
   final int? semanaAno;
   final String? inspetor;
   final String tipoAmostragem;
-  final double? pesoBruto;
 
   // Callbacks para atualizar o estado
   final ValueChanged<int?> onAnoChanged;
@@ -24,7 +23,6 @@ class SecaoInformacoesGerais extends StatelessWidget {
   final ValueChanged<DateTime?> onDataChanged;
   final ValueChanged<String?> onInspetorChanged;
   final ValueChanged<String> onTipoAmostragemChanged;
-  final ValueChanged<double?> onPesoBrutoChanged;
 
   const SecaoInformacoesGerais({
     super.key,
@@ -35,13 +33,11 @@ class SecaoInformacoesGerais extends StatelessWidget {
     required this.semanaAno,
     required this.inspetor,
     required this.tipoAmostragem,
-    required this.pesoBruto,
     required this.onAnoChanged,
     required this.onFazendaChanged,
     required this.onDataChanged,
     required this.onInspetorChanged,
     required this.onTipoAmostragemChanged,
-    required this.onPesoBrutoChanged,
   });
 
   /// Opções de tipo de amostragem conforme especificação exata
@@ -151,18 +147,6 @@ class SecaoInformacoesGerais extends StatelessWidget {
             Expanded(child: _buildDropdownTipoAmostragem(context)),
           ],
         ),
-
-        const SizedBox(height: spacing),
-
-        // Linha 5: Peso Bruto (centralizado)
-        Row(
-          children: [
-            Expanded(child: _buildCampoPeso(context)),
-            const Expanded(
-              child: SizedBox(),
-            ), // Espaço vazio para balanceamento
-          ],
-        ),
       ],
     );
   }
@@ -227,11 +211,6 @@ class SecaoInformacoesGerais extends StatelessWidget {
 
         // ROW 4: Tipo de Amostragem
         _buildDropdownTipoAmostragem(context),
-
-        const SizedBox(height: spacing),
-
-        // ROW 5: Peso Bruto
-        _buildCampoPeso(context),
       ],
     );
   }
@@ -835,100 +814,6 @@ class SecaoInformacoesGerais extends StatelessWidget {
               ? Colors.grey.shade800
               : Colors.white,
           menuMaxHeight: 300,
-        ),
-      ],
-    );
-  }
-
-  /// Constrói campo de peso bruto
-  Widget _buildCampoPeso(BuildContext context) {
-    const double fontSize = 14.0; // Tamanho de fonte fixo
-    const double spacing = 8.0; // Espaçamento fixo
-    const EdgeInsets contentPadding = EdgeInsets.symmetric(
-      horizontal: 12.0,
-      vertical: 12.0,
-    );
-
-    // Determinar cor da borda baseada no preenchimento
-    final bool isFilled = pesoBruto != null && pesoBruto! > 0;
-
-    Color getBorderColor() {
-      if (isFilled) {
-        return Colors.green; // Verde quando preenchido
-      } else {
-        return Colors.red; // Vermelho quando obrigatório e vazio
-      }
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Peso Bruto',
-          style: GoogleFonts.poppins(
-            fontSize: fontSize,
-            fontWeight: FontWeight.w500,
-            color: Colors.white, // Sempre branco para labels
-          ),
-        ),
-        const SizedBox(height: spacing),
-        TextFormField(
-          initialValue: pesoBruto?.toString(),
-          onChanged: (text) {
-            final peso = double.tryParse(text.replaceAll(',', '.'));
-            onPesoBrutoChanged(peso);
-          },
-          validator: (text) {
-            final peso = double.tryParse(text?.replaceAll(',', '.') ?? '');
-            if (peso == null) {
-              return 'Peso bruto é obrigatório';
-            }
-            if (peso <= 0) {
-              return 'Peso deve ser maior que zero';
-            }
-            return null;
-          },
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          style: GoogleFonts.poppins(
-            color: Theme.of(context).brightness == Brightness.dark
-                ? Colors.white
-                : Colors.black87,
-          ),
-          decoration: InputDecoration(
-            hintText: 'Ex: 15.5',
-            hintStyle: GoogleFonts.poppins(
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.grey.shade400
-                  : Colors.grey.shade600,
-            ),
-            suffixText: 'kg',
-            suffixStyle: GoogleFonts.poppins(
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.grey.shade400
-                  : Colors.grey.shade600,
-              fontWeight: FontWeight.w500,
-            ),
-            filled: true,
-            fillColor: Theme.of(context).brightness == Brightness.dark
-                ? Colors.grey.shade800
-                : Colors.white,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: getBorderColor(), width: 2),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: getBorderColor(), width: 2),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: Theme.of(context).primaryColor,
-                width: 2,
-              ),
-            ),
-            contentPadding: contentPadding,
-          ),
         ),
       ],
     );

@@ -26,9 +26,15 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
   int _amostraAtualIndex = 0;
   late AmostraDetalhada _amostraAtual;
 
-  // Controllers para Brix (10 leituras)
+  // Controllers para Brix (quantidade variável)
   final List<TextEditingController> _brixControllers = List.generate(
-    10,
+    20, // Máximo 20 para Cumbuca 250g
+    (index) => TextEditingController(),
+  );
+
+  // Controllers para Peso Bruto (quantidade variável)
+  final List<TextEditingController> _pesoBrutoControllers = List.generate(
+    20, // Máximo 20 para Cumbuca 250g
     (index) => TextEditingController(),
   );
 
@@ -44,6 +50,9 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
     for (final controller in _brixControllers) {
       controller.dispose();
     }
+    for (final controller in _pesoBrutoControllers) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
@@ -55,6 +64,16 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
         _brixControllers[i].text = leituras[i].toString();
       } else {
         _brixControllers[i].clear();
+      }
+    }
+
+    // Inicializar controllers de Peso Bruto com valores existentes
+    final leiturasP = _amostraAtual.pesoBrutoLeituras ?? [];
+    for (int i = 0; i < _pesoBrutoControllers.length; i++) {
+      if (i < leiturasP.length) {
+        _pesoBrutoControllers[i].text = leiturasP[i].toString();
+      } else {
+        _pesoBrutoControllers[i].clear();
       }
     }
   }
@@ -166,6 +185,11 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
 
           // ⚙️ INFORMAÇÕES DA AMOSTRA
           _buildSecaoInformacoesAmostra(),
+
+          const SizedBox(height: 24),
+
+          // ⚖️ PESO BRUTO (MÚLTIPLAS LEITURAS)
+          _buildSecaoPesoBruto(),
 
           const SizedBox(height: 24),
 
@@ -329,14 +353,13 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
 
           const SizedBox(height: 16),
 
-          // ROW 5: Pesos
+          // ROW 5: Peso da Embalagem e Peso Líquido (lado a lado)
           Row(
             children: [
               Expanded(
                 child: _buildCampoNumerico(
-                  label: 'Peso com Embalagem (kg)',
-                  value: _amostraAtual
-                      .pesoEmbalagem, // Temporário - usar campo existente
+                  label: 'Peso da Embalagem (g)',
+                  value: _amostraAtual.pesoEmbalagem,
                   onChanged: (valor) {
                     _amostraAtual = _amostraAtual.copyWith(
                       pesoEmbalagem: valor,
@@ -347,12 +370,15 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
               const SizedBox(width: 16),
               Expanded(
                 child: _buildCampoNumerico(
-                  label: 'Peso Líquido (kg)',
-                  value: _amostraAtual.pesoLiquidoKg,
+                  label: 'Peso Líquido (g)',
+                  value: _amostraAtual.pesoLiquido,
                   onChanged: (valor) {
-                    _amostraAtual = _amostraAtual.copyWith(
-                      pesoLiquidoKg: valor,
-                    );
+                    setState(() {
+                      _amostraAtual = _amostraAtual.copyWith(
+                        pesoLiquido: valor,
+                      );
+                    });
+                    widget.onAmostraAtualizada(_amostraAtual);
                   },
                 ),
               ),
@@ -371,100 +397,208 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
             },
             hint: 'Ex: 16-18',
           ),
+
+          const SizedBox(height: 16),
         ],
       ),
     );
   }
 
-  Widget _buildSecaoBrix() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'BRIX - 10 Leituras Manuais',
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.white, // Sempre branco para labels
-            ),
-          ),
-          const SizedBox(height: 16),
+  /// Constrói a seção de peso bruto com múltiplas leituras
+  /// Constrói a seção de peso bruto com múltiplas leituras
+  Widget _buildSecaoPesoBruto() {
+    final quantidadeLeituras = _getQuantidadeLeituras();
 
-          // Grid de 10 campos de Brix
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 5,
-              crossAxisSpacing: 8,
-              mainAxisSpacing: 8,
-              childAspectRatio: 2,
+    return Card(
+      margin: const EdgeInsets.all(0), // Forçar margin zero para debug
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'PESO BRUTO - $quantidadeLeituras Leituras (g)',
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : Colors.grey[800],
+              ),
             ),
-            itemCount: 10,
-            itemBuilder: (context, index) {
-              return Column(
-                children: [
-                  Text(
-                    '${index + 1}°',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
+            const SizedBox(height: 8),
+            Text(
+              'Quantidade varia conforme tipo de amostragem',
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.grey[400]
+                    : Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Grid de campos de peso bruto
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 5,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+                childAspectRatio: 2,
+              ),
+              itemCount: quantidadeLeituras,
+              itemBuilder: (context, index) {
+                return Column(
+                  children: [
+                    Text(
+                      '${index + 1}°',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _brixControllers[index],
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      decoration: InputDecoration(
-                        hintText: '0.0',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(6),
+                    const SizedBox(height: 4),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _pesoBrutoControllers[index],
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
                         ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
+                        decoration: InputDecoration(
+                          hintText: '0.0',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                         ),
+                        style: const TextStyle(fontSize: 12),
+                        onChanged: (value) {
+                          final peso = double.tryParse(value);
+                          _atualizarPesoBruto(index, peso);
+                        },
                       ),
-                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSecaoBrix() {
+    final quantidadeLeituras = _getQuantidadeLeituras();
+
+    return Card(
+      margin: const EdgeInsets.all(0), // Forçar margin zero para debug
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'BRIX - $quantidadeLeituras Leituras Manuais',
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : Colors.grey[800],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Quantidade varia conforme tipo de amostragem',
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.grey[400]
+                    : Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Grid de campos de Brix
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 5,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+                childAspectRatio: 2,
+              ),
+              itemCount: quantidadeLeituras,
+              itemBuilder: (context, index) {
+                return Column(
+                  children: [
+                    Text(
+                      '${index + 1}°',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _brixControllers[index],
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: '0.0',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                        ),
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+
+            const SizedBox(height: 16),
+
+            // Brix Médio Calculado
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.green[50],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.green[200]!),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.calculate, color: Colors.green[700], size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Brix Médio: ${_calcularBrixMedio()?.toStringAsFixed(2) ?? "--"}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.green[700],
                     ),
                   ),
                 ],
-              );
-            },
-          ),
-
-          const SizedBox(height: 16),
-
-          // Brix Médio Calculado
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.green[50],
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.green[200]!),
+              ),
             ),
-            child: Row(
-              children: [
-                Icon(Icons.calculate, color: Colors.green[700], size: 20),
-                const SizedBox(width: 8),
-                Text(
-                  'Brix Médio: ${_calcularBrixMedio()?.toStringAsFixed(2) ?? "--"}',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.green[700],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -1479,10 +1613,13 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
         (amostra.area?.isNotEmpty == true) &&
         (amostra.variedade?.isNotEmpty == true);
 
-    // Verificar se tem pelo menos alguns pesos preenchidos
+    // Verificar se tem pelo menos alguns pesos preenchidos (novos campos ou compatibilidade)
     final pesosPreenchidos =
-        (amostra.pesoLiquidoKg != null && amostra.pesoLiquidoKg! > 0) ||
-        (amostra.pesoEmbalagem != null && amostra.pesoEmbalagem! > 0);
+        (amostra.pesoBrutoLeituras?.isNotEmpty == true) ||
+        (amostra.pesoLiquido != null && amostra.pesoLiquido! > 0) ||
+        (amostra.pesoEmbalagem != null && amostra.pesoEmbalagem! > 0) ||
+        (amostra.pesoLiquidoKg != null &&
+            amostra.pesoLiquidoKg! > 0); // Compatibilidade
 
     // Verificar se tem pelo menos algumas leituras de Brix
     final brixPreenchido =
@@ -1510,5 +1647,46 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
     } else {
       return Colors.white.withValues(alpha: 0.4);
     }
+  }
+
+  /// Retorna a quantidade de leituras baseada no tipo de amostragem
+  int _getQuantidadeLeituras() {
+    switch (widget.tipoAmostragem) {
+      case 'Cumbuca 500g':
+        return 10;
+      case 'Cumbuca 250g':
+        return 20;
+      case 'Sacola':
+        return 1;
+      default:
+        return 10; // Default para Cumbuca 500g
+    }
+  }
+
+  /// Atualiza o valor de peso bruto em um índice específico
+  void _atualizarPesoBruto(int index, double? valor) {
+    final leituras = List<double>.from(_amostraAtual.pesoBrutoLeituras ?? []);
+
+    // Garante que a lista tenha o tamanho adequado
+    while (leituras.length <= index) {
+      leituras.add(0.0);
+    }
+
+    if (valor != null) {
+      leituras[index] = valor;
+    } else {
+      leituras.removeAt(index);
+    }
+
+    final media = leituras.isNotEmpty
+        ? leituras.fold(0.0, (sum, leitura) => sum + leitura) / leituras.length
+        : null;
+
+    setState(() {
+      _amostraAtual = _amostraAtual.copyWith(
+        pesoBrutoLeituras: leituras.isEmpty ? null : leituras,
+        pesoBrutoMedia: media,
+      );
+    });
   }
 }

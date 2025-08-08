@@ -4,30 +4,43 @@ class AmostraDetalhada {
   final String id;
   final String fichaId;
   final String letraAmostra; // A, B, C, D, E, F, G
+
+  // SEÇÃO 1: INFORMAÇÕES GERAIS (preenchidas uma vez por dia)
   final DateTime? data;
   final String? caixaMarca;
   final String? classe;
   final String? area;
   final String? variedade;
-  final double? pesoBrutoKg;
 
   // Campos específicos com opções pré-definidas
   final String? sacolaCumbuca; // C=certa, E=errada
   final String? caixaCumbucaAlta; // S=sim, N=não
   final String? aparenciaCalibro0a7; // 0-7
+  final String? embalagemCalibro0a7; // 0-7
   final String? corUMD; // U=uniforme, M=média, D=desuniforme
-  final double? pesoEmbalagem;
-  final double? pesoLiquidoKg;
+  final double? pesoEmbalagem; // Peso da embalagem apenas
   final double? bagaMm; // Formato "16-18" (menor-maior calibre)
 
-  // BRIX: Nova estrutura conforme especificação
-  final List<double>? brixLeituras; // 10 leituras manuais de Brix
-  final double? brixMedia; // Calculado automaticamente das 10 leituras
+  // SEÇÃO 2: MEDIDAS VARIÁVEIS (quantidade depende do tipo de amostragem)
+  // PESO BRUTO: Múltiplas leituras conforme tipo de amostragem
+  final List<double>?
+  pesoBrutoLeituras; // Cumbuca 500g: 10 | Cumbuca 250g: 20 | Sacola: 1
+  final double? pesoBrutoMedia; // Calculado automaticamente das leituras
 
-  // Campo antigo (mantido para compatibilidade)
+  // PESO LÍQUIDO: Uma única medida
+  final double? pesoLiquido; // Peso líquido em gramas
+
+  // BRIX: Múltiplas leituras conforme tipo de amostragem (mesmo padrão do peso)
+  final List<double>?
+  brixLeituras; // Cumbuca 500g: 10 | Cumbuca 250g: 20 | Sacola: 1
+  final double? brixMedia; // Calculado automaticamente das leituras
+
+  // Campos antigos (mantidos para compatibilidade)
+  final double? pesoBrutoKg;
+  final double? pesoLiquidoKg;
   final double? brix;
 
-  // Defeitos e problemas (percentuais ou contagens)
+  // SEÇÃO 3: DEFEITOS E PROBLEMAS (percentuais ou contagens)
   final double? teiaAranha;
   final double? aranha;
   final double? amassada;
@@ -39,6 +52,8 @@ class AmostraDetalhada {
   final double? cicatriz;
   final double? corpoEstranho;
   final double? desgranePercentual;
+  final double? glomerella;
+  final double? lagarta; // NOVO CAMPO ADICIONADO
   final double? moscaFruta;
   final double? murcha;
   final double? oidio;
@@ -47,7 +62,6 @@ class AmostraDetalhada {
   final double? rachada;
   final double? sacarose;
   final double? translucido;
-  final double? glomerella;
   final double? traca;
 
   final String? observacoes;
@@ -64,18 +78,24 @@ class AmostraDetalhada {
     this.classe,
     this.area,
     this.variedade,
-    this.pesoBrutoKg,
+    // Campos específicos
     this.sacolaCumbuca,
     this.caixaCumbucaAlta,
     this.aparenciaCalibro0a7,
+    this.embalagemCalibro0a7,
     this.corUMD,
     this.pesoEmbalagem,
-    this.pesoLiquidoKg,
     this.bagaMm,
+    // PESO BRUTO: Nova estrutura
+    this.pesoBrutoLeituras,
+    this.pesoBrutoMedia,
+    this.pesoLiquido,
     // BRIX: Nova estrutura
     this.brixLeituras,
     this.brixMedia,
-    // Campo antigo (compatibilidade)
+    // Campos antigos (compatibilidade)
+    this.pesoBrutoKg,
+    this.pesoLiquidoKg,
     this.brix,
     this.teiaAranha,
     this.aranha,
@@ -87,6 +107,8 @@ class AmostraDetalhada {
     this.cicatriz,
     this.corpoEstranho,
     this.desgranePercentual,
+    this.glomerella,
+    this.lagarta,
     this.moscaFruta,
     this.murcha,
     this.oidio,
@@ -95,7 +117,6 @@ class AmostraDetalhada {
     this.rachada,
     this.sacarose,
     this.translucido,
-    this.glomerella,
     this.traca,
     this.observacoes,
     this.atualizadoEm,
@@ -111,17 +132,21 @@ class AmostraDetalhada {
     String? classe,
     String? area,
     String? variedade,
+    // Campos específicos
     String? sacolaCumbuca,
     String? caixaCumbucaAlta,
     String? aparenciaCalibro0a7,
-    String? embalagemCalibro0a7, // NOVO: Avaliação da embalagem (0-7)
+    String? embalagemCalibro0a7,
     String? corUMD,
-    double? pesoComEmbalagem, // NOVO: Peso total conforme especificação
-    double? pesoLiquidoKg,
+    double? pesoEmbalagem,
     double? bagaMm,
-    // BRIX: Nova estrutura conforme especificação
+    // PESO BRUTO: Nova estrutura
+    List<double>? pesoBrutoLeituras,
+    double? pesoBrutoMedia,
+    double? pesoLiquido,
+    // BRIX: Nova estrutura
     List<double>? brixLeituras,
-    double? brixMedio, // NOVO: Cálculo automático das 10 leituras
+    double? brixMedia,
     // DEFEITOS: Conforme especificação
     double? teiaAranha,
     double? aranha,
@@ -133,6 +158,8 @@ class AmostraDetalhada {
     double? cicatriz,
     double? corpoEstranho,
     double? desgranePercentual,
+    double? glomerella,
+    double? lagarta,
     double? moscaFruta,
     double? murcha,
     double? oidio,
@@ -141,14 +168,12 @@ class AmostraDetalhada {
     double? rachada,
     double? sacarose,
     double? translucido,
-    double? glomerella,
     double? traca,
     // Campos de compatibilidade (deprecados)
     DateTime? data,
     double? pesoBrutoKg,
-    double? pesoEmbalagem,
+    double? pesoLiquidoKg,
     double? brix,
-    double? brixMedia,
     double? aquosaCorBaga,
     double? corBagaPercentual,
     String? observacoes,
@@ -165,17 +190,21 @@ class AmostraDetalhada {
       classe: classe ?? this.classe,
       area: area ?? this.area,
       variedade: variedade ?? this.variedade,
+      // Campos específicos
       sacolaCumbuca: sacolaCumbuca ?? this.sacolaCumbuca,
       caixaCumbucaAlta: caixaCumbucaAlta ?? this.caixaCumbucaAlta,
       aparenciaCalibro0a7: aparenciaCalibro0a7 ?? this.aparenciaCalibro0a7,
-      // embalagemCalibro0a7: Usar aparenciaCalibro0a7 temporariamente
+      embalagemCalibro0a7: embalagemCalibro0a7 ?? this.embalagemCalibro0a7,
       corUMD: corUMD ?? this.corUMD,
-      // pesoComEmbalagem: Usar pesoEmbalagem temporariamente
-      pesoLiquidoKg: pesoLiquidoKg ?? this.pesoLiquidoKg,
+      pesoEmbalagem: pesoEmbalagem ?? this.pesoEmbalagem,
       bagaMm: bagaMm ?? this.bagaMm,
-      // BRIX: Nova estrutura conforme especificação
+      // PESO BRUTO: Nova estrutura
+      pesoBrutoLeituras: pesoBrutoLeituras ?? this.pesoBrutoLeituras,
+      pesoBrutoMedia: pesoBrutoMedia ?? this.pesoBrutoMedia,
+      pesoLiquido: pesoLiquido ?? this.pesoLiquido,
+      // BRIX: Nova estrutura
       brixLeituras: brixLeituras ?? this.brixLeituras,
-      brixMedia: brixMedia ?? this.brixMedia, // Usar campo existente
+      brixMedia: brixMedia ?? this.brixMedia,
       // DEFEITOS: Conforme especificação
       teiaAranha: teiaAranha ?? this.teiaAranha,
       aranha: aranha ?? this.aranha,
@@ -187,6 +216,8 @@ class AmostraDetalhada {
       cicatriz: cicatriz ?? this.cicatriz,
       corpoEstranho: corpoEstranho ?? this.corpoEstranho,
       desgranePercentual: desgranePercentual ?? this.desgranePercentual,
+      glomerella: glomerella ?? this.glomerella,
+      lagarta: lagarta ?? this.lagarta,
       moscaFruta: moscaFruta ?? this.moscaFruta,
       murcha: murcha ?? this.murcha,
       oidio: oidio ?? this.oidio,
@@ -195,12 +226,11 @@ class AmostraDetalhada {
       rachada: rachada ?? this.rachada,
       sacarose: sacarose ?? this.sacarose,
       translucido: translucido ?? this.translucido,
-      glomerella: glomerella ?? this.glomerella,
       traca: traca ?? this.traca,
       // Campos de compatibilidade (deprecados)
       data: data ?? this.data,
       pesoBrutoKg: pesoBrutoKg ?? this.pesoBrutoKg,
-      pesoEmbalagem: pesoEmbalagem ?? this.pesoEmbalagem,
+      pesoLiquidoKg: pesoLiquidoKg ?? this.pesoLiquidoKg,
       brix: brix ?? this.brix,
       aquosaCorBaga: aquosaCorBaga ?? this.aquosaCorBaga,
       corBagaPercentual: corBagaPercentual ?? this.corBagaPercentual,
@@ -217,9 +247,33 @@ class AmostraDetalhada {
     return somaTotal / brixLeituras!.length;
   }
 
-  /// Verifica se as 10 leituras de Brix estão completas
-  bool get brixLeiturasCompletas {
-    return brixLeituras != null && brixLeituras!.length == 10;
+  /// Verifica se as leituras de Brix estão completas (quantidade varia por tipo)
+  bool brixLeiturasCompletas(int quantidadeEsperada) {
+    return brixLeituras != null && brixLeituras!.length == quantidadeEsperada;
+  }
+
+  /// Calcula a média automática das leituras de Peso Bruto
+  double? get pesoBrutoMediaCalculada {
+    if (pesoBrutoLeituras == null || pesoBrutoLeituras!.isEmpty) return null;
+
+    final somaTotal = pesoBrutoLeituras!.fold(
+      0.0,
+      (sum, leitura) => sum + leitura,
+    );
+    return somaTotal / pesoBrutoLeituras!.length;
+  }
+
+  /// Verifica se as leituras de peso estão completas (baseado no tipo de amostragem)
+  bool pesoBrutoLeiturasCompletas(int quantidadeEsperada) {
+    return pesoBrutoLeituras != null &&
+        pesoBrutoLeituras!.length == quantidadeEsperada;
+  }
+
+  /// Verifica se peso e brix têm a mesma quantidade de leituras (devem ser iguais)
+  bool get pesoEBrixConsistentes {
+    final tamanhoPeso = pesoBrutoLeituras?.length ?? 0;
+    final tamanhoBrix = brixLeituras?.length ?? 0;
+    return tamanhoPeso == tamanhoBrix;
   }
 
   /// Verifica se a amostra tem dados mínimos para salvamento
@@ -241,11 +295,13 @@ class AmostraDetalhada {
     if (sacolaCumbuca?.isNotEmpty == true) preenchidos++;
     if (caixaCumbucaAlta?.isNotEmpty == true) preenchidos++;
     if (aparenciaCalibro0a7?.isNotEmpty == true) preenchidos++;
+    if (embalagemCalibro0a7?.isNotEmpty == true) preenchidos++;
     if (corUMD?.isNotEmpty == true) preenchidos++;
     if (pesoEmbalagem != null) preenchidos++;
-    if (pesoLiquidoKg != null) preenchidos++;
+    if (pesoBrutoLeituras?.isNotEmpty == true) preenchidos++;
+    if (pesoLiquido != null) preenchidos++;
     if (bagaMm != null) preenchidos++;
-    if (brix != null) preenchidos++;
+    if (brixLeituras?.isNotEmpty == true) preenchidos++;
     if (brixMedia != null) preenchidos++;
     if (teiaAranha != null) preenchidos++;
     if (aranha != null) preenchidos++;
@@ -265,6 +321,7 @@ class AmostraDetalhada {
     if (sacarose != null) preenchidos++;
     if (translucido != null) preenchidos++;
     if (glomerella != null) preenchidos++;
+    if (lagarta != null) preenchidos++;
     if (traca != null) preenchidos++;
 
     return (preenchidos / totalCampos) * 100;

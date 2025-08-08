@@ -35,7 +35,6 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
   DateTime? _dataAvaliacao;
   int? _semanaAno;
   String? _inspetor;
-  double? _pesoBruto;
 
   // ⚙️ OBSERVAÇÕES FINAIS (Seção 3)
   final Map<String, String> _observacoesPorAmostra = {};
@@ -120,8 +119,7 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
         return _ano != null &&
             _fazenda != null &&
             _dataAvaliacao != null &&
-            _inspetor != null &&
-            _pesoBruto != null;
+            _inspetor != null;
       case 1: // Amostras
         return _amostras.every((amostra) => amostra.temDadosMinimos);
       case 2: // Observações
@@ -157,7 +155,6 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
           semanaAno: _semanaAno,
           inspetor: _inspetor,
           tipoAmostragem: _tipoAmostragem,
-          pesoBruto: _pesoBruto,
           onAnoChanged: (valor) {
             setState(() {
               _ano = valor;
@@ -179,7 +176,6 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
           },
           onInspetorChanged: (valor) => setState(() => _inspetor = valor),
           onTipoAmostragemChanged: _atualizarTipoAmostragem,
-          onPesoBrutoChanged: (valor) => setState(() => _pesoBruto = valor),
         );
       case 1:
         return SecaoAmostrasDefeitos(
