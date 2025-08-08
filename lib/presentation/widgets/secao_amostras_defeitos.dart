@@ -143,7 +143,7 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '${_amostraAtualIndex + 1} de ${widget.amostras.length} amostras • Deslize para navegar',
+                  '${_contarAmostrasPreenchidas()} de ${widget.amostras.length} amostras concluídas • Deslize para navegar',
                   style: GoogleFonts.poppins(
                     fontSize: 14,
                     color: Colors.white.withValues(alpha: 0.8),
@@ -1222,7 +1222,11 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
 
   // 📊 BARRA DE PROGRESSO
   Widget _buildBarraProgresso() {
-    final progresso = (_amostraAtualIndex + 1) / widget.amostras.length;
+    final amostrasPreenchidas = _contarAmostrasPreenchidas();
+    final totalAmostras = widget.amostras.length;
+    final progresso = totalAmostras > 0
+        ? amostrasPreenchidas / totalAmostras
+        : 0.0;
 
     return Column(
       children: [
@@ -1230,7 +1234,7 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Progresso',
+              'Progresso de Preenchimento',
               style: GoogleFonts.poppins(
                 fontSize: 12,
                 color: Colors.white.withValues(alpha: 0.8),
@@ -1250,8 +1254,18 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
         LinearProgressIndicator(
           value: progresso,
           backgroundColor: Colors.white.withValues(alpha: 0.2),
-          valueColor: AlwaysStoppedAnimation<Color>(Colors.green[400]!),
+          valueColor: AlwaysStoppedAnimation<Color>(
+            progresso >= 1.0 ? Colors.green[400]! : Colors.orange[400]!,
+          ),
           minHeight: 6,
+        ),
+        const SizedBox(height: 4),
+        Text(
+          '$amostrasPreenchidas de $totalAmostras amostras completas',
+          style: GoogleFonts.poppins(
+            fontSize: 10,
+            color: Colors.white.withValues(alpha: 0.6),
+          ),
         ),
       ],
     );
@@ -1335,13 +1349,24 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
                   color: Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Text(
-                  '${_amostraAtualIndex + 1} de ${widget.amostras.length}',
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
+                child: Column(
+                  children: [
+                    Text(
+                      'Amostra ${_amostraAtualIndex + 1} de ${widget.amostras.length}',
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Text(
+                      '${_contarAmostrasPreenchidas()} concluídas',
+                      style: GoogleFonts.poppins(
+                        fontSize: 10,
+                        color: Colors.white.withValues(alpha: 0.7),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(width: 16),
@@ -1446,15 +1471,40 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
 
   bool _verificarAmostraPreenchida(int index) {
     final amostra = widget.amostras[index];
-    return amostra.caixaMarca?.isNotEmpty == true ||
-        amostra.classe?.isNotEmpty == true ||
-        amostra.area?.isNotEmpty == true ||
-        amostra.variedade?.isNotEmpty == true;
+
+    // Verificar campos obrigatórios básicos
+    final camposBasicosPreenchidos =
+        (amostra.caixaMarca?.isNotEmpty == true) &&
+        (amostra.classe?.isNotEmpty == true) &&
+        (amostra.area?.isNotEmpty == true) &&
+        (amostra.variedade?.isNotEmpty == true);
+
+    // Verificar se tem pelo menos alguns pesos preenchidos
+    final pesosPreenchidos =
+        (amostra.pesoLiquidoKg != null && amostra.pesoLiquidoKg! > 0) ||
+        (amostra.pesoEmbalagem != null && amostra.pesoEmbalagem! > 0);
+
+    // Verificar se tem pelo menos algumas leituras de Brix
+    final brixPreenchido =
+        amostra.brixLeituras != null && amostra.brixLeituras!.isNotEmpty;
+
+    // Amostra considerada preenchida se tem os campos básicos E (pesos OU brix)
+    return camposBasicosPreenchidos && (pesosPreenchidos || brixPreenchido);
+  }
+
+  int _contarAmostrasPreenchidas() {
+    int contador = 0;
+    for (int i = 0; i < widget.amostras.length; i++) {
+      if (_verificarAmostraPreenchida(i)) {
+        contador++;
+      }
+    }
+    return contador;
   }
 
   Color _getCorIndicador(bool isAtual, bool isPreenchida) {
     if (isAtual) {
-      return Colors.blue[400]!;
+      return Colors.orange[400]!; // Mudança: azul para laranja
     } else if (isPreenchida) {
       return Colors.green[400]!;
     } else {
