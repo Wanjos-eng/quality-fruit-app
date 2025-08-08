@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../widgets/animated_logo_splash.dart';
+import '../widgets/loading_overlay_splash.dart';
 
 /// Tela de Splash Screen da aplicação
 ///
@@ -45,9 +45,9 @@ class _SplashScreenState extends State<SplashScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: AnimatedLogoSplash(
+        child: LoadingOverlaySplash(
           onAnimationComplete: _onAnimationComplete,
-          duration: const Duration(seconds: 3),
+          duration: const Duration(seconds: 4),
         ),
       ),
     );
