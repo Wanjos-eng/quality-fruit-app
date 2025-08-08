@@ -100,7 +100,7 @@ class SecaoInformacoesGerais extends StatelessWidget {
             Expanded(
               child: _buildDropdownAno(
                 context: context,
-                label: 'Ano *',
+                label: 'Ano',
                 value: ano,
                 onChanged: onAnoChanged,
                 validator: (value) {
@@ -135,7 +135,7 @@ class SecaoInformacoesGerais extends StatelessWidget {
             Expanded(
               child: _buildCampoTexto(
                 context: context,
-                label: 'Inspetor *',
+                label: 'Inspetor',
                 value: inspetor,
                 onChanged: onInspetorChanged,
                 hint: 'Nome do inspetor responsável',
@@ -179,7 +179,7 @@ class SecaoInformacoesGerais extends StatelessWidget {
             Expanded(
               child: _buildDropdownAno(
                 context: context,
-                label: 'Ano *',
+                label: 'Ano',
                 value: ano,
                 onChanged: onAnoChanged,
                 validator: (value) {
@@ -211,7 +211,7 @@ class SecaoInformacoesGerais extends StatelessWidget {
         // ROW 3: Inspetor
         _buildCampoTexto(
           context: context,
-          label: 'Inspetor *',
+          label: 'Inspetor',
           value: inspetor,
           onChanged: onInspetorChanged,
           hint: 'Nome do inspetor responsável',
@@ -252,6 +252,22 @@ class SecaoInformacoesGerais extends StatelessWidget {
       vertical: 12.0,
     );
 
+    // Determinar cor da borda baseada no preenchimento
+    final bool isRequired = label.contains('*');
+    final bool isFilled = value != null && value.trim().isNotEmpty;
+
+    Color getBorderColor() {
+      if (isFilled) {
+        return Colors.green; // Verde quando preenchido
+      } else if (isRequired) {
+        return Colors.red; // Vermelho quando obrigatório e vazio
+      } else {
+        return Theme.of(context).brightness == Brightness.dark
+            ? Colors.grey.shade600
+            : Colors.grey.shade400;
+      }
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -260,9 +276,7 @@ class SecaoInformacoesGerais extends StatelessWidget {
           style: GoogleFonts.poppins(
             fontSize: fontSize,
             fontWeight: FontWeight.w500,
-            color: Theme.of(context).brightness == Brightness.dark
-                ? AppColors.textDark
-                : Colors.white,
+            color: Colors.white, // Sempre branco para labels
           ),
         ),
         const SizedBox(height: spacing),
@@ -273,35 +287,33 @@ class SecaoInformacoesGerais extends StatelessWidget {
           style: GoogleFonts.poppins(
             fontSize: fontSize,
             color: Theme.of(context).brightness == Brightness.dark
-                ? AppColors.textDark
-                : Colors.white,
+                ? Colors.white
+                : Colors.black87,
           ),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: GoogleFonts.poppins(
               fontSize: fontSize,
               color: Theme.of(context).brightness == Brightness.dark
-                  ? AppColors.textDark.withValues(alpha: 0.6)
-                  : Colors.white.withValues(alpha: 0.7),
+                  ? Colors.grey.shade400
+                  : Colors.grey.shade600,
             ),
             filled: true,
             fillColor: Theme.of(context).brightness == Brightness.dark
-                ? AppColors.cardDark.withValues(alpha: 0.4)
-                : Colors.white.withValues(alpha: 0.15),
+                ? Colors.grey.shade800
+                : Colors.white,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
+              borderSide: BorderSide(color: getBorderColor(), width: 2),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
+              borderSide: BorderSide(color: getBorderColor(), width: 2),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.darkRed
-                    : AppColors.primaryRed,
+                color: Theme.of(context).primaryColor,
                 width: 2,
               ),
             ),
@@ -330,6 +342,22 @@ class SecaoInformacoesGerais extends StatelessWidget {
     // Gerar lista de anos de 2020 a 2035
     final anos = List.generate(16, (index) => 2020 + index);
 
+    // Determinar cor da borda baseada no preenchimento
+    final bool isRequired = label.contains('*');
+    final bool isFilled = value != null;
+
+    Color getBorderColor() {
+      if (isFilled) {
+        return Colors.green; // Verde quando preenchido
+      } else if (isRequired) {
+        return Colors.red; // Vermelho quando obrigatório e vazio
+      } else {
+        return Theme.of(context).brightness == Brightness.dark
+            ? Colors.grey.shade600
+            : Colors.grey.shade400;
+      }
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -338,9 +366,7 @@ class SecaoInformacoesGerais extends StatelessWidget {
           style: GoogleFonts.poppins(
             fontSize: fontSize,
             fontWeight: FontWeight.w500,
-            color: Theme.of(context).brightness == Brightness.dark
-                ? AppColors.textDark
-                : Colors.white,
+            color: Colors.white, // Sempre branco para labels
           ),
         ),
         const SizedBox(height: spacing),
@@ -352,35 +378,33 @@ class SecaoInformacoesGerais extends StatelessWidget {
             fontSize: fontSize,
             fontWeight: FontWeight.w400,
             color: Theme.of(context).brightness == Brightness.dark
-                ? AppColors.textDark
-                : Colors.white,
+                ? Colors.white
+                : Colors.black87,
           ),
           decoration: InputDecoration(
             hintText: 'Selecione o ano',
             hintStyle: GoogleFonts.poppins(
               fontSize: fontSize,
               color: Theme.of(context).brightness == Brightness.dark
-                  ? AppColors.textDark.withValues(alpha: 0.6)
-                  : Colors.white.withValues(alpha: 0.7),
+                  ? Colors.grey.shade400
+                  : Colors.grey.shade600,
             ),
             filled: true,
             fillColor: Theme.of(context).brightness == Brightness.dark
-                ? AppColors.cardDark.withValues(alpha: 0.4)
-                : Colors.white.withValues(alpha: 0.15),
+                ? Colors.grey.shade800
+                : Colors.white,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
+              borderSide: BorderSide(color: getBorderColor(), width: 2),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
+              borderSide: BorderSide(color: getBorderColor(), width: 2),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.darkRed
-                    : AppColors.primaryRed,
+                color: Theme.of(context).primaryColor,
                 width: 2,
               ),
             ),
@@ -406,8 +430,8 @@ class SecaoInformacoesGerais extends StatelessWidget {
               ? Colors.white
               : Colors.black87,
           dropdownColor: Theme.of(context).brightness == Brightness.dark
-              ? AppColors.backgroundDark
-              : AppColors.backgroundWhite.withValues(alpha: 0.95),
+              ? Colors.grey.shade800
+              : Colors.white,
           menuMaxHeight: 300,
         ),
       ],
@@ -423,17 +447,26 @@ class SecaoInformacoesGerais extends StatelessWidget {
       vertical: 12.0,
     );
 
+    // Determinar cor da borda baseada no preenchimento
+    final bool isFilled = fazenda != null && fazenda!.trim().isNotEmpty;
+
+    Color getBorderColor() {
+      if (isFilled) {
+        return Colors.green; // Verde quando preenchido
+      } else {
+        return Colors.red; // Vermelho quando obrigatório e vazio
+      }
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Fazenda *',
+          'Fazenda',
           style: GoogleFonts.poppins(
             fontSize: fontSize,
             fontWeight: FontWeight.w500,
-            color: Theme.of(context).brightness == Brightness.dark
-                ? AppColors.textDark
-                : Colors.white,
+            color: Colors.white, // Sempre branco para labels
           ),
         ),
         const SizedBox(height: spacing),
@@ -469,35 +502,33 @@ class SecaoInformacoesGerais extends StatelessWidget {
             fontSize: fontSize,
             fontWeight: FontWeight.w400,
             color: Theme.of(context).brightness == Brightness.dark
-                ? AppColors.textDark
-                : Colors.white,
+                ? Colors.white
+                : Colors.black87,
           ),
           decoration: InputDecoration(
             hintText: 'Ex: ABC',
             hintStyle: GoogleFonts.poppins(
               fontSize: fontSize,
               color: Theme.of(context).brightness == Brightness.dark
-                  ? AppColors.textDark.withValues(alpha: 0.6)
-                  : Colors.white.withValues(alpha: 0.7),
+                  ? Colors.grey.shade400
+                  : Colors.grey.shade600,
             ),
             filled: true,
             fillColor: Theme.of(context).brightness == Brightness.dark
-                ? AppColors.cardDark.withValues(alpha: 0.4)
-                : Colors.white.withValues(alpha: 0.15),
+                ? Colors.grey.shade800
+                : Colors.white,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
+              borderSide: BorderSide(color: getBorderColor(), width: 2),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
+              borderSide: BorderSide(color: getBorderColor(), width: 2),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.darkRed
-                    : AppColors.primaryRed,
+                color: Theme.of(context).primaryColor,
                 width: 2,
               ),
             ),
@@ -518,17 +549,26 @@ class SecaoInformacoesGerais extends StatelessWidget {
     );
     const double iconSize = 18.0;
 
+    // Determinar cor da borda baseada no preenchimento
+    final bool isFilled = dataAvaliacao != null;
+
+    Color getBorderColor() {
+      if (isFilled) {
+        return Colors.green; // Verde quando preenchido
+      } else {
+        return Colors.red; // Vermelho quando obrigatório e vazio
+      }
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Data de Avaliação (Dia/Mês) *',
+          'Data de Avaliação',
           style: GoogleFonts.poppins(
             fontSize: fontSize,
             fontWeight: FontWeight.w500,
-            color: Theme.of(context).brightness == Brightness.dark
-                ? AppColors.textDark
-                : Colors.white,
+            color: Colors.white, // Sempre branco para labels
           ),
         ),
         const SizedBox(height: spacing),
@@ -539,33 +579,33 @@ class SecaoInformacoesGerais extends StatelessWidget {
             padding: padding,
             decoration: BoxDecoration(
               color: Theme.of(context).brightness == Brightness.dark
-                  ? AppColors.cardDark.withValues(alpha: 0.4)
-                  : Colors.white.withValues(alpha: 0.15),
+                  ? Colors.grey.shade800
+                  : Colors.white,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.transparent, width: 1),
+              border: Border.all(color: getBorderColor(), width: 2),
             ),
             child: Row(
               children: [
                 Icon(
                   Icons.calendar_today,
                   color: Theme.of(context).brightness == Brightness.dark
-                      ? AppColors.textDark.withValues(alpha: 0.7)
-                      : Colors.white.withValues(alpha: 0.7),
+                      ? Colors.grey.shade400
+                      : Colors.grey.shade600,
                   size: iconSize,
                 ),
                 const SizedBox(width: 12),
                 Text(
                   dataAvaliacao != null
                       ? '${dataAvaliacao!.day.toString().padLeft(2, '0')}/${dataAvaliacao!.month.toString().padLeft(2, '0')}'
-                      : 'Selecione dia/mês',
+                      : 'Selecione a data',
                   style: GoogleFonts.poppins(
                     color: dataAvaliacao != null
                         ? (Theme.of(context).brightness == Brightness.dark
-                              ? AppColors.textDark
-                              : Colors.white)
+                              ? Colors.white
+                              : Colors.black87)
                         : (Theme.of(context).brightness == Brightness.dark
-                              ? AppColors.textDark.withValues(alpha: 0.6)
-                              : Colors.white.withValues(alpha: 0.7)),
+                              ? Colors.grey.shade400
+                              : Colors.grey.shade600),
                     fontSize: fontSize,
                   ),
                 ),
@@ -591,18 +631,42 @@ class SecaoInformacoesGerais extends StatelessWidget {
         builder: (BuildContext context, Widget? child) {
           return Theme(
             data: Theme.of(context).copyWith(
-              colorScheme: ColorScheme.light(
-                primary: AppColors.primaryRed,
-                onPrimary: Colors.white,
-                surface: Colors.white,
-                onSurface: Colors.black87,
-                brightness: Brightness.light,
+              colorScheme: Theme.of(context).brightness == Brightness.dark
+                  ? ColorScheme.dark(
+                      primary: Theme.of(context).primaryColor,
+                      onPrimary: Colors.white,
+                      surface: Colors.grey.shade800,
+                      onSurface: Colors.white,
+                      brightness: Brightness.dark,
+                    )
+                  : ColorScheme.light(
+                      primary: Theme.of(context).primaryColor,
+                      onPrimary: Colors.white,
+                      surface: Colors.white,
+                      onSurface: Colors.black87,
+                      brightness: Brightness.light,
+                    ),
+              dialogTheme: DialogThemeData(
+                backgroundColor: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.grey.shade800
+                    : Colors.white,
               ),
-              dialogBackgroundColor: Colors.white,
-              textTheme: const TextTheme(
-                headlineSmall: TextStyle(color: Colors.black87),
-                bodyLarge: TextStyle(color: Colors.black87),
-                bodyMedium: TextStyle(color: Colors.black87),
+              textTheme: TextTheme(
+                headlineSmall: TextStyle(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black87,
+                ),
+                bodyLarge: TextStyle(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black87,
+                ),
+                bodyMedium: TextStyle(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black87,
+                ),
               ),
             ),
             child: child!,
@@ -641,7 +705,7 @@ class SecaoInformacoesGerais extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Semana do Ano',
+          'Semana',
           style: GoogleFonts.poppins(
             fontSize: fontSize,
             fontWeight: FontWeight.w500,
@@ -684,17 +748,26 @@ class SecaoInformacoesGerais extends StatelessWidget {
       vertical: 12.0,
     );
 
+    // Determinar cor da borda baseada no preenchimento
+    final bool isFilled = tipoAmostragem.isNotEmpty;
+
+    Color getBorderColor() {
+      if (isFilled) {
+        return Colors.green; // Verde quando preenchido
+      } else {
+        return Colors.red; // Vermelho quando obrigatório e vazio
+      }
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Tipo de Amostragem *',
+          'Tipo de Amostragem',
           style: GoogleFonts.poppins(
             fontSize: fontSize,
             fontWeight: FontWeight.w500,
-            color: Theme.of(context).brightness == Brightness.dark
-                ? AppColors.textDark
-                : Colors.white,
+            color: Colors.white, // Sempre branco para labels
           ),
         ),
         const SizedBox(height: spacing),
@@ -709,28 +782,26 @@ class SecaoInformacoesGerais extends StatelessWidget {
             fontSize: fontSize,
             fontWeight: FontWeight.w400,
             color: Theme.of(context).brightness == Brightness.dark
-                ? AppColors.textDark
-                : Colors.white,
+                ? Colors.white
+                : Colors.black87,
           ),
           decoration: InputDecoration(
             filled: true,
             fillColor: Theme.of(context).brightness == Brightness.dark
-                ? AppColors.cardDark.withValues(alpha: 0.4)
-                : Colors.white.withValues(alpha: 0.15),
+                ? Colors.grey.shade800
+                : Colors.white,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
+              borderSide: BorderSide(color: getBorderColor(), width: 2),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
+              borderSide: BorderSide(color: getBorderColor(), width: 2),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.darkRed
-                    : AppColors.primaryRed,
+                color: Theme.of(context).primaryColor,
                 width: 2,
               ),
             ),
@@ -761,8 +832,8 @@ class SecaoInformacoesGerais extends StatelessWidget {
               ? Colors.white
               : Colors.black87,
           dropdownColor: Theme.of(context).brightness == Brightness.dark
-              ? AppColors.backgroundDark
-              : AppColors.backgroundWhite.withValues(alpha: 0.95),
+              ? Colors.grey.shade800
+              : Colors.white,
           menuMaxHeight: 300,
         ),
       ],
@@ -778,17 +849,26 @@ class SecaoInformacoesGerais extends StatelessWidget {
       vertical: 12.0,
     );
 
+    // Determinar cor da borda baseada no preenchimento
+    final bool isFilled = pesoBruto != null && pesoBruto! > 0;
+
+    Color getBorderColor() {
+      if (isFilled) {
+        return Colors.green; // Verde quando preenchido
+      } else {
+        return Colors.red; // Vermelho quando obrigatório e vazio
+      }
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Peso Bruto (kg) *',
+          'Peso Bruto',
           style: GoogleFonts.poppins(
             fontSize: fontSize,
             fontWeight: FontWeight.w500,
-            color: Theme.of(context).brightness == Brightness.dark
-                ? AppColors.textDark
-                : Colors.white,
+            color: Colors.white, // Sempre branco para labels
           ),
         ),
         const SizedBox(height: spacing),
@@ -811,41 +891,39 @@ class SecaoInformacoesGerais extends StatelessWidget {
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           style: GoogleFonts.poppins(
             color: Theme.of(context).brightness == Brightness.dark
-                ? AppColors.textDark
-                : Colors.white,
+                ? Colors.white
+                : Colors.black87,
           ),
           decoration: InputDecoration(
             hintText: 'Ex: 15.5',
             hintStyle: GoogleFonts.poppins(
               color: Theme.of(context).brightness == Brightness.dark
-                  ? AppColors.textDark.withValues(alpha: 0.6)
-                  : Colors.white.withValues(alpha: 0.7),
+                  ? Colors.grey.shade400
+                  : Colors.grey.shade600,
             ),
             suffixText: 'kg',
             suffixStyle: GoogleFonts.poppins(
               color: Theme.of(context).brightness == Brightness.dark
-                  ? AppColors.textDark.withValues(alpha: 0.7)
-                  : Colors.white.withValues(alpha: 0.8),
+                  ? Colors.grey.shade400
+                  : Colors.grey.shade600,
               fontWeight: FontWeight.w500,
             ),
             filled: true,
             fillColor: Theme.of(context).brightness == Brightness.dark
-                ? AppColors.cardDark.withValues(alpha: 0.4)
-                : Colors.white.withValues(alpha: 0.15),
+                ? Colors.grey.shade800
+                : Colors.white,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
+              borderSide: BorderSide(color: getBorderColor(), width: 2),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
+              borderSide: BorderSide(color: getBorderColor(), width: 2),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.darkRed
-                    : AppColors.primaryRed,
+                color: Theme.of(context).primaryColor,
                 width: 2,
               ),
             ),

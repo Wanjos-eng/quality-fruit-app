@@ -206,288 +206,284 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
   }
 
   Widget _buildSecaoInformacoesAmostra() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Informações da Amostra',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey[800],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Informações da Amostra',
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.white, // Sempre branco para labels
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // ROW 1: Caixa/Marca e Classe
+          Row(
+            children: [
+              Expanded(
+                child: _buildCampoTexto(
+                  label: 'Caixa / Marca',
+                  value: _amostraAtual.caixaMarca,
+                  onChanged: (valor) {
+                    _amostraAtual = _amostraAtual.copyWith(caixaMarca: valor);
+                  },
+                  hint: 'Identificação da embalagem',
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-
-            // ROW 1: Caixa/Marca e Classe
-            Row(
-              children: [
-                Expanded(
-                  child: _buildCampoTexto(
-                    label: 'Caixa / Marca',
-                    value: _amostraAtual.caixaMarca,
-                    onChanged: (valor) {
-                      _amostraAtual = _amostraAtual.copyWith(caixaMarca: valor);
-                    },
-                    hint: 'Identificação da embalagem',
-                  ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildDropdown(
+                  label: 'Classe',
+                  value: _amostraAtual.classe,
+                  items: const ['Clamshell', 'Open', 'Sacola'],
+                  onChanged: (valor) {
+                    _amostraAtual = _amostraAtual.copyWith(classe: valor);
+                  },
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildDropdown(
-                    label: 'Classe',
-                    value: _amostraAtual.classe,
-                    items: const ['Clamshell', 'Open', 'Sacola'],
-                    onChanged: (valor) {
-                      _amostraAtual = _amostraAtual.copyWith(classe: valor);
-                    },
-                  ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+
+          // ROW 2: Área e Variedade
+          Row(
+            children: [
+              Expanded(
+                child: _buildCampoTexto(
+                  label: 'Área',
+                  value: _amostraAtual.area,
+                  onChanged: (valor) {
+                    _amostraAtual = _amostraAtual.copyWith(area: valor);
+                  },
+                  hint: 'Local de coleta',
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(child: _buildDropdownVariedade()),
+            ],
+          ),
 
-            const SizedBox(height: 16),
+          const SizedBox(height: 16),
 
-            // ROW 2: Área e Variedade
-            Row(
-              children: [
-                Expanded(
-                  child: _buildCampoTexto(
-                    label: 'Área',
-                    value: _amostraAtual.area,
-                    onChanged: (valor) {
-                      _amostraAtual = _amostraAtual.copyWith(area: valor);
-                    },
-                    hint: 'Local de coleta',
-                  ),
+          // ROW 3: Campos de validação
+          Row(
+            children: [
+              Expanded(
+                child: _buildDropdown(
+                  label: 'Certa/Errada',
+                  value: _amostraAtual.sacolaCumbuca,
+                  items: const ['C', 'E'],
+                  onChanged: (valor) {
+                    _amostraAtual = _amostraAtual.copyWith(
+                      sacolaCumbuca: valor,
+                    );
+                  },
                 ),
-                const SizedBox(width: 16),
-                Expanded(child: _buildDropdownVariedade()),
-              ],
-            ),
-
-            const SizedBox(height: 16),
-
-            // ROW 3: Campos de validação
-            Row(
-              children: [
-                Expanded(
-                  child: _buildDropdown(
-                    label: 'Certa/Errada',
-                    value: _amostraAtual.sacolaCumbuca,
-                    items: const ['C', 'E'],
-                    onChanged: (valor) {
-                      _amostraAtual = _amostraAtual.copyWith(
-                        sacolaCumbuca: valor,
-                      );
-                    },
-                  ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildDropdown(
+                  label: 'Caixa Alta',
+                  value: _amostraAtual.caixaCumbucaAlta,
+                  items: const ['S', 'N'],
+                  onChanged: (valor) {
+                    _amostraAtual = _amostraAtual.copyWith(
+                      caixaCumbucaAlta: valor,
+                    );
+                  },
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildDropdown(
-                    label: 'Caixa Alta',
-                    value: _amostraAtual.caixaCumbucaAlta,
-                    items: const ['S', 'N'],
-                    onChanged: (valor) {
-                      _amostraAtual = _amostraAtual.copyWith(
-                        caixaCumbucaAlta: valor,
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
+          ),
 
-            const SizedBox(height: 16),
+          const SizedBox(height: 16),
 
-            // ROW 4: Aparência, Embalagem e Cor
-            Row(
-              children: [
-                Expanded(
-                  child: _buildDropdownNumerico(
-                    label: 'Aparência (0-7)',
-                    value: _amostraAtual.aparenciaCalibro0a7,
-                    items: List.generate(8, (i) => i.toString()),
-                    onChanged: (valor) {
-                      _amostraAtual = _amostraAtual.copyWith(
-                        aparenciaCalibro0a7: valor,
-                      );
-                    },
-                  ),
+          // ROW 4: Aparência, Embalagem e Cor
+          Row(
+            children: [
+              Expanded(
+                child: _buildDropdownNumerico(
+                  label: 'Aparência (0-7)',
+                  value: _amostraAtual.aparenciaCalibro0a7,
+                  items: List.generate(8, (i) => i.toString()),
+                  onChanged: (valor) {
+                    _amostraAtual = _amostraAtual.copyWith(
+                      aparenciaCalibro0a7: valor,
+                    );
+                  },
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildDropdownNumerico(
-                    label: 'Embalagem (0-7)',
-                    value: _amostraAtual.aparenciaCalibro0a7, // Temporário
-                    items: List.generate(8, (i) => i.toString()),
-                    onChanged: (valor) {
-                      // Temporário - usar campo existente
-                      _amostraAtual = _amostraAtual.copyWith(
-                        aparenciaCalibro0a7: valor,
-                      );
-                    },
-                  ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildDropdownNumerico(
+                  label: 'Embalagem (0-7)',
+                  value: _amostraAtual.aparenciaCalibro0a7, // Temporário
+                  items: List.generate(8, (i) => i.toString()),
+                  onChanged: (valor) {
+                    // Temporário - usar campo existente
+                    _amostraAtual = _amostraAtual.copyWith(
+                      aparenciaCalibro0a7: valor,
+                    );
+                  },
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildDropdown(
-                    label: 'Cor',
-                    value: _amostraAtual.corUMD,
-                    items: const ['U', 'M', 'D'],
-                    onChanged: (valor) {
-                      _amostraAtual = _amostraAtual.copyWith(corUMD: valor);
-                    },
-                  ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildDropdown(
+                  label: 'Cor',
+                  value: _amostraAtual.corUMD,
+                  items: const ['U', 'M', 'D'],
+                  onChanged: (valor) {
+                    _amostraAtual = _amostraAtual.copyWith(corUMD: valor);
+                  },
                 ),
-              ],
-            ),
+              ),
+            ],
+          ),
 
-            const SizedBox(height: 16),
+          const SizedBox(height: 16),
 
-            // ROW 5: Pesos
-            Row(
-              children: [
-                Expanded(
-                  child: _buildCampoNumerico(
-                    label: 'Peso com Embalagem (kg)',
-                    value: _amostraAtual
-                        .pesoEmbalagem, // Temporário - usar campo existente
-                    onChanged: (valor) {
-                      _amostraAtual = _amostraAtual.copyWith(
-                        pesoEmbalagem: valor,
-                      );
-                    },
-                  ),
+          // ROW 5: Pesos
+          Row(
+            children: [
+              Expanded(
+                child: _buildCampoNumerico(
+                  label: 'Peso com Embalagem (kg)',
+                  value: _amostraAtual
+                      .pesoEmbalagem, // Temporário - usar campo existente
+                  onChanged: (valor) {
+                    _amostraAtual = _amostraAtual.copyWith(
+                      pesoEmbalagem: valor,
+                    );
+                  },
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildCampoNumerico(
-                    label: 'Peso Líquido (kg)',
-                    value: _amostraAtual.pesoLiquidoKg,
-                    onChanged: (valor) {
-                      _amostraAtual = _amostraAtual.copyWith(
-                        pesoLiquidoKg: valor,
-                      );
-                    },
-                  ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildCampoNumerico(
+                  label: 'Peso Líquido (kg)',
+                  value: _amostraAtual.pesoLiquidoKg,
+                  onChanged: (valor) {
+                    _amostraAtual = _amostraAtual.copyWith(
+                      pesoLiquidoKg: valor,
+                    );
+                  },
                 ),
-              ],
-            ),
+              ),
+            ],
+          ),
 
-            const SizedBox(height: 16),
+          const SizedBox(height: 16),
 
-            // ROW 6: Ø Baga
-            _buildCampoTexto(
-              label: 'Ø Baga (mm)',
-              value: _amostraAtual.bagaMm?.toString(),
-              onChanged: (valor) {
-                final baga = double.tryParse(valor ?? '');
-                _amostraAtual = _amostraAtual.copyWith(bagaMm: baga);
-              },
-              hint: 'Ex: 16-18',
-            ),
-          ],
-        ),
+          // ROW 6: Ø Baga
+          _buildCampoTexto(
+            label: 'Ø Baga (mm)',
+            value: _amostraAtual.bagaMm?.toString(),
+            onChanged: (valor) {
+              final baga = double.tryParse(valor ?? '');
+              _amostraAtual = _amostraAtual.copyWith(bagaMm: baga);
+            },
+            hint: 'Ex: 16-18',
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildSecaoBrix() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'BRIX - 10 Leituras Manuais',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey[800],
-              ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'BRIX - 10 Leituras Manuais',
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.white, // Sempre branco para labels
             ),
-            const SizedBox(height: 16),
+          ),
+          const SizedBox(height: 16),
 
-            // Grid de 10 campos de Brix
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 5,
-                crossAxisSpacing: 8,
-                mainAxisSpacing: 8,
-                childAspectRatio: 2,
-              ),
-              itemCount: 10,
-              itemBuilder: (context, index) {
-                return Column(
-                  children: [
-                    Text(
-                      '${index + 1}°',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Expanded(
-                      child: TextFormField(
-                        controller: _brixControllers[index],
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        decoration: InputDecoration(
-                          hintText: '0.0',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                        ),
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                    ),
-                  ],
-                );
-              },
+          // Grid de 10 campos de Brix
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 5,
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
+              childAspectRatio: 2,
             ),
-
-            const SizedBox(height: 16),
-
-            // Brix Médio Calculado
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.green[50],
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.green[200]!),
-              ),
-              child: Row(
+            itemCount: 10,
+            itemBuilder: (context, index) {
+              return Column(
                 children: [
-                  Icon(Icons.calculate, color: Colors.green[700], size: 20),
-                  const SizedBox(width: 8),
                   Text(
-                    'Brix Médio: ${_calcularBrixMedio()?.toStringAsFixed(2) ?? "--"}',
-                    style: TextStyle(
-                      fontSize: 14,
+                    '${index + 1}°',
+                    style: const TextStyle(
+                      fontSize: 12,
                       fontWeight: FontWeight.w500,
-                      color: Colors.green[700],
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _brixControllers[index],
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: '0.0',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                      ),
+                      style: const TextStyle(fontSize: 12),
                     ),
                   ),
                 ],
-              ),
+              );
+            },
+          ),
+
+          const SizedBox(height: 16),
+
+          // Brix Médio Calculado
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.green[50],
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.green[200]!),
             ),
-          ],
-        ),
+            child: Row(
+              children: [
+                Icon(Icons.calculate, color: Colors.green[700], size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  'Brix Médio: ${_calcularBrixMedio()?.toStringAsFixed(2) ?? "--"}',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.green[700],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -501,16 +497,24 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
           children: [
             Text(
               'Defeitos',
-              style: TextStyle(
+              style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Colors.grey[800],
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : Colors
+                          .grey[800], // Cor escura para contraste com Card branco
               ),
             ),
             const SizedBox(height: 8),
             Text(
               _obterTextoTipoContagem(),
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.grey[400]
+                    : Colors.grey[600],
+              ),
             ),
             const SizedBox(height: 16),
 
@@ -538,7 +542,16 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
       children: [
         Expanded(
           flex: 3,
-          child: Text(nomeDefeito, style: const TextStyle(fontSize: 14)),
+          child: Text(
+            nomeDefeito,
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.grey[800],
+            ),
+          ),
         ),
         Row(
           mainAxisSize: MainAxisSize.min,
@@ -558,9 +571,12 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
               child: Text(
                 valor.toStringAsFixed(valor % 1 == 0 ? 0 : 1),
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.grey[800],
                 ),
               ),
             ),
@@ -576,13 +592,22 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
   }
 
   Widget _buildDropdownCorBaga() {
+    const double fontSize = 14.0;
+
     return Row(
       children: [
-        const Expanded(
+        Expanded(
           flex: 3,
           child: Text(
             'Cor da Baga (%)',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+            style: GoogleFonts.poppins(
+              fontSize: fontSize,
+              fontWeight: FontWeight.w500,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors
+                        .grey[800], // Cor escura para contraste com Card branco
+            ),
           ),
         ),
         Expanded(
@@ -592,13 +617,45 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
             onChanged: (valor) {
               _amostraAtual = _amostraAtual.copyWith(corBagaPercentual: valor);
             },
+            style: GoogleFonts.poppins(
+              fontSize: fontSize,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black87,
+            ),
             decoration: InputDecoration(
+              filled: true,
+              fillColor: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.grey.shade800
+                  : Colors.white,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(6),
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.grey.shade600
+                      : Colors.grey.shade400,
+                  width: 2,
+                ),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.grey.shade600
+                      : Colors.grey.shade400,
+                  width: 2,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: Theme.of(context).primaryColor,
+                  width: 2,
+                ),
               ),
               contentPadding: const EdgeInsets.symmetric(
-                horizontal: 8,
-                vertical: 4,
+                horizontal: 12,
+                vertical: 12,
               ),
             ),
             items: FichaFisicaConstants.opcoesCorBagaPercentual.map((
@@ -606,9 +663,24 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
             ) {
               return DropdownMenuItem(
                 value: percentual,
-                child: Text('${percentual.toInt()}%'),
+                child: Text(
+                  '${percentual.toInt()}%',
+                  style: GoogleFonts.poppins(
+                    fontSize: fontSize,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black87,
+                  ),
+                ),
               );
             }).toList(),
+            isExpanded: true,
+            iconEnabledColor: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.black87,
+            dropdownColor: Theme.of(context).brightness == Brightness.dark
+                ? Colors.grey.shade800
+                : Colors.white,
           ),
         ),
       ],
@@ -762,26 +834,79 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
     required ValueChanged<String?> onChanged,
     required String hint,
   }) {
+    const double fontSize = 14.0;
+    const double spacing = 8.0;
+    const EdgeInsets contentPadding = EdgeInsets.symmetric(
+      horizontal: 12.0,
+      vertical: 12.0,
+    );
+
+    // Determinar cor da borda baseada no preenchimento
+    final bool isRequired = label.contains('*');
+    final bool isFilled = value != null && value.trim().isNotEmpty;
+
+    Color getBorderColor() {
+      if (isFilled) {
+        return Colors.green; // Verde quando preenchido
+      } else if (isRequired) {
+        return Colors.red; // Vermelho quando obrigatório e vazio
+      } else {
+        return Theme.of(context).brightness == Brightness.dark
+            ? Colors.grey.shade600
+            : Colors.grey.shade400;
+      }
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+          style: GoogleFonts.poppins(
+            fontSize: fontSize,
+            fontWeight: FontWeight.w500,
+            color: Colors.white, // Sempre branco para labels
+          ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: spacing),
         TextFormField(
           initialValue: value,
           onChanged: onChanged,
+          style: GoogleFonts.poppins(
+            fontSize: fontSize,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.black87,
+          ),
           decoration: InputDecoration(
             hintText: hint,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 8,
-              vertical: 8,
+            hintStyle: GoogleFonts.poppins(
+              fontSize: fontSize,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.grey.shade400
+                  : Colors.grey.shade600,
             ),
+            filled: true,
+            fillColor: Theme.of(context).brightness == Brightness.dark
+                ? Colors.grey.shade800
+                : Colors.white,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: getBorderColor(), width: 2),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: getBorderColor(), width: 2),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: Theme.of(context).primaryColor,
+                width: 2,
+              ),
+            ),
+            contentPadding: contentPadding,
           ),
-          style: const TextStyle(fontSize: 14),
         ),
       ],
     );
@@ -792,14 +917,36 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
     required double? value,
     required ValueChanged<double?> onChanged,
   }) {
+    const double fontSize = 14.0;
+    const double spacing = 8.0;
+    const EdgeInsets contentPadding = EdgeInsets.symmetric(
+      horizontal: 12.0,
+      vertical: 12.0,
+    );
+
+    // Determinar cor da borda baseada no preenchimento
+    final bool isFilled = value != null && value > 0;
+
+    Color getBorderColor() {
+      if (isFilled) {
+        return Colors.green; // Verde quando preenchido
+      } else {
+        return Colors.red; // Vermelho quando obrigatório e vazio
+      }
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+          style: GoogleFonts.poppins(
+            fontSize: fontSize,
+            fontWeight: FontWeight.w500,
+            color: Colors.white, // Sempre branco para labels
+          ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: spacing),
         TextFormField(
           initialValue: value?.toString(),
           onChanged: (text) {
@@ -807,14 +954,40 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
             onChanged(numero);
           },
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          decoration: InputDecoration(
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 8,
-              vertical: 8,
-            ),
+          style: GoogleFonts.poppins(
+            fontSize: fontSize,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.black87,
           ),
-          style: const TextStyle(fontSize: 14),
+          decoration: InputDecoration(
+            hintStyle: GoogleFonts.poppins(
+              fontSize: fontSize,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.grey.shade400
+                  : Colors.grey.shade600,
+            ),
+            filled: true,
+            fillColor: Theme.of(context).brightness == Brightness.dark
+                ? Colors.grey.shade800
+                : Colors.white,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: getBorderColor(), width: 2),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: getBorderColor(), width: 2),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: Theme.of(context).primaryColor,
+                width: 2,
+              ),
+            ),
+            contentPadding: contentPadding,
+          ),
         ),
       ],
     );
@@ -826,27 +999,96 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
     required List<String> items,
     required ValueChanged<String?> onChanged,
   }) {
+    const double fontSize = 14.0;
+    const double spacing = 8.0;
+    const EdgeInsets contentPadding = EdgeInsets.symmetric(
+      horizontal: 12.0,
+      vertical: 12.0,
+    );
+
+    // Determinar cor da borda baseada no preenchimento
+    final bool isFilled = value != null && value.isNotEmpty;
+
+    Color getBorderColor() {
+      if (isFilled) {
+        return Colors.green; // Verde quando preenchido
+      } else {
+        return Colors.red; // Vermelho quando obrigatório e vazio
+      }
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+          style: GoogleFonts.poppins(
+            fontSize: fontSize,
+            fontWeight: FontWeight.w500,
+            color: Colors.white, // Sempre branco para labels
+          ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: spacing),
         DropdownButtonFormField<String>(
           value: value,
           onChanged: onChanged,
+          style: GoogleFonts.poppins(
+            fontSize: fontSize,
+            fontWeight: FontWeight.w400,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.black87,
+          ),
           decoration: InputDecoration(
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 8,
-              vertical: 8,
+            hintStyle: GoogleFonts.poppins(
+              fontSize: fontSize,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.grey.shade400
+                  : Colors.grey.shade600,
             ),
+            filled: true,
+            fillColor: Theme.of(context).brightness == Brightness.dark
+                ? Colors.grey.shade800
+                : Colors.white,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: getBorderColor(), width: 2),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: getBorderColor(), width: 2),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: Theme.of(context).primaryColor,
+                width: 2,
+              ),
+            ),
+            contentPadding: contentPadding,
           ),
           items: items.map((item) {
-            return DropdownMenuItem(value: item, child: Text(item));
+            return DropdownMenuItem(
+              value: item,
+              child: Text(
+                item,
+                style: GoogleFonts.poppins(
+                  fontSize: fontSize,
+                  fontWeight: FontWeight.w400,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black87,
+                ),
+              ),
+            );
           }).toList(),
+          isExpanded: true,
+          iconEnabledColor: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white
+              : Colors.black87,
+          dropdownColor: Theme.of(context).brightness == Brightness.dark
+              ? Colors.grey.shade800
+              : Colors.white,
         ),
       ],
     );
@@ -867,29 +1109,91 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
   }
 
   Widget _buildDropdownVariedade() {
+    const double fontSize = 14.0;
+    const double spacing = 8.0;
+    const EdgeInsets contentPadding = EdgeInsets.symmetric(
+      horizontal: 12.0,
+      vertical: 12.0,
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Variedade',
-          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+          style: GoogleFonts.poppins(
+            fontSize: fontSize,
+            fontWeight: FontWeight.w500,
+            color: Colors.white, // Sempre branco para labels
+          ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: spacing),
         DropdownButtonFormField<String>(
           value: _amostraAtual.variedade,
           onChanged: (valor) {
             _amostraAtual = _amostraAtual.copyWith(variedade: valor);
           },
+          style: GoogleFonts.poppins(
+            fontSize: fontSize,
+            fontWeight: FontWeight.w400,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.black87,
+          ),
           decoration: InputDecoration(
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 8,
-              vertical: 8,
+            filled: true,
+            fillColor: Theme.of(context).brightness == Brightness.dark
+                ? Colors.grey.shade800
+                : Colors.white,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.grey.shade600
+                    : Colors.grey.shade400,
+                width: 2,
+              ),
             ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.grey.shade600
+                    : Colors.grey.shade400,
+                width: 2,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: Theme.of(context).primaryColor,
+                width: 2,
+              ),
+            ),
+            contentPadding: contentPadding,
           ),
           items: FichaFisicaConstants.variedadesUva.map((variedade) {
-            return DropdownMenuItem(value: variedade, child: Text(variedade));
+            return DropdownMenuItem(
+              value: variedade,
+              child: Text(
+                variedade,
+                style: GoogleFonts.poppins(
+                  fontSize: fontSize,
+                  fontWeight: FontWeight.w400,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black87,
+                ),
+              ),
+            );
           }).toList(),
+          isExpanded: true,
+          iconEnabledColor: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white
+              : Colors.black87,
+          dropdownColor: Theme.of(context).brightness == Brightness.dark
+              ? Colors.grey.shade800
+              : Colors.white,
         ),
       ],
     );
