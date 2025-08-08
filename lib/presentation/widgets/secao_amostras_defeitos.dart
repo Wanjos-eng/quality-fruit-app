@@ -109,99 +109,80 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // 📋 CABEÇALHO SIMPLES DA SEÇÃO
-        Padding(
-          padding: const EdgeInsets.only(bottom: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Amostra ${_amostraAtual.letraAmostra}',
-                style: GoogleFonts.poppins(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+    return GestureDetector(
+      onPanEnd: (details) {
+        // Swipe para navegação touch
+        if (details.velocity.pixelsPerSecond.dx > 300) {
+          // Swipe para direita (anterior)
+          if (_amostraAtualIndex > 0) {
+            _amostraAnterior();
+          }
+        } else if (details.velocity.pixelsPerSecond.dx < -300) {
+          // Swipe para esquerda (próxima)
+          if (_amostraAtualIndex < widget.amostras.length - 1) {
+            _proximaAmostra();
+          }
+        }
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // � CABEÇALHO COM NAVEGAÇÃO VISUAL
+          Padding(
+            padding: const EdgeInsets.only(bottom: 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Amostra ${_amostraAtual.letraAmostra}',
+                  style: GoogleFonts.poppins(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                '${_amostraAtualIndex + 1} de ${widget.amostras.length} amostras',
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  color: Colors.white.withValues(alpha: 0.8),
+                const SizedBox(height: 8),
+                Text(
+                  '${_amostraAtualIndex + 1} de ${widget.amostras.length} amostras • Deslize para navegar',
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: Colors.white.withValues(alpha: 0.8),
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 16),
+
+                // 🔘 INDICADORES DE NAVEGAÇÃO POR PONTOS
+                _buildIndicadoresNavegacao(),
+
+                const SizedBox(height: 12),
+
+                // 📊 BARRA DE PROGRESSO
+                _buildBarraProgresso(),
+              ],
+            ),
           ),
-        ),
 
-        // 🔢 NAVEGAÇÃO ENTRE AMOSTRAS
-        Row(
-          children: [
-            OutlinedButton.icon(
-              onPressed: _amostraAtualIndex > 0 ? _amostraAnterior : null,
-              icon: const Icon(Icons.arrow_back, color: Colors.white, size: 18),
-              label: Text(
-                'Anterior',
-                style: GoogleFonts.poppins(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              style: OutlinedButton.styleFrom(
-                side: BorderSide(color: Colors.white.withValues(alpha: 0.6)),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-              ),
-            ),
-            const Spacer(),
-            OutlinedButton.icon(
-              onPressed: _amostraAtualIndex < widget.amostras.length - 1
-                  ? _proximaAmostra
-                  : null,
-              icon: const Icon(
-                Icons.arrow_forward,
-                color: Colors.white,
-                size: 18,
-              ),
-              label: Text(
-                'Próxima',
-                style: GoogleFonts.poppins(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              style: OutlinedButton.styleFrom(
-                side: BorderSide(color: Colors.white.withValues(alpha: 0.6)),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-              ),
-            ),
-          ],
-        ),
+          const SizedBox(height: 24),
 
-        const SizedBox(height: 24),
+          // ⚙️ INFORMAÇÕES DA AMOSTRA
+          _buildSecaoInformacoesAmostra(),
 
-        // ⚙️ INFORMAÇÕES DA AMOSTRA
-        _buildSecaoInformacoesAmostra(),
+          const SizedBox(height: 24),
 
-        const SizedBox(height: 24),
+          // 📊 BRIX (10 LEITURAS)
+          _buildSecaoBrix(),
 
-        // 📊 BRIX (10 LEITURAS)
-        _buildSecaoBrix(),
+          const SizedBox(height: 24),
 
-        const SizedBox(height: 24),
+          // 🦠 DEFEITOS
+          _buildSecaoDefeitos(),
 
-        // 🦠 DEFEITOS
-        _buildSecaoDefeitos(),
-      ],
+          const SizedBox(height: 32),
+
+          // 🔢 NAVEGAÇÃO ENTRE AMOSTRAS (FINAL DA PÁGINA)
+          _buildNavegacaoFinal(),
+        ],
+      ),
     );
   }
 
@@ -1197,5 +1178,287 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
         ),
       ],
     );
+  }
+
+  // 🔘 INDICADORES DE NAVEGAÇÃO POR PONTOS
+  Widget _buildIndicadoresNavegacao() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(widget.amostras.length, (index) {
+        final isAtual = index == _amostraAtualIndex;
+        final isPreenchida = _verificarAmostraPreenchida(index);
+
+        return GestureDetector(
+          onTap: () => _irParaAmostra(index),
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 4),
+            width: isAtual ? 32 : 24,
+            height: isAtual ? 32 : 24,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: _getCorIndicador(isAtual, isPreenchida),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.6),
+                width: isAtual ? 2 : 1,
+              ),
+            ),
+            child: Center(
+              child: Text(
+                widget.amostras[index].letraAmostra,
+                style: GoogleFonts.poppins(
+                  fontSize: isAtual ? 14 : 12,
+                  fontWeight: isAtual ? FontWeight.bold : FontWeight.w500,
+                  color: isAtual || isPreenchida
+                      ? Colors.white
+                      : Colors.grey[400],
+                ),
+              ),
+            ),
+          ),
+        );
+      }),
+    );
+  }
+
+  // 📊 BARRA DE PROGRESSO
+  Widget _buildBarraProgresso() {
+    final progresso = (_amostraAtualIndex + 1) / widget.amostras.length;
+
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Progresso',
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                color: Colors.white.withValues(alpha: 0.8),
+              ),
+            ),
+            Text(
+              '${(progresso * 100).toInt()}%',
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        LinearProgressIndicator(
+          value: progresso,
+          backgroundColor: Colors.white.withValues(alpha: 0.2),
+          valueColor: AlwaysStoppedAnimation<Color>(Colors.green[400]!),
+          minHeight: 6,
+        ),
+      ],
+    );
+  }
+
+  // 🔢 NAVEGAÇÃO FINAL (BOTÕES)
+  Widget _buildNavegacaoFinal() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.2),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        children: [
+          // Status da navegação
+          Text(
+            'Navegação entre Amostras',
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Use os botões ou deslize horizontalmente para navegar',
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              color: Colors.white.withValues(alpha: 0.7),
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+
+          // Botões de navegação
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: _amostraAtualIndex > 0 ? _amostraAnterior : null,
+                  icon: const Icon(
+                    Icons.arrow_back,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                  label: Text(
+                    'Anterior',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(
+                      color: _amostraAtualIndex > 0
+                          ? Colors.white.withValues(alpha: 0.8)
+                          : Colors.white.withValues(alpha: 0.3),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 16,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  '${_amostraAtualIndex + 1} de ${widget.amostras.length}',
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: _amostraAtualIndex < widget.amostras.length - 1
+                      ? _proximaAmostra
+                      : null,
+                  icon: const Icon(
+                    Icons.arrow_forward,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                  label: Text(
+                    'Próxima',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(
+                      color: _amostraAtualIndex < widget.amostras.length - 1
+                          ? Colors.white.withValues(alpha: 0.8)
+                          : Colors.white.withValues(alpha: 0.3),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 16,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 12),
+
+          // Navegação rápida
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: List.generate(widget.amostras.length, (index) {
+                final isAtual = index == _amostraAtualIndex;
+                final isPreenchida = _verificarAmostraPreenchida(index);
+
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: OutlinedButton(
+                    onPressed: () => _irParaAmostra(index),
+                    style: OutlinedButton.styleFrom(
+                      backgroundColor: isAtual
+                          ? Colors.white.withValues(alpha: 0.2)
+                          : Colors.transparent,
+                      side: BorderSide(
+                        color: _getCorIndicador(isAtual, isPreenchida),
+                        width: isAtual ? 2 : 1,
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      minimumSize: const Size(40, 36),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Text(
+                      widget.amostras[index].letraAmostra,
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        fontWeight: isAtual ? FontWeight.bold : FontWeight.w500,
+                        color: isAtual
+                            ? Colors.white
+                            : _getCorIndicador(isAtual, isPreenchida),
+                      ),
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Métodos auxiliares para navegação
+  void _irParaAmostra(int index) {
+    if (index != _amostraAtualIndex) {
+      _salvarAmostraAtual();
+      setState(() {
+        _amostraAtualIndex = index;
+        _amostraAtual = widget.amostras[index];
+        _inicializarControllers();
+      });
+    }
+  }
+
+  bool _verificarAmostraPreenchida(int index) {
+    final amostra = widget.amostras[index];
+    return amostra.caixaMarca?.isNotEmpty == true ||
+        amostra.classe?.isNotEmpty == true ||
+        amostra.area?.isNotEmpty == true ||
+        amostra.variedade?.isNotEmpty == true;
+  }
+
+  Color _getCorIndicador(bool isAtual, bool isPreenchida) {
+    if (isAtual) {
+      return Colors.blue[400]!;
+    } else if (isPreenchida) {
+      return Colors.green[400]!;
+    } else {
+      return Colors.white.withValues(alpha: 0.4);
+    }
   }
 }
