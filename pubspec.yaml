@@ -44,3 +44,16 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  # Assets do projeto
+  assets:
+    - assets/icons/app_icon/
+    - assets/images/
+    
+  # Fontes customizadas (se necessário)
+  # fonts:
+  #   - family: PuraFruta
+  #     fonts:
+  #       - asset: assets/fonts/PuraFruta-Regular.ttf
+  #       - asset: assets/fonts/PuraFruta-Bold.ttf
+  #         weight: 700

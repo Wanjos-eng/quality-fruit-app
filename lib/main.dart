@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'core/theme/app_theme.dart';
+import 'presentation/pages/splash_screen.dart';
 import 'presentation/pages/home_page.dart';
 import 'presentation/pages/criar_ficha_page.dart';
 import 'presentation/pages/lista_fichas_page.dart';
@@ -31,10 +32,11 @@ class QualityFruitApp extends StatelessWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system, // Detecta automaticamente tema do sistema
 
-      home: const HomePage(),
+      home: const SplashScreen(nextRoute: '/home'),
 
       // === ROTAS ===
       routes: {
+        '/home': (context) => const HomePage(),
         '/criar-ficha': (context) => const CriarFichaPage(),
         '/lista-fichas': (context) => const ListaFichasPage(),
       },
