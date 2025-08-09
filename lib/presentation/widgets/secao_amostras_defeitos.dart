@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../domain/entities/amostra_detalhada.dart';
 
@@ -174,24 +175,21 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
                 _buildIndicadoresNavegacao(),
 
                 const SizedBox(height: 12),
-
-                // 📊 BARRA DE PROGRESSO
-                _buildBarraProgresso(),
               ],
             ),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
 
           // ⚙️ INFORMAÇÕES DA AMOSTRA
           _buildSecaoInformacoesAmostra(),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
 
           // ⚖️ PESO BRUTO (MÚLTIPLAS LEITURAS)
           _buildSecaoPesoBruto(),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
 
           // 📊 BRIX (10 LEITURAS)
           _buildSecaoBrix(),
@@ -226,31 +224,15 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
           ),
           const SizedBox(height: 16),
 
-          // ROW 1: Caixa/Marca e Classe
-          Row(
-            children: [
-              Expanded(
-                child: _buildCampoTexto(
-                  label: 'Caixa / Marca',
-                  value: _amostraAtual.caixaMarca,
-                  onChanged: (valor) {
-                    _amostraAtual = _amostraAtual.copyWith(caixaMarca: valor);
-                  },
-                  hint: 'Identificação da embalagem',
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildDropdown(
-                  label: 'Classe',
-                  value: _amostraAtual.classe,
-                  items: const ['Clamshell', 'Open', 'Sacola'],
-                  onChanged: (valor) {
-                    _amostraAtual = _amostraAtual.copyWith(classe: valor);
-                  },
-                ),
-              ),
-            ],
+          // ROW 1: Classe
+          _buildDropdown(
+            label: 'Classe',
+            value: _amostraAtual.classe,
+            items: const ['Clamshell', 'Open', 'Sacola'],
+            hint: 'Tipo de embalagem',
+            onChanged: (valor) {
+              _amostraAtual = _amostraAtual.copyWith(classe: valor);
+            },
           ),
 
           const SizedBox(height: 16),
@@ -308,14 +290,15 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
 
           const SizedBox(height: 16),
 
-          // ROW 4: Aparência, Embalagem e Cor
+          // ROW 4: Aparência e Embalagem
           Row(
             children: [
               Expanded(
                 child: _buildDropdownNumerico(
-                  label: 'Aparência (0-7)',
+                  label: 'Aparência',
                   value: _amostraAtual.aparenciaCalibro0a7,
                   items: List.generate(8, (i) => i.toString()),
+                  hint: '(0 - 7)',
                   onChanged: (valor) {
                     _amostraAtual = _amostraAtual.copyWith(
                       aparenciaCalibro0a7: valor,
@@ -323,12 +306,13 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
                   },
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 16),
               Expanded(
                 child: _buildDropdownNumerico(
-                  label: 'Embalagem (0-7)',
+                  label: 'Embalagem',
                   value: _amostraAtual.aparenciaCalibro0a7, // Temporário
                   items: List.generate(8, (i) => i.toString()),
+                  hint: '(0 - 7)',
                   onChanged: (valor) {
                     // Temporário - usar campo existente
                     _amostraAtual = _amostraAtual.copyWith(
@@ -337,29 +321,44 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
                   },
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildDropdown(
-                  label: 'Cor',
-                  value: _amostraAtual.corUMD,
-                  items: const ['U', 'M', 'D'],
-                  onChanged: (valor) {
-                    _amostraAtual = _amostraAtual.copyWith(corUMD: valor);
-                  },
-                ),
-              ),
             ],
           ),
 
           const SizedBox(height: 16),
 
-          // ROW 5: Peso da Embalagem e Peso Líquido (lado a lado)
+          // ROW 5: Caixa/Marca (linha sozinha)
+          _buildCampoTexto(
+            label: 'Caixa / Marca',
+            value: _amostraAtual.caixaMarca,
+            hint: 'Identifique a embalagem',
+            onChanged: (valor) {
+              _amostraAtual = _amostraAtual.copyWith(caixaMarca: valor);
+            },
+          ),
+
+          const SizedBox(height: 16),
+
+          // ROW 6: Cor (linha sozinha)
+          _buildDropdown(
+            label: 'Cor',
+            value: _amostraAtual.corUMD,
+            items: const ['U', 'M', 'D'],
+            hint: 'Uniforme / Mista / Desuniforme',
+            onChanged: (valor) {
+              _amostraAtual = _amostraAtual.copyWith(corUMD: valor);
+            },
+          ),
+
+          const SizedBox(height: 16),
+
+          // ROW 7: Peso da Embalagem e Peso Líquido (lado a lado)
           Row(
             children: [
               Expanded(
-                child: _buildCampoNumerico(
-                  label: 'Peso da Embalagem (g)',
+                child: _buildCampoNumericoComUnidade(
+                  label: 'Peso da Embalagem',
                   value: _amostraAtual.pesoEmbalagem,
+                  unidade: 'g',
                   onChanged: (valor) {
                     _amostraAtual = _amostraAtual.copyWith(
                       pesoEmbalagem: valor,
@@ -369,9 +368,10 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: _buildCampoNumerico(
-                  label: 'Peso Líquido (g)',
+                child: _buildCampoNumericoComUnidade(
+                  label: 'Peso Líquido',
                   value: _amostraAtual.pesoLiquido,
+                  unidade: 'g',
                   onChanged: (valor) {
                     setState(() {
                       _amostraAtual = _amostraAtual.copyWith(
@@ -387,15 +387,15 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
 
           const SizedBox(height: 16),
 
-          // ROW 6: Ø Baga
+          // ROW 8: Ø Baga
           _buildCampoTexto(
-            label: 'Ø Baga (mm)',
+            label: 'Ø Baga',
             value: _amostraAtual.bagaMm?.toString(),
+            hint: 'Diâmetro em mm (Ex: 16-18)',
             onChanged: (valor) {
               final baga = double.tryParse(valor ?? '');
               _amostraAtual = _amostraAtual.copyWith(bagaMm: baga);
             },
-            hint: 'Ex: 16-18',
           ),
 
           const SizedBox(height: 16),
@@ -633,13 +633,22 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
             ),
             const SizedBox(height: 16),
 
-            // Grid de defeitos
-            ...FichaFisicaConstants.defeitosPrincipais.map((defeito) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: _buildContadorDefeito(defeito),
-              );
-            }),
+            // Grid de defeitos (exceto Desgrane)
+            ...FichaFisicaConstants.defeitosPrincipais
+                .where((defeito) => defeito != 'Desgrane')
+                .map((defeito) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _buildContadorDefeito(defeito),
+                  );
+                }),
+
+            // Desgrane (%) - caso especial percentual
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _buildContadorDefeito('Desgrane'),
+            ),
 
             // Cor da Baga (%) - caso especial
             const SizedBox(height: 8),
@@ -653,6 +662,143 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
   Widget _buildContadorDefeito(String nomeDefeito) {
     final valor = _obterValorDefeito(nomeDefeito);
 
+    // Desgrane é um campo percentual especial
+    if (nomeDefeito == 'Desgrane') {
+      return Row(
+        children: [
+          Expanded(
+            flex: 3,
+            child: Text(
+              '$nomeDefeito (%)',
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : Colors.grey[800],
+              ),
+            ),
+          ),
+          SizedBox(
+            width: 100,
+            child: TextFormField(
+              initialValue:
+                  (_amostraAtual.desgranePercentual != null &&
+                      _amostraAtual.desgranePercentual! > 0)
+                  ? _amostraAtual.desgranePercentual!.toStringAsFixed(
+                      _amostraAtual.desgranePercentual! % 1 == 0 ? 0 : 1,
+                    )
+                  : null,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              textAlign: TextAlign.center,
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(
+                  RegExp(r'^\d{0,3}(\.\d{0,2})?$'),
+                ),
+                TextInputFormatter.withFunction((oldValue, newValue) {
+                  if (newValue.text.isEmpty) return newValue;
+
+                  final numero = double.tryParse(newValue.text);
+                  if (numero != null && numero > 100) {
+                    return oldValue; // Não permite valores > 100
+                  }
+
+                  // Permite exatamente 100 e 0
+                  if (newValue.text == '100' || newValue.text == '0') {
+                    return newValue;
+                  }
+
+                  return newValue;
+                }),
+              ],
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : Colors.grey[800],
+              ),
+              decoration: InputDecoration(
+                hintText: '0-100%',
+                suffixText: '%',
+                suffixStyle: GoogleFonts.poppins(
+                  fontSize: 12,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.grey[400]
+                      : Colors.grey[600],
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 8,
+                ),
+                isDense: true,
+                errorText:
+                    (_amostraAtual.desgranePercentual != null &&
+                        (_amostraAtual.desgranePercentual! < 0 ||
+                            _amostraAtual.desgranePercentual! > 100))
+                    ? 'Valor deve estar entre 0 e 100'
+                    : null,
+              ),
+              validator: (value) {
+                if (value != null && value.isNotEmpty) {
+                  final numero = double.tryParse(value);
+                  if (numero == null) {
+                    return 'Digite um número válido';
+                  }
+                  if (numero < 0 || numero > 100) {
+                    return 'Valor deve estar entre 0 e 100';
+                  }
+                }
+                return null;
+              },
+              onChanged: (text) {
+                if (text.isEmpty) {
+                  setState(() {
+                    _amostraAtual = _amostraAtual.copyWith(
+                      desgranePercentual: 0.0,
+                    );
+                  });
+                  return;
+                }
+
+                final novoValor = double.tryParse(text);
+                if (novoValor != null) {
+                  // Limita entre 0 e 100
+                  final valorLimitado = novoValor.clamp(0.0, 100.0);
+                  setState(() {
+                    _amostraAtual = _amostraAtual.copyWith(
+                      desgranePercentual: valorLimitado,
+                    );
+                  });
+
+                  // Se o valor foi limitado, atualiza o campo
+                  if (valorLimitado != novoValor) {
+                    // Força a atualização do TextFormField para mostrar o valor limitado
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      final controller = TextEditingController(
+                        text: valorLimitado.toStringAsFixed(
+                          valorLimitado % 1 == 0 ? 0 : 1,
+                        ),
+                      );
+                      controller.selection = TextSelection.fromPosition(
+                        TextPosition(offset: controller.text.length),
+                      );
+                    });
+                  }
+                }
+              },
+            ),
+          ),
+        ],
+      );
+    }
+
+    // Para outros defeitos, manter o contador normal
     return Row(
       children: [
         Expanded(
@@ -1027,9 +1173,10 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
     );
   }
 
-  Widget _buildCampoNumerico({
+  Widget _buildCampoNumericoComUnidade({
     required String label,
     required double? value,
+    required String unidade,
     required ValueChanged<double?> onChanged,
   }) {
     const double fontSize = 14.0;
@@ -1076,6 +1223,15 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
                 : Colors.black87,
           ),
           decoration: InputDecoration(
+            hintText: 'Digite o peso',
+            suffixText: unidade,
+            suffixStyle: GoogleFonts.poppins(
+              fontSize: fontSize,
+              fontWeight: FontWeight.w500,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.grey.shade300
+                  : Colors.grey.shade700,
+            ),
             hintStyle: GoogleFonts.poppins(
               fontSize: fontSize,
               color: Theme.of(context).brightness == Brightness.dark
@@ -1113,6 +1269,7 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
     required String? value,
     required List<String> items,
     required ValueChanged<String?> onChanged,
+    String? hint,
   }) {
     const double fontSize = 14.0;
     const double spacing = 8.0;
@@ -1155,6 +1312,7 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
                 : Colors.black87,
           ),
           decoration: InputDecoration(
+            hintText: hint,
             hintStyle: GoogleFonts.poppins(
               fontSize: fontSize,
               color: Theme.of(context).brightness == Brightness.dark
@@ -1214,12 +1372,14 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
     required String? value,
     required List<String> items,
     required ValueChanged<String?> onChanged,
+    String? hint,
   }) {
     return _buildDropdown(
       label: label,
       value: value,
       items: items,
       onChanged: onChanged,
+      hint: hint,
     );
   }
 
@@ -1316,274 +1476,141 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
 
   // 🔘 INDICADORES DE NAVEGAÇÃO POR PONTOS
   Widget _buildIndicadoresNavegacao() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(widget.amostras.length, (index) {
-        final isAtual = index == _amostraAtualIndex;
-        final isPreenchida = _verificarAmostraPreenchida(index);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Calcula o tamanho dos botões para ocupar toda a largura disponível
+        final larguraDisponivel =
+            constraints.maxWidth - 48; // Aumentei padding das laterais
+        final numeroAmostras = widget.amostras.length;
 
-        return GestureDetector(
-          onTap: () => _irParaAmostra(index),
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 4),
-            width: isAtual ? 32 : 24,
-            height: isAtual ? 32 : 24,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: _getCorIndicador(isAtual, isPreenchida),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.6),
-                width: isAtual ? 2 : 1,
-              ),
-            ),
-            child: Center(
-              child: Text(
-                widget.amostras[index].letraAmostra,
-                style: GoogleFonts.poppins(
-                  fontSize: isAtual ? 14 : 12,
-                  fontWeight: isAtual ? FontWeight.bold : FontWeight.w500,
-                  color: isAtual || isPreenchida
-                      ? Colors.white
-                      : Colors.grey[400],
+        // Distribui uniformemente por toda a largura com tamanhos maiores
+        final larguraPorBotao = larguraDisponivel / numeroAmostras;
+        final tamanhoAtivoIdeal = (larguraPorBotao * 0.75).clamp(
+          34.0,
+          52.0,
+        ); // Reduzi um pouco para dar mais espaço
+        final tamanhoInativoIdeal = (tamanhoAtivoIdeal * 0.85).clamp(
+          28.0,
+          44.0,
+        );
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 24,
+          ), // Aumentei o padding
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment
+                .spaceBetween, // Mudei para spaceBetween para melhor distribuição
+            children: List.generate(widget.amostras.length, (index) {
+              final isAtual = index == _amostraAtualIndex;
+              final isPreenchida = _verificarAmostraPreenchida(index);
+
+              return Expanded(
+                child: Container(
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                  ), // Adicionei margem entre os botões
+                  child: Center(
+                    child: GestureDetector(
+                      onTap: () => _irParaAmostra(index),
+                      child: Container(
+                        width: isAtual
+                            ? tamanhoAtivoIdeal
+                            : tamanhoInativoIdeal,
+                        height: isAtual
+                            ? tamanhoAtivoIdeal
+                            : tamanhoInativoIdeal,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: _getCorIndicador(isAtual, isPreenchida),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.6),
+                            width: isAtual ? 2 : 1,
+                          ),
+                        ),
+                        child: Center(
+                          child: Text(
+                            widget.amostras[index].letraAmostra,
+                            style: GoogleFonts.poppins(
+                              fontSize: isAtual
+                                  ? (tamanhoAtivoIdeal * 0.4).clamp(16.0, 22.0)
+                                  : (tamanhoInativoIdeal * 0.45).clamp(
+                                      14.0,
+                                      20.0,
+                                    ),
+                              fontWeight: isAtual
+                                  ? FontWeight.bold
+                                  : FontWeight.w500,
+                              color: isAtual || isPreenchida
+                                  ? Colors.white
+                                  : Colors.grey[400],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-            ),
+              );
+            }),
           ),
         );
-      }),
+      },
     );
   }
 
-  // 📊 BARRA DE PROGRESSO
-  Widget _buildBarraProgresso() {
-    final amostrasPreenchidas = _contarAmostrasPreenchidas();
-    final totalAmostras = widget.amostras.length;
-    final progresso = totalAmostras > 0
-        ? amostrasPreenchidas / totalAmostras
-        : 0.0;
-
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Progresso de Preenchimento',
-              style: GoogleFonts.poppins(
-                fontSize: 12,
-                color: Colors.white.withValues(alpha: 0.8),
-              ),
-            ),
-            Text(
-              '${(progresso * 100).toInt()}%',
-              style: GoogleFonts.poppins(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 4),
-        LinearProgressIndicator(
-          value: progresso,
-          backgroundColor: Colors.white.withValues(alpha: 0.2),
-          valueColor: AlwaysStoppedAnimation<Color>(
-            progresso >= 1.0 ? Colors.green[400]! : Colors.orange[400]!,
-          ),
-          minHeight: 6,
-        ),
-        const SizedBox(height: 4),
-        Text(
-          '$amostrasPreenchidas de $totalAmostras amostras completas',
-          style: GoogleFonts.poppins(
-            fontSize: 10,
-            color: Colors.white.withValues(alpha: 0.6),
-          ),
-        ),
-      ],
-    );
-  }
-
-  // 🔢 NAVEGAÇÃO FINAL (BOTÕES)
+  //  NAVEGAÇÃO FINAL (SETAS SIMPLES)
   Widget _buildNavegacaoFinal() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
-          width: 1,
-        ),
-      ),
-      child: Column(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Status da navegação
+          // Seta para a esquerda
+          IconButton(
+            onPressed: _amostraAtualIndex > 0 ? _amostraAnterior : null,
+            icon: Icon(Icons.arrow_back_ios, size: 28),
+            style: IconButton.styleFrom(
+              foregroundColor: _amostraAtualIndex > 0
+                  ? Colors.green[700]
+                  : Theme.of(context).disabledColor,
+              backgroundColor: _amostraAtualIndex > 0
+                  ? Colors.green[50]
+                  : Colors.transparent,
+              padding: const EdgeInsets.all(16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+
+          // Indicador da amostra atual
           Text(
-            'Navegação entre Amostras',
+            'Amostra ${_amostraAtualIndex + 1} de ${widget.amostras.length}',
             style: GoogleFonts.poppins(
               fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
+              fontWeight: FontWeight.w500,
+              color: Theme.of(context).textTheme.bodyLarge?.color,
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            'Use os botões ou deslize horizontalmente para navegar',
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              color: Colors.white.withValues(alpha: 0.7),
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
 
-          // Botões de navegação
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: _amostraAtualIndex > 0 ? _amostraAnterior : null,
-                  icon: const Icon(
-                    Icons.arrow_back,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                  label: Text(
-                    'Anterior',
-                    style: GoogleFonts.poppins(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    side: BorderSide(
-                      color: _amostraAtualIndex > 0
-                          ? Colors.white.withValues(alpha: 0.8)
-                          : Colors.white.withValues(alpha: 0.3),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 16,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
+          // Seta para a direita
+          IconButton(
+            onPressed: _amostraAtualIndex < widget.amostras.length - 1
+                ? _proximaAmostra
+                : null,
+            icon: Icon(Icons.arrow_forward_ios, size: 28),
+            style: IconButton.styleFrom(
+              foregroundColor: _amostraAtualIndex < widget.amostras.length - 1
+                  ? Colors.green[700]
+                  : Theme.of(context).disabledColor,
+              backgroundColor: _amostraAtualIndex < widget.amostras.length - 1
+                  ? Colors.green[50]
+                  : Colors.transparent,
+              padding: const EdgeInsets.all(16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
-              const SizedBox(width: 16),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                      'Amostra ${_amostraAtualIndex + 1} de ${widget.amostras.length}',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                    Text(
-                      '${_contarAmostrasPreenchidas()} concluídas',
-                      style: GoogleFonts.poppins(
-                        fontSize: 10,
-                        color: Colors.white.withValues(alpha: 0.7),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: _amostraAtualIndex < widget.amostras.length - 1
-                      ? _proximaAmostra
-                      : null,
-                  icon: const Icon(
-                    Icons.arrow_forward,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                  label: Text(
-                    'Próxima',
-                    style: GoogleFonts.poppins(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    side: BorderSide(
-                      color: _amostraAtualIndex < widget.amostras.length - 1
-                          ? Colors.white.withValues(alpha: 0.8)
-                          : Colors.white.withValues(alpha: 0.3),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 16,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 12),
-
-          // Navegação rápida
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: List.generate(widget.amostras.length, (index) {
-                final isAtual = index == _amostraAtualIndex;
-                final isPreenchida = _verificarAmostraPreenchida(index);
-
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: OutlinedButton(
-                    onPressed: () => _irParaAmostra(index),
-                    style: OutlinedButton.styleFrom(
-                      backgroundColor: isAtual
-                          ? Colors.white.withValues(alpha: 0.2)
-                          : Colors.transparent,
-                      side: BorderSide(
-                        color: _getCorIndicador(isAtual, isPreenchida),
-                        width: isAtual ? 2 : 1,
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                      minimumSize: const Size(40, 36),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: Text(
-                      widget.amostras[index].letraAmostra,
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        fontWeight: isAtual ? FontWeight.bold : FontWeight.w500,
-                        color: isAtual
-                            ? Colors.white
-                            : _getCorIndicador(isAtual, isPreenchida),
-                      ),
-                    ),
-                  ),
-                );
-              }),
             ),
           ),
         ],
