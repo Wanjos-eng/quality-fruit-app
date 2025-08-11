@@ -56,7 +56,7 @@ class FichaRepositoryImpl implements FichaRepository {
   Future<Ficha?> buscarPorNumero(String numeroFicha) async {
     final results = await _datasource.query(
       _datasource.tableFichas,
-      where: 'numero_ficha = ?',
+      where: 'numeroFicha = ?',
       whereArgs: [numeroFicha],
       limit: 1,
     );
@@ -70,7 +70,7 @@ class FichaRepositoryImpl implements FichaRepository {
   Future<List<Ficha>> listarTodas({int? limite, int? offset}) async {
     final results = await _datasource.query(
       _datasource.tableFichas,
-      orderBy: 'criado_em DESC',
+      orderBy: 'criadoEm DESC',
       limit: limite,
       offset: offset,
     );
@@ -86,7 +86,7 @@ class FichaRepositoryImpl implements FichaRepository {
       _datasource.tableFichas,
       where: 'cliente LIKE ?',
       whereArgs: ['%$cliente%'],
-      orderBy: 'criado_em DESC',
+      orderBy: 'criadoEm DESC',
     );
 
     return results
@@ -100,7 +100,7 @@ class FichaRepositoryImpl implements FichaRepository {
       _datasource.tableFichas,
       where: 'produto LIKE ?',
       whereArgs: ['%$produto%'],
-      orderBy: 'criado_em DESC',
+      orderBy: 'criadoEm DESC',
     );
 
     return results
@@ -115,9 +115,12 @@ class FichaRepositoryImpl implements FichaRepository {
   }) async {
     final results = await _datasource.query(
       _datasource.tableFichas,
-      where: 'data_avaliacao BETWEEN ? AND ?',
-      whereArgs: [dataInicio.toIso8601String(), dataFim.toIso8601String()],
-      orderBy: 'data_avaliacao DESC',
+      where: 'dataAvaliacao BETWEEN ? AND ?',
+      whereArgs: [
+        dataInicio.millisecondsSinceEpoch,
+        dataFim.millisecondsSinceEpoch,
+      ],
+      orderBy: 'dataAvaliacao DESC',
     );
 
     return results
@@ -129,7 +132,7 @@ class FichaRepositoryImpl implements FichaRepository {
   Future<List<Ficha>> listarRecentes() async {
     final results = await _datasource.query(
       _datasource.tableFichas,
-      orderBy: 'criado_em DESC',
+      orderBy: 'criadoEm DESC',
       limit: 10,
     );
 
@@ -163,7 +166,7 @@ class FichaRepositoryImpl implements FichaRepository {
     final results = await _datasource.query(
       _datasource.tableFichas,
       columns: ['id'],
-      where: 'numero_ficha = ?',
+      where: 'numeroFicha = ?',
       whereArgs: [numeroFicha],
       limit: 1,
     );

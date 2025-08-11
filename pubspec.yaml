@@ -36,6 +36,12 @@ dependencies:
   
   # Formatação de datas
   intl: ^0.20.2
+  
+  # Geração de PDFs
+  pdf: ^3.10.7
+  
+  # Impressão e compartilhamento de PDFs
+  printing: ^5.12.0
 
 dev_dependencies:
   flutter_test:

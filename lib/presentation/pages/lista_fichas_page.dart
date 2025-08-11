@@ -4,6 +4,11 @@ import '../../core/theme/app_colors.dart';
 import '../../responsive/responsive.dart';
 import '../../core/theme/responsive_theme_extensions.dart';
 import '../../domain/entities/entities.dart';
+import '../../core/services/services.dart';
+import '../../domain/usecases/usecases.dart';
+import '../../data/datasources/local_datasource.dart';
+import '../../data/repositories/ficha_repository_impl.dart';
+import 'dart:io';
 
 /// Página para listar todas as fichas criadas
 class ListaFichasPage extends StatefulWidget {
@@ -18,77 +23,232 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
   bool _isLoading = true;
   String _searchQuery = '';
 
+  // Repositórios e use cases
+  late final LocalDatasource _datasource;
+  late final FichaRepositoryImpl _fichaRepository;
+  late final ListarFichasUseCase _listarFichasUseCase;
+  late final SalvarFichaUseCase _salvarFichaUseCase;
+
   @override
   void initState() {
     super.initState();
-    _carregarFichas();
+    _initializeServices();
+  }
+
+  Future<void> _initializeServices() async {
+    try {
+      _datasource = LocalDatasource();
+
+      // FORÇAR reset completo do banco para garantir estrutura correta
+      debugPrint('🔄 Resetando banco de dados...');
+      await _datasource.resetDatabase();
+
+      // Inicializar banco com nova estrutura
+      debugPrint('🔄 Inicializando nova estrutura do banco...');
+      await _datasource.database;
+
+      // Inicializar repositórios e use cases
+      _fichaRepository = FichaRepositoryImpl(_datasource);
+      _listarFichasUseCase = ListarFichasUseCase(_fichaRepository);
+      _salvarFichaUseCase = SalvarFichaUseCase(_fichaRepository);
+
+      debugPrint('✅ Serviços inicializados com sucesso!');
+
+      // Criar fichas de teste
+      await _criarFichasDeTeste();
+
+      // Carregar fichas do banco
+      await _carregarFichas();
+    } catch (e) {
+      debugPrint('❌ Erro na inicialização: $e');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro na inicialização: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _carregarFichas() async {
-    // Simular carregamento - aqui seria a chamada para o repository
-    await Future.delayed(const Duration(seconds: 1));
+    if (!mounted) return;
 
     setState(() {
-      _fichas = _gerarFichasExemplo();
-      _isLoading = false;
+      _isLoading = true;
     });
+
+    try {
+      debugPrint('🔍 Carregando fichas do banco...');
+      final fichas = await _listarFichasUseCase.listarTodas();
+      debugPrint('📊 ${fichas.length} fichas encontradas');
+
+      if (mounted) {
+        setState(() {
+          _fichas = fichas;
+          _isLoading = false;
+        });
+        debugPrint('✅ Fichas carregadas com sucesso na UI');
+      }
+    } catch (e) {
+      debugPrint('❌ Erro ao carregar fichas: $e');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao carregar fichas: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
-  List<Ficha> _gerarFichasExemplo() {
-    // Gerar algumas fichas de exemplo
-    final agora = DateTime.now();
-    return [
-      Ficha(
-        id: '1',
-        numeroFicha: 'QF-2025-001',
-        dataAvaliacao: agora.subtract(const Duration(days: 1)),
-        cliente: 'Exportadora São Paulo',
-        // SEÇÃO 1: Novos campos obrigatórios
-        ano: 2025,
-        fazenda: 'PV', // Fazenda Pura Verde
-        semanaAno: Ficha.calcularSemanaAno(
-          agora.subtract(const Duration(days: 1)),
-        ),
+  Future<void> _criarFichasDeTeste() async {
+    try {
+      debugPrint('🔄 Iniciando criação de fichas de teste...');
+
+      final agoraExato = DateTime.now(); // Data atual do sistema
+
+      // Ficha 1: Fazenda Pura Verde
+      final dataFicha1 = agoraExato.subtract(const Duration(days: 1));
+      final ficha1 = Ficha(
+        id: '',
+        numeroFicha: '', // Será gerado automaticamente pelo SalvarFichaUseCase
+        dataAvaliacao: dataFicha1,
+        cliente: '', // Não preenchido pelo usuário, manter vazio
+        // APENAS campos preenchidos pelo usuário na SEÇÃO 1
+        ano: dataFicha1.year,
+        fazenda: 'PVE', // Pura Verde (3 letras)
+        semanaAno: Ficha.calcularSemanaAno(dataFicha1),
         inspetor: 'João Silva',
         tipoAmostragem: TiposAmostragem.cumbuca500g,
-        pesoBrutoKg: 1500.5,
-        // Campos antigos (mantidos para compatibilidade)
+        pesoBrutoKg: 0.0, // Não preenchido pelo usuário
+        // Campos obrigatórios mínimos (valores padrão)
         produto: 'Uva',
-        variedade: 'Thompson Seedless',
-        origem: 'São Paulo - Brasil',
-        lote: 'SP-2025-001',
-        pesoTotal: 1500.5,
-        quantidadeAmostras: 10, // Cumbuca 500g = 10 amostras
+        variedade: '',
+        origem: '',
+        lote: '',
+        pesoTotal: 1.0, // Valor mínimo para passar validação
+        quantidadeAmostras: 10, // Baseado no tipo de amostragem
         responsavelAvaliacao: 'João Silva',
-        observacoes: 'Primeira avaliação da safra 2025',
-        criadoEm: agora.subtract(const Duration(days: 1)),
-      ),
-      Ficha(
-        id: '2',
-        numeroFicha: 'QF-2025-002',
-        dataAvaliacao: agora.subtract(const Duration(days: 3)),
-        cliente: 'Importadora Rio',
-        // SEÇÃO 1: Novos campos obrigatórios
-        ano: 2025,
-        fazenda: 'JP', // Fazenda João Paulo
-        semanaAno: Ficha.calcularSemanaAno(
-          agora.subtract(const Duration(days: 3)),
-        ),
+        observacoes: '',
+        criadoEm:
+            agoraExato, // Será definido automaticamente pelo SalvarFichaUseCase
+      );
+
+      // Ficha 2: Fazenda João Paulo
+      final dataFicha2 = agoraExato.subtract(const Duration(days: 3));
+      final ficha2 = Ficha(
+        id: '',
+        numeroFicha: '', // Será gerado automaticamente
+        dataAvaliacao: dataFicha2,
+        cliente: '',
+        // APENAS campos preenchidos pelo usuário na SEÇÃO 1
+        ano: dataFicha2.year,
+        fazenda: 'JPA', // João Paulo (3 letras)
+        semanaAno: Ficha.calcularSemanaAno(dataFicha2),
         inspetor: 'Maria Santos',
         tipoAmostragem: TiposAmostragem.cumbuca250g,
-        pesoBrutoKg: 2300.0,
-        // Campos antigos (mantidos para compatibilidade)
-        produto: 'Manga',
-        variedade: 'Tommy Atkins',
-        origem: 'São Paulo - Brasil',
-        lote: 'RP-2025-001',
-        pesoTotal: 2300.0,
-        quantidadeAmostras: 20, // Cumbuca 250g = 20 amostras
+        pesoBrutoKg: 0.0,
+        // Campos obrigatórios mínimos (valores padrão)
+        produto: 'Uva',
+        variedade: '',
+        origem: '',
+        lote: '',
+        pesoTotal: 1.0, // Valor mínimo para passar validação
+        quantidadeAmostras: 20, // Baseado no tipo de amostragem
         responsavelAvaliacao: 'Maria Santos',
-        observacoes: 'Qualidade excelente',
-        criadoEm: agora.subtract(const Duration(days: 3)),
-      ),
-    ];
+        observacoes: '',
+        criadoEm: agoraExato, // Será definido automaticamente
+      );
+
+      // Ficha 3: Fazenda Santa Rita
+      final dataFicha3 = agoraExato.subtract(const Duration(days: 5));
+      final ficha3 = Ficha(
+        id: '',
+        numeroFicha: '', // Será gerado automaticamente
+        dataAvaliacao: dataFicha3,
+        cliente: '',
+        // APENAS campos preenchidos pelo usuário na SEÇÃO 1
+        ano: dataFicha3.year,
+        fazenda: 'SRT', // Santa Rita (3 letras)
+        semanaAno: Ficha.calcularSemanaAno(dataFicha3),
+        inspetor: 'Carlos Eduardo',
+        tipoAmostragem: TiposAmostragem.sacola,
+        pesoBrutoKg: 0.0,
+        // Campos obrigatórios mínimos (valores padrão)
+        produto: 'Uva',
+        variedade: '',
+        origem: '',
+        lote: '',
+        pesoTotal: 1.0, // Valor mínimo para passar validação
+        quantidadeAmostras: 7, // Baseado no tipo de amostragem
+        responsavelAvaliacao: 'Carlos Eduardo',
+        observacoes: '',
+        criadoEm: agoraExato, // Será definido automaticamente
+      );
+
+      // Ficha 4: Fazenda Vale do Sol
+      final dataFicha4 = agoraExato.subtract(const Duration(days: 7));
+      final ficha4 = Ficha(
+        id: '',
+        numeroFicha: '', // Será gerado automaticamente
+        dataAvaliacao: dataFicha4,
+        cliente: '',
+        // APENAS campos preenchidos pelo usuário na SEÇÃO 1
+        ano: dataFicha4.year,
+        fazenda: 'VSO', // Vale do Sol (3 letras)
+        semanaAno: Ficha.calcularSemanaAno(dataFicha4),
+        inspetor: 'Ana Beatriz',
+        tipoAmostragem: TiposAmostragem.cumbuca500g,
+        pesoBrutoKg: 0.0,
+        // Campos obrigatórios mínimos (valores padrão)
+        produto: 'Uva',
+        variedade: '',
+        origem: '',
+        lote: '',
+        pesoTotal: 1.0, // Valor mínimo para passar validação
+        quantidadeAmostras: 10, // Baseado no tipo de amostragem
+        responsavelAvaliacao: 'Ana Beatriz',
+        observacoes: '',
+        criadoEm: agoraExato, // Será definido automaticamente
+      );
+
+      // Salvar todas as fichas de teste - o numeroFicha será gerado automaticamente
+      debugPrint('📝 Salvando ficha 1 (fazenda: ${ficha1.fazenda})');
+      final fichaSalva1 = await _salvarFichaUseCase.call(ficha1);
+      debugPrint('✅ Ficha 1 salva com número: ${fichaSalva1.numeroFicha}');
+
+      debugPrint('📝 Salvando ficha 2 (fazenda: ${ficha2.fazenda})');
+      final fichaSalva2 = await _salvarFichaUseCase.call(ficha2);
+      debugPrint('✅ Ficha 2 salva com número: ${fichaSalva2.numeroFicha}');
+
+      debugPrint('📝 Salvando ficha 3 (fazenda: ${ficha3.fazenda})');
+      final fichaSalva3 = await _salvarFichaUseCase.call(ficha3);
+      debugPrint('✅ Ficha 3 salva com número: ${fichaSalva3.numeroFicha}');
+
+      debugPrint('📝 Salvando ficha 4 (fazenda: ${ficha4.fazenda})');
+      final fichaSalva4 = await _salvarFichaUseCase.call(ficha4);
+      debugPrint('✅ Ficha 4 salva com número: ${fichaSalva4.numeroFicha}');
+
+      debugPrint('✅ 4 fichas de UVA criadas com números automáticos!');
+      debugPrint(
+        '📋 Números gerados: ${fichaSalva1.numeroFicha}, ${fichaSalva2.numeroFicha}, ${fichaSalva3.numeroFicha}, ${fichaSalva4.numeroFicha}',
+      );
+    } catch (e) {
+      debugPrint('❌ Erro ao criar fichas de teste: $e');
+      rethrow; // Re-lançar erro para que seja capturado na inicialização
+    }
   }
 
   List<Ficha> get _fichasFiltradas {
@@ -113,16 +273,37 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
 
   @override
   Widget build(BuildContext context) {
-    return ResponsiveScaffold(
-      // === CONFIGURAÇÕES RESPONSIVAS ===
-      applySafeArea: true,
-      centerContentOnTablet: true,
-      tabletMaxContentWidth: 1000.0,
-      customPadding: EdgeInsets.zero,
-      // === BODY RESPONSIVO ===
-      body: _buildContent(context),
-      mobileBody: _buildMobileLayout(context),
-      tabletBody: _buildTabletLayout(context),
+    return Scaffold(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: Theme.of(context).brightness == Brightness.dark
+              ? AppColors.gradientDarkIntense
+              : AppColors.gradientBrand,
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Header flutuante
+              _buildFloatingHeader(context),
+              // Conteúdo principal
+              Expanded(
+                child: _isLoading
+                    ? Center(
+                        child: CircularProgressIndicator(
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? AppColors.darkGreen
+                              : AppColors.positiveGreen,
+                        ),
+                      )
+                    : _fichasFiltradas.isEmpty
+                    ? _buildEmptyState()
+                    : _buildListaFichas(),
+              ),
+            ],
+          ),
+        ),
+      ),
+      floatingActionButton: _buildFloatingActionButton(context),
     );
   }
 
@@ -191,122 +372,6 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
     );
   }
 
-  /// Conteúdo padrão (fallback para mobile)
-  Widget _buildContent(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: Theme.of(context).brightness == Brightness.dark
-              ? AppColors.gradientDarkIntense
-              : AppColors.gradientBrand,
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Header flutuante
-              _buildFloatingHeader(context),
-              // Conteúdo principal
-              Expanded(
-                child: _isLoading
-                    ? Center(
-                        child: CircularProgressIndicator(
-                          color: Theme.of(context).brightness == Brightness.dark
-                              ? AppColors.darkGreen
-                              : AppColors.positiveGreen,
-                        ),
-                      )
-                    : _fichasFiltradas.isEmpty
-                    ? _buildEmptyState()
-                    : _buildListaFichas(),
-              ),
-            ],
-          ),
-        ),
-      ),
-      floatingActionButton: _buildFloatingActionButton(context),
-    );
-  }
-
-  /// Layout para dispositivos mobile
-  Widget _buildMobileLayout(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: Theme.of(context).brightness == Brightness.dark
-              ? AppColors.gradientDarkIntense
-              : AppColors.gradientBrand,
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Header flutuante
-              _buildFloatingHeader(context),
-              // Conteúdo principal
-              Expanded(
-                child: _isLoading
-                    ? Center(
-                        child: CircularProgressIndicator(
-                          color: Theme.of(context).brightness == Brightness.dark
-                              ? AppColors.darkGreen
-                              : AppColors.positiveGreen,
-                        ),
-                      )
-                    : _fichasFiltradas.isEmpty
-                    ? _buildEmptyState()
-                    : _buildListaFichas(),
-              ),
-            ],
-          ),
-        ),
-      ),
-      floatingActionButton: _buildFloatingActionButton(context),
-    );
-  }
-
-  /// Layout para dispositivos tablet
-  Widget _buildTabletLayout(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: Theme.of(context).brightness == Brightness.dark
-              ? AppColors.gradientDarkIntense
-              : AppColors.gradientBrand,
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Header flutuante
-              _buildFloatingHeader(context),
-              // Conteúdo principal
-              Expanded(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: ResponsiveThemeValues.elementSpacing(context),
-                    vertical:
-                        ResponsiveThemeValues.elementSpacing(context) * 0.5,
-                  ),
-                  child: _isLoading
-                      ? Center(
-                          child: CircularProgressIndicator(
-                            color:
-                                Theme.of(context).brightness == Brightness.dark
-                                ? AppColors.darkGreen
-                                : AppColors.positiveGreen,
-                          ),
-                        )
-                      : _fichasFiltradas.isEmpty
-                      ? _buildEmptyState()
-                      : _buildTabletGridLayout(),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-      floatingActionButton: _buildFloatingActionButton(context),
-    );
-  }
-
   /// FloatingActionButton responsivo
   Widget _buildFloatingActionButton(BuildContext context) {
     return FloatingActionButton(
@@ -321,172 +386,6 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
           context,
           mobile: 24.0,
           tablet: 28.0,
-        ),
-      ),
-    );
-  }
-
-  /// Layout em grid para tablets
-  Widget _buildTabletGridLayout() {
-    return GridView.builder(
-      padding: EdgeInsets.all(ResponsiveThemeValues.elementSpacing(context)),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: ResponsiveThemeValues.elementSpacing(context),
-        mainAxisSpacing: ResponsiveThemeValues.elementSpacing(context),
-        childAspectRatio: 1.5,
-      ),
-      itemCount: _fichasFiltradas.length,
-      itemBuilder: (context, index) {
-        final ficha = _fichasFiltradas[index];
-        return _buildFichaCardTablet(ficha);
-      },
-    );
-  }
-
-  /// Card otimizado para tablets
-  Widget _buildFichaCardTablet(Ficha ficha) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      color: Theme.of(context).brightness == Brightness.dark
-          ? AppColors.cardDark
-          : Colors.white,
-      child: InkWell(
-        onTap: () => _abrirDetalhes(ficha),
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: EdgeInsets.all(
-            ResponsiveThemeValues.elementSpacing(context),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header compacto
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? AppColors.darkGreen
-                          : AppColors.positiveGreen,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      ficha.numeroFicha,
-                      style: GoogleFonts.poppins(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    onPressed: () => _showOptionsMenu(ficha),
-                    icon: const Icon(Icons.more_vert),
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? AppColors.textDark.withValues(alpha: 0.7)
-                        : Colors.grey[600],
-                    constraints: const BoxConstraints(),
-                    padding: EdgeInsets.zero,
-                    iconSize: 18,
-                  ),
-                ],
-              ),
-              SizedBox(
-                height: ResponsiveThemeValues.elementSpacing(context) * 0.5,
-              ),
-
-              // Informações principais
-              Text(
-                ficha.cliente,
-                style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? AppColors.textDark
-                      : AppColors.textPrimary,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 4),
-              // SEÇÃO 1: Mostrar tipo de amostragem e fazenda
-              Row(
-                children: [
-                  Text(
-                    ficha.fazenda,
-                    style: GoogleFonts.poppins(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? AppColors.darkGreen
-                          : AppColors.positiveGreen,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      ficha.tipoAmostragem,
-                      style: GoogleFonts.poppins(
-                        fontSize: 10,
-                        color: Theme.of(context).brightness == Brightness.dark
-                            ? AppColors.textDark.withValues(alpha: 0.7)
-                            : Colors.grey[600],
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Text(
-                '${ficha.produto} - ${ficha.variedade}',
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? AppColors.darkGreen
-                      : AppColors.positiveGreen,
-                  fontWeight: FontWeight.w500,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const Spacer(),
-
-              // Footer compacto
-              Row(
-                children: [
-                  Text(
-                    '${ficha.pesoBrutoKg.toStringAsFixed(1)}kg',
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? AppColors.darkGreen
-                          : AppColors.positiveGreen,
-                    ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    '${ficha.quantidadeAmostras} amostras',
-                    style: GoogleFonts.poppins(
-                      fontSize: 10,
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? AppColors.textDark.withValues(alpha: 0.7)
-                          : Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
         ),
       ),
     );
@@ -690,32 +589,36 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
               ),
               const SizedBox(height: 16),
 
-              // Informações principais
-              Text(
-                ficha.cliente,
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? AppColors.textDark
-                      : AppColors.textPrimary,
+              // Informações principais - apenas cliente se existir
+              if (ficha.cliente.isNotEmpty) ...[
+                Text(
+                  ficha.cliente,
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? AppColors.textDark
+                        : AppColors.textPrimary,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
+                const SizedBox(height: 8),
+              ],
+
               // SEÇÃO 1: Informações principais da ficha
               Row(
                 children: [
-                  Text(
-                    'Fazenda: ${ficha.fazenda}',
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? AppColors.darkGreen
-                          : AppColors.positiveGreen,
+                  Expanded(
+                    child: Text(
+                      'Fazenda: ${ficha.fazenda}',
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.darkGreen
+                            : AppColors.positiveGreen,
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 16),
                   Text(
                     'Semana: ${ficha.semanaAno}',
                     style: GoogleFonts.poppins(
@@ -727,7 +630,9 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
+
+              // Tipo de amostragem e inspetor
               Row(
                 children: [
                   Icon(
@@ -738,92 +643,23 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
                         : AppColors.positiveGreen,
                   ),
                   const SizedBox(width: 4),
-                  Text(
-                    ficha.tipoAmostragem,
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? AppColors.darkGreen
-                          : AppColors.positiveGreen,
-                    ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    'Inspetor: ${ficha.inspetor}',
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? AppColors.textDark.withValues(alpha: 0.7)
-                          : Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-
-              // Produto e informações técnicas
-              Row(
-                children: [
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${ficha.produto} - ${ficha.variedade}',
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color:
-                                Theme.of(context).brightness == Brightness.dark
-                                ? AppColors.darkGreen
-                                : AppColors.positiveGreen,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Lote: ${ficha.lote}',
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            color:
-                                Theme.of(context).brightness == Brightness.dark
-                                ? AppColors.textDark.withValues(alpha: 0.7)
-                                : Colors.grey[600],
-                          ),
-                        ),
-                      ],
+                    child: Text(
+                      ficha.tipoAmostragem,
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.darkGreen
+                            : AppColors.positiveGreen,
+                      ),
                     ),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        '${ficha.pesoBrutoKg.toStringAsFixed(1)} kg (bruto)',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Theme.of(context).brightness == Brightness.dark
-                              ? AppColors.darkGreen
-                              : AppColors.positiveGreen,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '${ficha.quantidadeAmostras} amostras',
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          color: Theme.of(context).brightness == Brightness.dark
-                              ? AppColors.textDark.withValues(alpha: 0.7)
-                              : Colors.grey[600],
-                        ),
-                      ),
-                    ],
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
 
-              // Responsável (nova estrutura)
+              // Inspetor responsável
               Row(
                 children: [
                   Icon(
@@ -864,30 +700,52 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
       context: context,
       builder: (context) {
         String searchText = _searchQuery;
-        return AlertDialog(
-          title: const Text('Pesquisar Fichas'),
-          content: TextField(
-            autofocus: true,
-            decoration: const InputDecoration(
-              hintText: 'Digite o número, cliente, produto...',
-              border: OutlineInputBorder(),
+        return Theme(
+          data: Theme.of(context), // Usar tema do sistema
+          child: AlertDialog(
+            backgroundColor:
+                Theme.of(context).dialogTheme.backgroundColor ??
+                (Theme.of(context).brightness == Brightness.dark
+                    ? Colors.grey[900]
+                    : Colors.white),
+            title: Text(
+              'Pesquisar Fichas',
+              style: TextStyle(
+                color: Theme.of(context).textTheme.titleLarge?.color,
+              ),
             ),
-            onChanged: (value) => searchText = value,
-            controller: TextEditingController(text: _searchQuery),
+            content: TextField(
+              autofocus: true,
+              style: TextStyle(
+                color: Theme.of(context).textTheme.bodyLarge?.color,
+              ),
+              decoration: InputDecoration(
+                hintText: 'Digite o número, fazenda, inspetor...',
+                hintStyle: TextStyle(color: Theme.of(context).hintColor),
+                border: const OutlineInputBorder(),
+              ),
+              onChanged: (value) => searchText = value,
+              controller: TextEditingController(text: _searchQuery),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  'Cancelar',
+                  style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                  ),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  setState(() => _searchQuery = searchText);
+                  Navigator.pop(context);
+                },
+                child: const Text('Pesquisar'),
+              ),
+            ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                setState(() => _searchQuery = searchText);
-                Navigator.pop(context);
-              },
-              child: const Text('Pesquisar'),
-            ),
-          ],
         );
       },
     );
@@ -967,57 +825,111 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
   void _showOptionsMenu(Ficha ficha) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Ações para ${ficha.numeroFicha}'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: Icon(
-                Icons.edit,
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.darkGreen
-                    : AppColors.positiveGreen,
+      builder: (context) => Theme(
+        data: Theme.of(context), // Usar tema do sistema
+        child: AlertDialog(
+          backgroundColor:
+              Theme.of(context).dialogTheme.backgroundColor ??
+              (Theme.of(context).brightness == Brightness.dark
+                  ? Colors.grey[900]
+                  : Colors.white), // Cor do sistema
+          title: Text(
+            'Ações para ${ficha.numeroFicha}',
+            style: TextStyle(
+              color: Theme.of(
+                context,
+              ).textTheme.titleLarge?.color, // Cor do texto do sistema
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: Icon(
+                  Icons.edit,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.darkGreen
+                      : AppColors.positiveGreen,
+                ),
+                title: Text(
+                  'Editar',
+                  style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _editarFicha(ficha);
+                },
               ),
-              title: const Text('Editar'),
-              onTap: () {
-                Navigator.pop(context);
-                // Implementar edição
-                _editarFicha(ficha);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.share, color: Colors.blue),
-              title: const Text('Compartilhar'),
-              onTap: () {
-                Navigator.pop(context);
-                _compartilharFicha(ficha);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.download, color: Colors.orange),
-              title: const Text('Exportar PDF'),
-              onTap: () {
-                Navigator.pop(context);
-                _exportarPDF(ficha);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.delete, color: Colors.red),
-              title: const Text('Excluir'),
-              onTap: () {
-                Navigator.pop(context);
-                _confirmarExclusao(ficha);
-              },
+              ListTile(
+                leading: Icon(
+                  Icons.share,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.lightBlue
+                      : Colors.blue,
+                ),
+                title: Text(
+                  'Compartilhar',
+                  style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _compartilharFicha(ficha);
+                },
+              ),
+              ListTile(
+                leading: Icon(
+                  Icons.download,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.orangeAccent
+                      : Colors.orange,
+                ),
+                title: Text(
+                  'Exportar PDF',
+                  style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _exportarPDF(ficha);
+                },
+              ),
+              ListTile(
+                leading: Icon(
+                  Icons.delete,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.redAccent
+                      : Colors.red,
+                ),
+                title: Text(
+                  'Excluir',
+                  style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _confirmarExclusao(ficha);
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'Cancelar',
+                style: TextStyle(
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                ),
+              ),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
-          ),
-        ],
       ),
     );
   }
@@ -1082,15 +994,9 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
             child: const Text('Cancelar'),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              // Implementar exportação
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('PDF da ficha ${ficha.numeroFicha} exportado'),
-                  backgroundColor: Colors.orange,
-                ),
-              );
+              await _gerarEExportarPDF(ficha);
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
             child: const Text('Exportar'),
@@ -1098,6 +1004,195 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
         ],
       ),
     );
+  }
+
+  /// Gera e exporta o PDF da ficha
+  Future<void> _gerarEExportarPDF(Ficha ficha) async {
+    try {
+      // Mostra loading
+      _mostrarDialogLoading('Gerando PDF...');
+
+      // Criar as instâncias dos serviços
+      final pdfService = PdfGeneratorService();
+      final gerarPdfUseCase = GerarPdfUseCase(pdfService);
+
+      // Simular carregamento das amostras (você deve implementar a busca real)
+      final amostras = await _carregarAmostrasParaFicha(ficha.id);
+
+      // Gerar o PDF
+      final arquivo = await gerarPdfUseCase.gerarPdfFichaCompleta(
+        ficha,
+        amostras,
+      );
+
+      // Fechar loading
+      if (mounted) Navigator.pop(context);
+
+      // Mostrar sucesso
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('PDF gerado com sucesso!'),
+                Text(
+                  'Salvo em: ${arquivo.path}',
+                  style: TextStyle(fontSize: 12, color: Colors.white70),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 4),
+            action: SnackBarAction(
+              label: 'Ver Local',
+              textColor: Colors.white,
+              onPressed: () {
+                _mostrarLocalizacaoArquivo(arquivo);
+              },
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      // Fechar loading se estiver aberto
+      if (mounted && Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
+
+      // Mostrar erro
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao gerar PDF: $e'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
+
+  /// Mostra dialog de loading
+  void _mostrarDialogLoading(String mensagem) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        content: Row(
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(width: 20),
+            Expanded(child: Text(mensagem)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Mostra informações sobre a localização do arquivo
+  void _mostrarLocalizacaoArquivo(File arquivo) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('PDF Salvo'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('O arquivo foi salvo em:'),
+            SizedBox(height: 8),
+            Container(
+              padding: EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: SelectableText(
+                arquivo.path,
+                style: TextStyle(fontSize: 12, fontFamily: 'monospace'),
+              ),
+            ),
+            SizedBox(height: 12),
+            Text(
+              'Para acessar o arquivo, use um gerenciador de arquivos e navegue até a pasta "Documents" do aplicativo.',
+              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Carrega as amostras para uma ficha específica
+  Future<List<AmostraDetalhada>> _carregarAmostrasParaFicha(
+    String fichaId,
+  ) async {
+    try {
+      final datasource = LocalDatasource();
+      return await datasource.buscarAmostrasDetalhadasPorFicha(fichaId);
+    } catch (e) {
+      // Em caso de erro, retorna amostras de exemplo
+      debugPrint('Erro ao carregar amostras do banco: $e');
+      return _criarAmostrasExemplo(fichaId);
+    }
+  }
+
+  /// Cria amostras de exemplo para teste
+  List<AmostraDetalhada> _criarAmostrasExemplo(String fichaId) {
+    final agora = DateTime.now();
+    return [
+      AmostraDetalhada(
+        id: '${fichaId}_A',
+        fichaId: fichaId,
+        letraAmostra: 'A',
+        criadoEm: agora,
+        caixaMarca: 'Caixa 001',
+        classe: 'Extra',
+        area: 'Bloco 1',
+        variedade: 'Crimson',
+        pesoLiquido: 485.3,
+        brixMedia: 18.5,
+        pesoBrutoMedia: 520.1,
+        observacoes: 'Amostra em ótimo estado',
+      ),
+      AmostraDetalhada(
+        id: '${fichaId}_B',
+        fichaId: fichaId,
+        letraAmostra: 'B',
+        criadoEm: agora,
+        caixaMarca: 'Caixa 002',
+        classe: 'Primeira',
+        area: 'Bloco 2',
+        variedade: 'Crimson',
+        pesoLiquido: 478.9,
+        brixMedia: 17.8,
+        pesoBrutoMedia: 515.2,
+        podre: 2.5,
+        amassada: 1.2,
+      ),
+      AmostraDetalhada(
+        id: '${fichaId}_C',
+        fichaId: fichaId,
+        letraAmostra: 'C',
+        criadoEm: agora,
+        caixaMarca: 'Caixa 003',
+        classe: 'Extra',
+        area: 'Bloco 1',
+        variedade: 'Crimson',
+        pesoLiquido: 492.1,
+        brixMedia: 19.2,
+        pesoBrutoMedia: 525.7,
+        observacoes: 'Excelente qualidade visual',
+      ),
+    ];
   }
 
   void _confirmarExclusao(Ficha ficha) {

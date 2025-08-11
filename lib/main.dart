@@ -1,12 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'core/theme/app_theme.dart';
+import 'core/services/services.dart';
 import 'presentation/pages/splash_screen.dart';
 import 'presentation/pages/home_page.dart';
 import 'presentation/pages/criar_ficha_page.dart';
 import 'presentation/pages/lista_fichas_page.dart';
 
-void main() {
+void main() async {
+  // Garante que o Flutter esteja inicializado
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Inicializa a estrutura da aplicação
+  try {
+    final appInit = AppInitializationService();
+    await appInit.initialize();
+    debugPrint('🚀 Aplicação inicializada com sucesso');
+  } catch (e) {
+    debugPrint('❌ Erro na inicialização: $e');
+  }
+
   runApp(const QualityFruitApp());
 }
 
