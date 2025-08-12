@@ -736,6 +736,9 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
           SizedBox(
             width: 100,
             child: TextFormField(
+              key: Key(
+                'desgrane_${_amostraAtual.id}',
+              ), // Key única para forçar reconstrução
               initialValue:
                   (_amostraAtual.desgranePercentual != null &&
                       _amostraAtual.desgranePercentual! > 0)
@@ -928,6 +931,9 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
         Expanded(
           flex: 2,
           child: DropdownButtonFormField<double>(
+            key: Key(
+              'corBaga_${_amostraAtual.id}',
+            ), // Key única para forçar reconstrução
             value: _amostraAtual.corBagaPercentual, // Usar campo existente
             onChanged: (valor) {
               _amostraAtual = _amostraAtual.copyWith(corBagaPercentual: valor);
@@ -1190,6 +1196,9 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
         ),
         const SizedBox(height: spacing),
         TextFormField(
+          key: Key(
+            '${label}_${_amostraAtual.id}',
+          ), // Key única para forçar reconstrução
           initialValue: value,
           onChanged: onChanged,
           keyboardType: keyboardType,
@@ -1271,6 +1280,9 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
         ),
         const SizedBox(height: spacing),
         TextFormField(
+          key: Key(
+            '${label}_${_amostraAtual.id}',
+          ), // Key única para forçar reconstrução
           initialValue: value?.toString(),
           onChanged: (text) {
             final numero = double.tryParse(text.replaceAll(',', '.'));
@@ -1367,6 +1379,9 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
         ),
         const SizedBox(height: spacing),
         DropdownButtonFormField<String>(
+          key: Key(
+            '${label}_${_amostraAtual.id}',
+          ), // Key única para forçar reconstrução
           value: value,
           onChanged: onChanged,
           style: GoogleFonts.poppins(
@@ -1469,6 +1484,9 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
         ),
         const SizedBox(height: spacing),
         DropdownButtonFormField<String>(
+          key: Key(
+            'variedade_${_amostraAtual.id}',
+          ), // Key única para forçar reconstrução
           value: _amostraAtual.variedade,
           onChanged: (valor) {
             _amostraAtual = _amostraAtual.copyWith(variedade: valor);
@@ -1913,6 +1931,9 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
             ),
           ),
           child: TextFormField(
+            key: Key(
+              'observacoes_${_amostraAtual.id}',
+            ), // Key única para forçar reconstrução
             initialValue: _amostraAtual.observacoes ?? '',
             maxLines: 4,
             style: GoogleFonts.poppins(
