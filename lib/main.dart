@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/theme_notifier.dart';
 import 'core/services/services.dart';
 import 'presentation/pages/splash_screen.dart';
 import 'presentation/pages/home_page.dart';
 import 'presentation/pages/criar_ficha_page.dart';
 import 'presentation/pages/lista_fichas_page.dart';
 
+// Instância global do gerenciador de tema
+final themeNotifier = ThemeNotifier();
+
 void main() async {
   // Garante que o Flutter esteja inicializado
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Inicializa o tema
+  await themeNotifier.initTheme();
 
   // Inicializa a estrutura da aplicação
   try {
@@ -23,8 +30,22 @@ void main() async {
   runApp(const QualityFruitApp());
 }
 
-class QualityFruitApp extends StatelessWidget {
+class QualityFruitApp extends StatefulWidget {
   const QualityFruitApp({super.key});
+
+  @override
+  State<QualityFruitApp> createState() => _QualityFruitAppState();
+}
+
+class _QualityFruitAppState extends State<QualityFruitApp> {
+  @override
+  void initState() {
+    super.initState();
+    // Escuta mudanças no tema
+    themeNotifier.addListener(() {
+      setState(() {});
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,10 +61,10 @@ class QualityFruitApp extends StatelessWidget {
       supportedLocales: const [Locale('pt', 'BR'), Locale('en', 'US')],
       locale: const Locale('pt', 'BR'),
 
-      // === APLICANDO NOVO TEMA ===
+      // === APLICANDO TEMA CONTROLADO ===
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system, // Detecta automaticamente tema do sistema
+      themeMode: themeNotifier.themeMode, // Usa o tema controlado
 
       home: const SplashScreen(nextRoute: '/home'),
 

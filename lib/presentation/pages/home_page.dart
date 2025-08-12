@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_colors.dart';
 import '../../responsive/responsive.dart';
 import '../../core/theme/responsive_theme_extensions.dart';
+import '../../main.dart'; // Para acessar themeNotifier
+import '../widgets/animated_theme_toggle.dart';
 import 'lista_fichas_page.dart';
 import 'criar_ficha_page.dart';
 
@@ -202,44 +204,75 @@ class _HomePageState extends State<HomePage> {
               : ResponsiveThemeValues.elementSpacing(context) * 0.25,
         ),
 
-        // Alinhamento usando valores globais do sistema responsivo
+        // Cabeçalho com título e botão de tema
         ResponsivePadding(
           mobile: EdgeInsets.only(
             left: ResponsiveThemeValues.elementSpacing(context) * 0.25,
+            right: ResponsiveThemeValues.elementSpacing(context) * 0.05,
           ),
-          child: Column(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'QualityFruit',
-                style: GoogleFonts.poppins(
-                  fontSize: ResponsiveUtils.responsiveValue(
-                    context,
-                    mobile: 28.0,
-                    mobileSmall: 24.0,
-                    tablet: 32.0,
-                  ),
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? AppColors.textDark
-                      : Colors.white,
+              // Coluna com título e subtítulo
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'QualityFruit',
+                      style: GoogleFonts.poppins(
+                        fontSize: ResponsiveUtils.responsiveValue(
+                          context,
+                          mobile: 28.0,
+                          mobileSmall: 24.0,
+                          tablet: 32.0,
+                        ),
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.textDark
+                            : Colors.white,
+                      ),
+                    ),
+                    SizedBox(
+                      height:
+                          ResponsiveThemeValues.elementSpacing(context) * 0.125,
+                    ),
+                    Text(
+                      'Sistema Offline de Controle de Qualidade 🍇',
+                      style: GoogleFonts.poppins(
+                        fontSize: ResponsiveUtils.responsiveValue(
+                          context,
+                          mobile: 14.0,
+                          mobileSmall: 12.0,
+                          tablet: 16.0,
+                        ),
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.textDark.withValues(alpha: 0.9)
+                            : Colors.white.withValues(alpha: 0.9),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              SizedBox(
-                height: ResponsiveThemeValues.elementSpacing(context) * 0.125,
-              ),
-              Text(
-                'Sistema Offline de Controle de Qualidade 🍇',
-                style: GoogleFonts.poppins(
-                  fontSize: ResponsiveUtils.responsiveValue(
+
+              // Botão de tema
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: AnimatedThemeToggle(
+                  themeNotifier: themeNotifier,
+                  width: ResponsiveUtils.responsiveValue(
                     context,
-                    mobile: 14.0,
-                    mobileSmall: 12.0,
-                    tablet: 16.0,
+                    mobile: 60.0,
+                    mobileSmall: 55.0,
+                    tablet: 70.0,
                   ),
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? AppColors.textDark.withValues(alpha: 0.9)
-                      : Colors.white.withValues(alpha: 0.9),
+                  height: ResponsiveUtils.responsiveValue(
+                    context,
+                    mobile: 30.0,
+                    mobileSmall: 28.0,
+                    tablet: 35.0,
+                  ),
                 ),
               ),
             ],

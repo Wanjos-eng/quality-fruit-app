@@ -1,9 +1,11 @@
 /// Entidade que representa uma amostra individual na planilha de controle
-/// Corresponde a cada coluna (A, B, C, D, E, F, G) da ficha física
+/// Cada amostra corresponde a uma letra (A, B, C, D, E, F, G...) da ficha física
+/// QUANTIDADE DE AMOSTRAS: Definida dinamicamente pelo analista (não mais fixa por tipo)
 class AmostraDetalhada {
   final String id;
   final String fichaId;
-  final String letraAmostra; // A, B, C, D, E, F, G
+  final String
+  letraAmostra; // A, B, C, D, E, F, G... (dinâmico, até 26 amostras)
 
   // SEÇÃO 1: INFORMAÇÕES GERAIS (preenchidas uma vez por dia)
   final DateTime? data;
@@ -21,8 +23,8 @@ class AmostraDetalhada {
   final double? pesoEmbalagem; // Peso da embalagem apenas
   final double? bagaMm; // Formato "16-18" (menor-maior calibre)
 
-  // SEÇÃO 2: MEDIDAS VARIÁVEIS (quantidade depende do tipo de amostragem)
-  // PESO BRUTO: Múltiplas leituras conforme tipo de amostragem
+  // SEÇÃO 2: MEDIDAS VARIÁVEIS
+  // PESO BRUTO: Múltiplas leituras conforme tipo de amostragem (ÚNICO CAMPO QUE VARIA)
   final List<double>?
   pesoBrutoLeituras; // Cumbuca 500g: 10 | Cumbuca 250g: 20 | Sacola: 1
   final double? pesoBrutoMedia; // Calculado automaticamente das leituras
@@ -30,9 +32,9 @@ class AmostraDetalhada {
   // PESO LÍQUIDO: Uma única medida
   final double? pesoLiquido; // Peso líquido em gramas
 
-  // BRIX: Múltiplas leituras conforme tipo de amostragem (mesmo padrão do peso)
+  // BRIX: SEMPRE 10 leituras fixas (não varia por tipo de amostragem)
   final List<double>?
-  brixLeituras; // Cumbuca 500g: 10 | Cumbuca 250g: 20 | Sacola: 1
+  brixLeituras; // SEMPRE 10 leituras de 10 frutas diferentes
   final double? brixMedia; // Calculado automaticamente das leituras
 
   // Campos antigos (mantidos para compatibilidade)

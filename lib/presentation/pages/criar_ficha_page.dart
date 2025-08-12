@@ -47,50 +47,60 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
     _gerarAmostrasIniciais();
   }
 
-  /// Gera lista de amostras baseada no tipo de amostragem selecionado
+  /// Gera amostra inicial (sempre começa com apenas uma amostra A)
   void _gerarAmostrasIniciais() {
     _amostras.clear();
     _observacoesPorAmostra.clear();
 
-    final letras = _obterLetrasAmostras();
+    // Sempre começar com uma única amostra A
+    _amostras.add(
+      AmostraDetalhada(
+        id: '${_fichaId}_A',
+        fichaId: _fichaId,
+        letraAmostra: 'A',
+        criadoEm: DateTime.now(),
+      ),
+    );
 
-    for (int i = 0; i < letras.length; i++) {
+    // Inicializar observação vazia para a amostra A
+    _observacoesPorAmostra['A'] = '';
+  }
+
+  /// Adiciona uma nova amostra
+  void _adicionarAmostra() {
+    setState(() {
+      final proximaLetra = String.fromCharCode(
+        65 + _amostras.length,
+      ); // A=65, B=66, etc.
+
       _amostras.add(
         AmostraDetalhada(
-          id: '${_fichaId}_${letras[i]}',
+          id: '${_fichaId}_$proximaLetra',
           fichaId: _fichaId,
-          letraAmostra: letras[i],
+          letraAmostra: proximaLetra,
           criadoEm: DateTime.now(),
         ),
       );
 
       // Inicializar observação vazia para esta amostra
-      _observacoesPorAmostra[letras[i]] = '';
+      _observacoesPorAmostra[proximaLetra] = '';
+    });
+  }
+
+  /// Remove a última amostra (mínimo 1 amostra)
+  void _removerAmostra() {
+    if (_amostras.length > 1) {
+      setState(() {
+        final ultimaAmostra = _amostras.removeLast();
+        _observacoesPorAmostra.remove(ultimaAmostra.letraAmostra);
+      });
     }
   }
 
-  /// Retorna as letras das amostras conforme tipo de amostragem
-  List<String> _obterLetrasAmostras() {
-    switch (_tipoAmostragem) {
-      case 'Cumbuca 500g':
-        // 10 amostras: A até J
-        return List.generate(10, (i) => String.fromCharCode(65 + i));
-      case 'Cumbuca 250g':
-        // 20 amostras: A até T
-        return List.generate(20, (i) => String.fromCharCode(65 + i));
-      case 'Sacola (Caixa)':
-        // 7 amostras: A até G
-        return List.generate(7, (i) => String.fromCharCode(65 + i));
-      default:
-        return ['A']; // Fallback
-    }
-  }
-
-  /// Atualiza o tipo de amostragem e regenera as amostras
   void _atualizarTipoAmostragem(String novoTipo) {
     setState(() {
       _tipoAmostragem = novoTipo;
-      _gerarAmostrasIniciais();
+      // NÃO regenera amostras - apenas atualiza o tipo que afeta apenas peso bruto
     });
   }
 
@@ -189,6 +199,8 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
               }
             });
           },
+          onAdicionarAmostra: _adicionarAmostra,
+          onRemoverAmostra: _removerAmostra,
         );
       case 2:
         return SecaoObservacaoFinais(

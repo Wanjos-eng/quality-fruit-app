@@ -7,16 +7,21 @@ import '../../domain/entities/amostra_detalhada.dart';
 ///
 /// Widget responsável pela segunda seção da ficha
 /// Permite preencher 1 amostra por vez com todos os campos necessários
+/// Agora com sistema dinâmico de adição/remoção de amostras
 class SecaoAmostrasDefeitos extends StatefulWidget {
   final List<AmostraDetalhada> amostras;
   final String tipoAmostragem;
   final ValueChanged<AmostraDetalhada> onAmostraAtualizada;
+  final VoidCallback onAdicionarAmostra;
+  final VoidCallback onRemoverAmostra;
 
   const SecaoAmostrasDefeitos({
     super.key,
     required this.amostras,
     required this.tipoAmostragem,
     required this.onAmostraAtualizada,
+    required this.onAdicionarAmostra,
+    required this.onRemoverAmostra,
   });
 
   @override
@@ -177,6 +182,9 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
                 _buildIndicadoresNavegacao(),
 
                 const SizedBox(height: 12),
+
+                // 🔧 BOTÕES DE GERENCIAMENTO DE AMOSTRAS
+                _buildBotoesGerenciamento(),
               ],
             ),
           ),
@@ -246,10 +254,16 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
                 child: _buildCampoTexto(
                   label: 'Área',
                   value: _amostraAtual.area,
+                  hint: 'Local de coleta',
+                  keyboardType: TextInputType.text,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(
+                      RegExp(r'[a-zA-ZÀ-ÿ0-9\s\-]'),
+                    ),
+                  ],
                   onChanged: (valor) {
                     _amostraAtual = _amostraAtual.copyWith(area: valor);
                   },
-                  hint: 'Local de coleta',
                 ),
               ),
               const SizedBox(width: 16),
@@ -394,6 +408,10 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
             label: 'Ø Baga',
             value: _amostraAtual.bagaMm?.toString(),
             hint: 'Diâmetro em mm (Ex: 16-18)',
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+            ],
             onChanged: (valor) {
               final baga = double.tryParse(valor ?? '');
               _amostraAtual = _amostraAtual.copyWith(bagaMm: baga);
@@ -406,7 +424,6 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
     );
   }
 
-  /// Constrói a seção de peso bruto com múltiplas leituras
   /// Constrói a seção de peso bruto com múltiplas leituras
   Widget _buildSecaoPesoBruto() {
     final quantidadeLeituras = _getQuantidadeLeiturasPesoBruto();
@@ -421,7 +438,7 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
               MainAxisSize.min, // Não ocupar mais espaço que necessário
           children: [
             Text(
-              'PESO BRUTO - $quantidadeLeituras Leituras',
+              'PESO BRUTO - $quantidadeLeituras Leituras (g)',
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -432,7 +449,7 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Pese cada fruto ou porção individualmente com precisão',
+              'Quantidade varia conforme tipo de amostragem',
               style: GoogleFonts.poppins(
                 fontSize: 12,
                 color: Theme.of(context).brightness == Brightness.dark
@@ -448,79 +465,52 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
               physics:
                   const NeverScrollableScrollPhysics(), // Deixar scroll para o pai (SingleChildScrollView)
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3, // Reduzido de 5 para 3 colunas para dar mais espaço
+                crossAxisCount: 3,
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 12,
-                childAspectRatio: 1.2, // Aumentado de 2 para 1.2 para campos mais altos
+                childAspectRatio: 1.8,
               ),
               itemCount: quantidadeLeituras,
               itemBuilder: (context, index) {
                 return Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
                       '${index + 1}°',
-                      style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: Theme.of(context).brightness == Brightness.dark
-                            ? Colors.grey[300]
-                            : Colors.grey[700],
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 4),
                     Expanded(
                       child: TextFormField(
                         controller: _pesoBrutoControllers[index],
                         keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,
                         ),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(
+                            RegExp(r'^\d*\.?\d*'),
+                          ),
+                        ],
                         textAlign: TextAlign.center,
                         decoration: InputDecoration(
-                          hintText: '0.0g',
-                          hintStyle: GoogleFonts.poppins(
+                          hintText: '0.0',
+                          suffixText: 'g',
+                          suffixStyle: const TextStyle(
                             fontSize: 12,
-                            color: Colors.grey[500],
+                            color: Colors.grey,
+                            fontWeight: FontWeight.w500,
                           ),
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(
-                              color: Theme.of(context).brightness == Brightness.dark
-                                  ? Colors.grey[600]!
-                                  : Colors.grey[300]!,
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(
-                              color: Theme.of(context).brightness == Brightness.dark
-                                  ? Colors.grey[600]!
-                                  : Colors.grey[300]!,
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(
-                              color: Theme.of(context).primaryColor,
-                              width: 2,
-                            ),
+                            borderRadius: BorderRadius.circular(6),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 8,
-                            vertical: 12,
+                            vertical: 4,
                           ),
-                          filled: true,
-                          fillColor: Theme.of(context).brightness == Brightness.dark
-                              ? Colors.grey[800]
-                              : Colors.grey[50],
                         ),
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Theme.of(context).brightness == Brightness.dark
-                              ? Colors.white
-                              : Colors.grey[800],
-                        ),
+                        style: const TextStyle(fontSize: 12),
                         onChanged: (value) {
                           final peso = double.tryParse(value);
                           _atualizarPesoBruto(index, peso);
@@ -550,7 +540,7 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
               MainAxisSize.min, // Não ocupar mais espaço que necessário
           children: [
             Text(
-              'BRIX - 10 Leituras Manuais',
+              'BRIX - $quantidadeLeituras Leituras Manuais',
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -561,7 +551,7 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Meça o °Brix de 10 frutos diferentes para obter média representativa',
+              'Quantidade varia conforme tipo de amostragem',
               style: GoogleFonts.poppins(
                 fontSize: 12,
                 color: Theme.of(context).brightness == Brightness.dark
@@ -577,83 +567,52 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
               physics:
                   const NeverScrollableScrollPhysics(), // Deixar scroll para o pai (SingleChildScrollView)
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3, // Reduzido de 5 para 3 colunas para dar mais espaço
+                crossAxisCount: 3,
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 12,
-                childAspectRatio: 1.2, // Aumentado de 2 para 1.2 para campos mais altos
+                childAspectRatio: 1.8,
               ),
               itemCount: quantidadeLeituras,
               itemBuilder: (context, index) {
                 return Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
                       '${index + 1}°',
-                      style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: Theme.of(context).brightness == Brightness.dark
-                            ? Colors.grey[300]
-                            : Colors.grey[700],
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 4),
                     Expanded(
                       child: TextFormField(
                         controller: _brixControllers[index],
                         keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,
                         ),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(
+                            RegExp(r'^\d*\.?\d*'),
+                          ),
+                        ],
                         textAlign: TextAlign.center,
                         decoration: InputDecoration(
-                          hintText: '0.0°Bx',
-                          hintStyle: GoogleFonts.poppins(
+                          hintText: '0.0',
+                          suffixText: '°Bx',
+                          suffixStyle: const TextStyle(
                             fontSize: 12,
-                            color: Colors.grey[500],
+                            color: Colors.grey,
+                            fontWeight: FontWeight.w500,
                           ),
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(
-                              color: Theme.of(context).brightness == Brightness.dark
-                                  ? Colors.grey[600]!
-                                  : Colors.grey[300]!,
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(
-                              color: Theme.of(context).brightness == Brightness.dark
-                                  ? Colors.grey[600]!
-                                  : Colors.grey[300]!,
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(
-                              color: Theme.of(context).primaryColor,
-                              width: 2,
-                            ),
+                            borderRadius: BorderRadius.circular(6),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 8,
-                            vertical: 12,
+                            vertical: 4,
                           ),
-                          filled: true,
-                          fillColor: Theme.of(context).brightness == Brightness.dark
-                              ? Colors.grey[800]
-                              : Colors.grey[50],
                         ),
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Theme.of(context).brightness == Brightness.dark
-                              ? Colors.white
-                              : Colors.grey[800],
-                        ),
-                        onChanged: (value) {
-                          final brix = double.tryParse(value);
-                          _atualizarBrix(index, brix);
-                        },
+                        style: const TextStyle(fontSize: 12),
                       ),
                     ),
                   ],
@@ -1188,6 +1147,8 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
     required String? value,
     required ValueChanged<String?> onChanged,
     required String hint,
+    List<TextInputFormatter>? inputFormatters,
+    TextInputType? keyboardType,
   }) {
     const double fontSize = 14.0;
     const double spacing = 8.0;
@@ -1227,6 +1188,8 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
         TextFormField(
           initialValue: value,
           onChanged: onChanged,
+          keyboardType: keyboardType,
+          inputFormatters: inputFormatters,
           style: GoogleFonts.poppins(
             fontSize: fontSize,
             color: Theme.of(context).brightness == Brightness.dark
@@ -1310,6 +1273,10 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
             onChanged(numero);
           },
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+          ],
+          textAlign: TextAlign.center,
           style: GoogleFonts.poppins(
             fontSize: fontSize,
             color: Theme.of(context).brightness == Brightness.dark
@@ -1568,7 +1535,79 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
     );
   }
 
-  // 🔘 INDICADORES DE NAVEGAÇÃO POR PONTOS
+  // � BOTÕES DE GERENCIAMENTO DE AMOSTRAS
+  Widget _buildBotoesGerenciamento() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          // Botão Remover Amostra (mínimo 1)
+          ElevatedButton.icon(
+            onPressed: widget.amostras.length > 1
+                ? () {
+                    // Se estamos na última amostra, volta para a anterior antes de remover
+                    if (_amostraAtualIndex >= widget.amostras.length - 1 &&
+                        _amostraAtualIndex > 0) {
+                      _amostraAnterior();
+                    }
+                    widget.onRemoverAmostra();
+                  }
+                : null,
+            icon: const Icon(Icons.remove_circle_outline, size: 20),
+            label: Text(
+              'Remover',
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+            ),
+            style: ElevatedButton.styleFrom(
+              foregroundColor: Colors.red[700],
+              backgroundColor: Colors.red[50],
+              disabledForegroundColor: Colors.grey[400],
+              disabledBackgroundColor: Colors.grey[100],
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+
+          // Botão Adicionar Amostra (máximo 26 = A-Z)
+          ElevatedButton.icon(
+            onPressed: widget.amostras.length < 26
+                ? () {
+                    widget.onAdicionarAmostra();
+                    // Navegar automaticamente para a nova amostra após adicionar
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      setState(() {
+                        _amostraAtualIndex = widget.amostras.length - 1;
+                        _amostraAtual = widget.amostras[_amostraAtualIndex];
+                        _inicializarControllers();
+                      });
+                    });
+                  }
+                : null,
+            icon: const Icon(Icons.add_circle_outline, size: 20),
+            label: Text(
+              'Adicionar',
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+            ),
+            style: ElevatedButton.styleFrom(
+              foregroundColor: Colors.green[700],
+              backgroundColor: Colors.green[50],
+              disabledForegroundColor: Colors.grey[400],
+              disabledBackgroundColor: Colors.grey[100],
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // �🔘 INDICADORES DE NAVEGAÇÃO POR PONTOS
   Widget _buildIndicadoresNavegacao() {
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -1653,17 +1692,17 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
     );
   }
 
-  //  NAVEGAÇÃO FINAL (SETAS SIMPLES)
+  //  NAVEGAÇÃO FINAL SIMPLIFICADA (APENAS VOLTAR/PRÓXIMO)
   Widget _buildNavegacaoFinal() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           // Seta para a esquerda
           IconButton(
             onPressed: _amostraAtualIndex > 0 ? _amostraAnterior : null,
-            icon: Icon(Icons.arrow_back_ios, size: 28),
+            icon: Icon(Icons.arrow_back_ios, size: 20),
             style: IconButton.styleFrom(
               foregroundColor: _amostraAtualIndex > 0
                   ? Colors.green[700]
@@ -1671,9 +1710,9 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
               backgroundColor: _amostraAtualIndex > 0
                   ? Colors.green[50]
                   : Colors.transparent,
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(12),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(8),
               ),
             ),
           ),
@@ -1682,9 +1721,11 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
           Text(
             'Amostra ${_amostraAtualIndex + 1} de ${widget.amostras.length}',
             style: GoogleFonts.poppins(
-              fontSize: 16,
+              fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: Theme.of(context).textTheme.bodyLarge?.color,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black87,
             ),
           ),
 
@@ -1693,7 +1734,7 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
             onPressed: _amostraAtualIndex < widget.amostras.length - 1
                 ? _proximaAmostra
                 : null,
-            icon: Icon(Icons.arrow_forward_ios, size: 28),
+            icon: Icon(Icons.arrow_forward_ios, size: 20),
             style: IconButton.styleFrom(
               foregroundColor: _amostraAtualIndex < widget.amostras.length - 1
                   ? Colors.green[700]
@@ -1701,9 +1742,9 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
               backgroundColor: _amostraAtualIndex < widget.amostras.length - 1
                   ? Colors.green[50]
                   : Colors.transparent,
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(12),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(8),
               ),
             ),
           ),
@@ -1770,7 +1811,10 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
     }
   }
 
-  /// Retorna a quantidade de leituras baseada no tipo de amostragem
+  /// Retorna a quantidade de leituras de peso bruto baseada no tipo de amostragem
+  /// - Cumbuca 500g: 10 leituras
+  /// - Cumbuca 250g: 20 leituras
+  /// - Sacola (Caixa): 1 leitura
   int _getQuantidadeLeiturasPesoBruto() {
     switch (widget.tipoAmostragem) {
       case 'Cumbuca 500g':
@@ -1784,8 +1828,8 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
     }
   }
 
+  /// Retorna a quantidade de leituras de brix (sempre 10, independente do tipo)
   int _getQuantidadeLeiturasBrix() {
-    // Brix sempre tem 10 leituras, independente do tipo de amostragem
     return 10;
   }
 
@@ -1812,33 +1856,6 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
       _amostraAtual = _amostraAtual.copyWith(
         pesoBrutoLeituras: leituras.isEmpty ? null : leituras,
         pesoBrutoMedia: media,
-      );
-    });
-  }
-
-  /// Atualiza o valor de brix em um índice específico
-  void _atualizarBrix(int index, double? valor) {
-    final leituras = List<double>.from(_amostraAtual.brixLeituras ?? []);
-
-    // Garante que a lista tenha o tamanho adequado
-    while (leituras.length <= index) {
-      leituras.add(0.0);
-    }
-
-    if (valor != null) {
-      leituras[index] = valor;
-    } else {
-      leituras.removeAt(index);
-    }
-
-    final media = leituras.isNotEmpty
-        ? leituras.fold(0.0, (sum, leitura) => sum + leitura) / leituras.length
-        : null;
-
-    setState(() {
-      _amostraAtual = _amostraAtual.copyWith(
-        brixLeituras: leituras.isEmpty ? null : leituras,
-        brixMedia: media,
       );
     });
   }
