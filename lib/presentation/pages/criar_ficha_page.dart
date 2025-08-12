@@ -301,89 +301,98 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
               // 📋 CONTEÚDO DA SEÇÃO
               Expanded(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-                  child: _obterSecaoAtual(),
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  child: Column(
+                    children: [
+                      _obterSecaoAtual(),
+
+                      const SizedBox(height: 32),
+
+                      // 🔘 BOTÕES DE NAVEGAÇÃO (NO FINAL DO CONTEÚDO)
+                      _buildBotoesNavegacao(),
+                    ],
+                  ),
                 ),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
 
-      // 🔘 BOTÕES FLUTUANTES NA PARTE INFERIOR
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: Container(
-        width: double.infinity,
-        margin: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            // Botão Voltar
-            if (_etapaAtual > 0) ...[
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: _etapaAnterior,
-                  icon: const Icon(Icons.arrow_back, size: 18),
-                  label: Text(
-                    'Voltar',
-                    style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    side: BorderSide(
-                      color: Colors.white.withValues(alpha: 0.8),
-                      width: 2,
-                    ),
-                    foregroundColor: Colors.white,
-                    backgroundColor: Colors.black.withValues(alpha: 0.2),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-            ],
-
-            // Botão Próxima/Finalizar
+  /// Constrói os botões de navegação entre etapas
+  Widget _buildBotoesNavegacao() {
+    return Container(
+      width: double.infinity,
+      child: Row(
+        children: [
+          // Botão Voltar
+          if (_etapaAtual > 0) ...[
             Expanded(
-              flex: _etapaAtual > 0 ? 2 : 1,
-              child: ElevatedButton.icon(
-                onPressed: _podeAvancar()
-                    ? () {
-                        if (_etapaAtual == 2) {
-                          _finalizarFicha();
-                        } else {
-                          _proximaEtapa();
-                        }
-                      }
-                    : null,
-                icon: Icon(
-                  _etapaAtual == 2 ? Icons.check_circle : Icons.arrow_forward,
-                  size: 20,
-                ),
+              child: OutlinedButton.icon(
+                onPressed: _etapaAnterior,
+                icon: const Icon(Icons.arrow_back, size: 18),
                 label: Text(
-                  _etapaAtual == 2 ? 'Finalizar' : 'Próxima',
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                  ),
+                  'Voltar',
+                  style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
                 ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: AppColors.primaryRed,
+                style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  disabledBackgroundColor: Colors.white.withValues(alpha: 0.5),
-                  disabledForegroundColor: Colors.grey[400],
-                  elevation: 3,
-                  shadowColor: Colors.black.withValues(alpha: 0.3),
+                  side: BorderSide(
+                    color: Colors.white.withValues(alpha: 0.8),
+                    width: 2,
+                  ),
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.black.withValues(alpha: 0.2),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
               ),
             ),
+            const SizedBox(width: 12),
           ],
-        ),
+
+          // Botão Próxima/Finalizar
+          Expanded(
+            flex: _etapaAtual > 0 ? 2 : 1,
+            child: ElevatedButton.icon(
+              onPressed: _podeAvancar()
+                  ? () {
+                      if (_etapaAtual == 2) {
+                        _finalizarFicha();
+                      } else {
+                        _proximaEtapa();
+                      }
+                    }
+                  : null,
+              icon: Icon(
+                _etapaAtual == 2 ? Icons.check_circle : Icons.arrow_forward,
+                size: 20,
+              ),
+              label: Text(
+                _etapaAtual == 2 ? 'Finalizar' : 'Próxima',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: AppColors.primaryRed,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                disabledBackgroundColor: Colors.white.withValues(alpha: 0.5),
+                disabledForegroundColor: Colors.grey[400],
+                elevation: 3,
+                shadowColor: Colors.black.withValues(alpha: 0.3),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
