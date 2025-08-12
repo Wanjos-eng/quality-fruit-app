@@ -130,8 +130,8 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onPanEnd: (details) {
-        // Swipe para navegação touch
+      onHorizontalDragEnd: (details) {
+        // Detectar apenas swipes horizontais, não interferir com scroll vertical
         if (details.velocity.pixelsPerSecond.dx > 300) {
           // Swipe para direita (anterior)
           if (_amostraAtualIndex > 0) {
@@ -146,6 +146,8 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
       },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize
+            .min, // Importante: não ocupar mais espaço que o necessário
         children: [
           // � CABEÇALHO COM NAVEGAÇÃO VISUAL
           Padding(
@@ -415,6 +417,8 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize:
+              MainAxisSize.min, // Não ocupar mais espaço que necessário
           children: [
             Text(
               'PESO BRUTO - $quantidadeLeituras Leituras (g)',
@@ -440,8 +444,9 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
 
             // Grid de campos de peso bruto
             GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
+              shrinkWrap: true, // Ajustar altura ao conteúdo
+              physics:
+                  const NeverScrollableScrollPhysics(), // Deixar scroll para o pai (SingleChildScrollView)
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 5,
                 crossAxisSpacing: 8,
@@ -502,6 +507,8 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize:
+              MainAxisSize.min, // Não ocupar mais espaço que necessário
           children: [
             Text(
               'BRIX - $quantidadeLeituras Leituras Manuais',
@@ -527,8 +534,9 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
 
             // Grid de campos de Brix
             GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
+              shrinkWrap: true, // Ajustar altura ao conteúdo
+              physics:
+                  const NeverScrollableScrollPhysics(), // Deixar scroll para o pai (SingleChildScrollView)
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 5,
                 crossAxisSpacing: 8,
@@ -609,6 +617,8 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize:
+              MainAxisSize.min, // Não ocupar mais espaço que necessário
           children: [
             Text(
               'Defeitos',
@@ -617,8 +627,7 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
                 fontWeight: FontWeight.bold,
                 color: Theme.of(context).brightness == Brightness.dark
                     ? Colors.white
-                    : Colors
-                          .grey[800], // Cor escura para contraste com Card branco
+                    : Colors.grey[800],
               ),
             ),
             const SizedBox(height: 8),
@@ -1085,6 +1094,9 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
           _amostraAtual = _amostraAtual.copyWith(traca: novoValor);
           break;
       }
+
+      // Notificar o parent sobre a mudança
+      widget.onAmostraAtualizada(_amostraAtual);
     });
   }
 

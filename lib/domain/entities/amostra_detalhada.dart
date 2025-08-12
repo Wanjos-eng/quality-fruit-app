@@ -447,7 +447,7 @@ class FichaFisicaConstants {
     'Teia de Aranha',
     'Aranha',
     'Amassada',
-    'Aquosa Cor Baga',
+    'Aquosa',
     'Cacho duro',
     'Cacho ralo / banguelo',
     'Cicatriz',
