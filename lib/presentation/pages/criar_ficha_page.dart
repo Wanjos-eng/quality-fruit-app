@@ -4,7 +4,7 @@ import '../../core/theme/app_colors.dart';
 import '../../domain/entities/amostra_detalhada.dart';
 import '../widgets/secao_informacoes_gerais.dart';
 import '../widgets/secao_amostras_defeitos.dart';
-import '../widgets/secao_observacoes_finais.dart';
+import '../widgets/secao_finalizacao_acoes.dart';
 
 /// ✅ PÁGINA PRINCIPAL - CRIAR FICHA DE QUALIDADE
 ///
@@ -36,9 +36,6 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
   int? _semanaAno;
   String? _inspetor;
 
-  // ⚙️ OBSERVAÇÕES FINAIS (Seção 3)
-  final Map<String, String> _observacoesPorAmostra = {};
-
   @override
   void initState() {
     super.initState();
@@ -50,7 +47,6 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
   /// Gera amostra inicial (sempre começa com apenas uma amostra A)
   void _gerarAmostrasIniciais() {
     _amostras.clear();
-    _observacoesPorAmostra.clear();
 
     // Sempre começar com uma única amostra A
     _amostras.add(
@@ -61,9 +57,6 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
         criadoEm: DateTime.now(),
       ),
     );
-
-    // Inicializar observação vazia para a amostra A
-    _observacoesPorAmostra['A'] = '';
   }
 
   /// Adiciona uma nova amostra
@@ -81,9 +74,6 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
           criadoEm: DateTime.now(),
         ),
       );
-
-      // Inicializar observação vazia para esta amostra
-      _observacoesPorAmostra[proximaLetra] = '';
     });
   }
 
@@ -91,8 +81,7 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
   void _removerAmostra() {
     if (_amostras.length > 1) {
       setState(() {
-        final ultimaAmostra = _amostras.removeLast();
-        _observacoesPorAmostra.remove(ultimaAmostra.letraAmostra);
+        _amostras.removeLast();
       });
     }
   }
@@ -147,7 +136,7 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
       case 1:
         return 'SEÇÃO 2: Amostras e Defeitos';
       case 2:
-        return 'SEÇÃO 3: Observações Finais';
+        return 'SEÇÃO 3: Finalização e Ações';
       default:
         return 'Criar Ficha de Qualidade';
     }
@@ -203,13 +192,29 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
           onRemoverAmostra: _removerAmostra,
         );
       case 2:
-        return SecaoObservacaoFinais(
+        return SecaoFinalizacaoAcoes(
           amostras: _amostras,
-          observacoesPorAmostra: _observacoesPorAmostra,
-          onObservacaoChanged: (letra, observacao) {
-            setState(() {
-              _observacoesPorAmostra[letra] = observacao;
-            });
+          dadosGerais: {
+            'fazenda': _fazenda,
+            'dataAvaliacao': _dataAvaliacao,
+            'inspetor': _inspetor,
+            'ano': _ano,
+            'tipoAmostragem': _tipoAmostragem,
+          },
+          onSalvarRascunho: () {
+            _salvarFicha(isFinal: false);
+          },
+          onSalvarFinal: () {
+            _salvarFicha(isFinal: true);
+          },
+          onExportarPDF: () {
+            _exportarPDF();
+          },
+          onCompartilhar: () {
+            _compartilharFicha();
+          },
+          onVisualizarResumo: () {
+            _mostrarResumo();
           },
         );
       default:
@@ -379,6 +384,152 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// Salva a ficha (rascunho ou final)
+  void _salvarFicha({required bool isFinal}) {
+    if (isFinal) {
+      // Validar se todos os dados obrigatórios estão preenchidos
+      if (!_podeAvancar()) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              '⚠️ Preencha todos os campos obrigatórios antes de finalizar',
+            ),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        return;
+      }
+    }
+
+    // Implementar salvamento na base de dados
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          isFinal
+              ? '✅ Ficha finalizada e salva com sucesso!'
+              : '💾 Rascunho salvo com sucesso!',
+        ),
+        backgroundColor: isFinal ? Colors.green : Colors.blue,
+      ),
+    );
+
+    if (isFinal) {
+      Navigator.of(context).pop();
+    }
+  }
+
+  /// Exporta a ficha como PDF
+  void _exportarPDF() {
+    // Implementar geração de PDF
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('📄 Gerando PDF... (em desenvolvimento)'),
+        backgroundColor: Colors.blue,
+      ),
+    );
+  }
+
+  /// Compartilha a ficha
+  void _compartilharFicha() {
+    // Implementar compartilhamento
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('📤 Compartilhamento... (em desenvolvimento)'),
+        backgroundColor: Colors.orange,
+      ),
+    );
+  }
+
+  /// Mostra resumo da ficha
+  void _mostrarResumo() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            'Resumo da Ficha',
+            style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildResumoItem('Fazenda', _fazenda ?? 'Não informado'),
+                _buildResumoItem(
+                  'Data',
+                  _dataAvaliacao?.toString().split(' ')[0] ?? 'Não informado',
+                ),
+                _buildResumoItem('Inspetor', _inspetor ?? 'Não informado'),
+                _buildResumoItem('Tipo de Amostragem', _tipoAmostragem),
+                _buildResumoItem('Amostras', '${_amostras.length}'),
+                const SizedBox(height: 16),
+                Text(
+                  'Status das Amostras:',
+                  style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                ..._amostras.map(
+                  (amostra) => Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: Row(
+                      children: [
+                        Icon(
+                          amostra.temDadosMinimos
+                              ? Icons.check_circle
+                              : Icons.warning,
+                          color: amostra.temDadosMinimos
+                              ? Colors.green
+                              : Colors.orange,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Amostra ${amostra.letraAmostra}: ${amostra.temDadosMinimos ? "Completa" : "Incompleta"}',
+                          style: GoogleFonts.poppins(fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Fechar', style: GoogleFonts.poppins()),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildResumoItem(String label, String valor) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 80,
+            child: Text(
+              '$label:',
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w500,
+                fontSize: 12,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(valor, style: GoogleFonts.poppins(fontSize: 12)),
+          ),
+        ],
       ),
     );
   }

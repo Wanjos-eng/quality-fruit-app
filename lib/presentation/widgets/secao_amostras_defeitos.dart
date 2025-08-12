@@ -703,6 +703,10 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
             // Cor da Baga (%) - caso especial
             const SizedBox(height: 8),
             _buildDropdownCorBaga(),
+
+            // Observações da Amostra
+            const SizedBox(height: 24),
+            _buildCampoObservacoes(),
           ],
         ),
       ),
@@ -1858,5 +1862,78 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
         pesoBrutoMedia: media,
       );
     });
+  }
+
+  /// Constrói campo de observações para a amostra atual
+  Widget _buildCampoObservacoes() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Observações da Amostra ${_amostraAtual.letraAmostra}',
+          style: GoogleFonts.poppins(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.grey[800],
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Adicione observações específicas desta amostra (opcional)',
+          style: GoogleFonts.poppins(
+            fontSize: 12,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.grey[400]
+                : Colors.grey[600],
+          ),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.grey[800]
+                : Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.grey[600]!
+                  : Colors.grey[300]!,
+              width: 1,
+            ),
+          ),
+          child: TextFormField(
+            initialValue: _amostraAtual.observacoes ?? '',
+            maxLines: 4,
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black87,
+            ),
+            decoration: InputDecoration(
+              hintText: 'Digite observações sobre esta amostra...',
+              hintStyle: GoogleFonts.poppins(
+                fontSize: 14,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.grey[400]
+                    : Colors.grey[600],
+              ),
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.all(16),
+            ),
+            onChanged: (valor) {
+              setState(() {
+                _amostraAtual = _amostraAtual.copyWith(
+                  observacoes: valor.isEmpty ? null : valor,
+                );
+              });
+              widget.onAmostraAtualizada(_amostraAtual);
+            },
+          ),
+        ),
+      ],
+    );
   }
 }
