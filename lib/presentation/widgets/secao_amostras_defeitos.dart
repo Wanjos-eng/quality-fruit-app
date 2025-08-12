@@ -409,7 +409,7 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
   /// Constrói a seção de peso bruto com múltiplas leituras
   /// Constrói a seção de peso bruto com múltiplas leituras
   Widget _buildSecaoPesoBruto() {
-    final quantidadeLeituras = _getQuantidadeLeituras();
+    final quantidadeLeituras = _getQuantidadeLeiturasPesoBruto();
 
     return Card(
       margin: const EdgeInsets.all(0), // Forçar margin zero para debug
@@ -421,7 +421,7 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
               MainAxisSize.min, // Não ocupar mais espaço que necessário
           children: [
             Text(
-              'PESO BRUTO - $quantidadeLeituras Leituras (g)',
+              'PESO BRUTO - $quantidadeLeituras Leituras',
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -432,7 +432,7 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Quantidade varia conforme tipo de amostragem',
+              'Pese cada fruto ou porção individualmente com precisão',
               style: GoogleFonts.poppins(
                 fontSize: 12,
                 color: Theme.of(context).brightness == Brightness.dark
@@ -448,40 +448,79 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
               physics:
                   const NeverScrollableScrollPhysics(), // Deixar scroll para o pai (SingleChildScrollView)
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 5,
-                crossAxisSpacing: 8,
-                mainAxisSpacing: 8,
-                childAspectRatio: 2,
+                crossAxisCount: 3, // Reduzido de 5 para 3 colunas para dar mais espaço
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 1.2, // Aumentado de 2 para 1.2 para campos mais altos
               ),
               itemCount: quantidadeLeituras,
               itemBuilder: (context, index) {
                 return Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
                       '${index + 1}°',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.grey[300]
+                            : Colors.grey[700],
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 6),
                     Expanded(
                       child: TextFormField(
                         controller: _pesoBrutoControllers[index],
                         keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,
                         ),
+                        textAlign: TextAlign.center,
                         decoration: InputDecoration(
-                          hintText: '0.0',
+                          hintText: '0.0g',
+                          hintStyle: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: Colors.grey[500],
+                          ),
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(6),
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(
+                              color: Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.grey[600]!
+                                  : Colors.grey[300]!,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(
+                              color: Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.grey[600]!
+                                  : Colors.grey[300]!,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(
+                              color: Theme.of(context).primaryColor,
+                              width: 2,
+                            ),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 8,
-                            vertical: 4,
+                            vertical: 12,
                           ),
+                          filled: true,
+                          fillColor: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.grey[800]
+                              : Colors.grey[50],
                         ),
-                        style: const TextStyle(fontSize: 12),
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white
+                              : Colors.grey[800],
+                        ),
                         onChanged: (value) {
                           final peso = double.tryParse(value);
                           _atualizarPesoBruto(index, peso);
@@ -499,7 +538,7 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
   }
 
   Widget _buildSecaoBrix() {
-    final quantidadeLeituras = _getQuantidadeLeituras();
+    final quantidadeLeituras = _getQuantidadeLeiturasBrix();
 
     return Card(
       margin: const EdgeInsets.all(0), // Forçar margin zero para debug
@@ -511,7 +550,7 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
               MainAxisSize.min, // Não ocupar mais espaço que necessário
           children: [
             Text(
-              'BRIX - $quantidadeLeituras Leituras Manuais',
+              'BRIX - 10 Leituras Manuais',
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -522,7 +561,7 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Quantidade varia conforme tipo de amostragem',
+              'Meça o °Brix de 10 frutos diferentes para obter média representativa',
               style: GoogleFonts.poppins(
                 fontSize: 12,
                 color: Theme.of(context).brightness == Brightness.dark
@@ -538,40 +577,83 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
               physics:
                   const NeverScrollableScrollPhysics(), // Deixar scroll para o pai (SingleChildScrollView)
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 5,
-                crossAxisSpacing: 8,
-                mainAxisSpacing: 8,
-                childAspectRatio: 2,
+                crossAxisCount: 3, // Reduzido de 5 para 3 colunas para dar mais espaço
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 1.2, // Aumentado de 2 para 1.2 para campos mais altos
               ),
               itemCount: quantidadeLeituras,
               itemBuilder: (context, index) {
                 return Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
                       '${index + 1}°',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.grey[300]
+                            : Colors.grey[700],
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 6),
                     Expanded(
                       child: TextFormField(
                         controller: _brixControllers[index],
                         keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,
                         ),
+                        textAlign: TextAlign.center,
                         decoration: InputDecoration(
-                          hintText: '0.0',
+                          hintText: '0.0°Bx',
+                          hintStyle: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: Colors.grey[500],
+                          ),
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(6),
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(
+                              color: Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.grey[600]!
+                                  : Colors.grey[300]!,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(
+                              color: Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.grey[600]!
+                                  : Colors.grey[300]!,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(
+                              color: Theme.of(context).primaryColor,
+                              width: 2,
+                            ),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 8,
-                            vertical: 4,
+                            vertical: 12,
                           ),
+                          filled: true,
+                          fillColor: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.grey[800]
+                              : Colors.grey[50],
                         ),
-                        style: const TextStyle(fontSize: 12),
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white
+                              : Colors.grey[800],
+                        ),
+                        onChanged: (value) {
+                          final brix = double.tryParse(value);
+                          _atualizarBrix(index, brix);
+                        },
                       ),
                     ),
                   ],
@@ -1689,17 +1771,22 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
   }
 
   /// Retorna a quantidade de leituras baseada no tipo de amostragem
-  int _getQuantidadeLeituras() {
+  int _getQuantidadeLeiturasPesoBruto() {
     switch (widget.tipoAmostragem) {
       case 'Cumbuca 500g':
         return 10;
       case 'Cumbuca 250g':
         return 20;
-      case 'Sacola':
+      case 'Sacola (Caixa)':
         return 1;
       default:
         return 10; // Default para Cumbuca 500g
     }
+  }
+
+  int _getQuantidadeLeiturasBrix() {
+    // Brix sempre tem 10 leituras, independente do tipo de amostragem
+    return 10;
   }
 
   /// Atualiza o valor de peso bruto em um índice específico
@@ -1725,6 +1812,33 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
       _amostraAtual = _amostraAtual.copyWith(
         pesoBrutoLeituras: leituras.isEmpty ? null : leituras,
         pesoBrutoMedia: media,
+      );
+    });
+  }
+
+  /// Atualiza o valor de brix em um índice específico
+  void _atualizarBrix(int index, double? valor) {
+    final leituras = List<double>.from(_amostraAtual.brixLeituras ?? []);
+
+    // Garante que a lista tenha o tamanho adequado
+    while (leituras.length <= index) {
+      leituras.add(0.0);
+    }
+
+    if (valor != null) {
+      leituras[index] = valor;
+    } else {
+      leituras.removeAt(index);
+    }
+
+    final media = leituras.isNotEmpty
+        ? leituras.fold(0.0, (sum, leitura) => sum + leitura) / leituras.length
+        : null;
+
+    setState(() {
+      _amostraAtual = _amostraAtual.copyWith(
+        brixLeituras: leituras.isEmpty ? null : leituras,
+        brixMedia: media,
       );
     });
   }
