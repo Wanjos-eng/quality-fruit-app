@@ -1828,9 +1828,9 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
 
   Color _getCorIndicador(bool isAtual, bool isPreenchida) {
     if (isAtual) {
-      return Colors.blue[600]!.withValues(
+      return Colors.orange[600]!.withValues(
         alpha: 0.8,
-      ); // Azul semi-transparente para amostra atual
+      ); // Laranja semi-transparente para amostra atual
     } else if (isPreenchida) {
       return Colors.green[600]!.withValues(
         alpha: 0.7,
