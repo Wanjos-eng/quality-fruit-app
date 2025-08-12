@@ -1615,81 +1615,84 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
   Widget _buildIndicadoresNavegacao() {
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Calcula o tamanho dos botões para ocupar toda a largura disponível
-        final larguraDisponivel =
-            constraints.maxWidth - 48; // Aumentei padding das laterais
+        final larguraDisponivel = constraints.maxWidth - 32;
         final numeroAmostras = widget.amostras.length;
 
-        // Distribui uniformemente por toda a largura com tamanhos maiores
-        final larguraPorBotao = larguraDisponivel / numeroAmostras;
-        final tamanhoAtivoIdeal = (larguraPorBotao * 0.75).clamp(
-          34.0,
-          52.0,
-        ); // Reduzi um pouco para dar mais espaço
-        final tamanhoInativoIdeal = (tamanhoAtivoIdeal * 0.85).clamp(
-          28.0,
-          44.0,
-        );
+        // Tamanho fixo dos botões para melhor usabilidade
+        const tamanhoAtivoIdeal = 48.0;
+        const tamanhoInativoIdeal = 42.0;
+        const espacamentoEntreButtons = 8.0;
+
+        // Calcula quantos botões cabem por linha
+        final larguraPorBotao = tamanhoAtivoIdeal + espacamentoEntreButtons;
+        final botoesPorLinha = (larguraDisponivel / larguraPorBotao)
+            .floor()
+            .clamp(1, numeroAmostras);
+
+        // Organiza os botões em linhas
+        final linhas = <List<int>>[];
+        for (int i = 0; i < numeroAmostras; i += botoesPorLinha) {
+          final fimLinha = (i + botoesPorLinha).clamp(0, numeroAmostras);
+          linhas.add(List.generate(fimLinha - i, (index) => i + index));
+        }
 
         return Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 24,
-          ), // Aumentei o padding
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment
-                .spaceBetween, // Mudei para spaceBetween para melhor distribuição
-            children: List.generate(widget.amostras.length, (index) {
-              final isAtual = index == _amostraAtualIndex;
-              final isPreenchida = _verificarAmostraPreenchida(index);
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            children: linhas.map((botoesDaLinha) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: botoesDaLinha.map((index) {
+                    final isAtual = index == _amostraAtualIndex;
+                    final isPreenchida = _verificarAmostraPreenchida(index);
 
-              return Expanded(
-                child: Container(
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 4,
-                  ), // Adicionei margem entre os botões
-                  child: Center(
-                    child: GestureDetector(
-                      onTap: () => _irParaAmostra(index),
-                      child: Container(
-                        width: isAtual
-                            ? tamanhoAtivoIdeal
-                            : tamanhoInativoIdeal,
-                        height: isAtual
-                            ? tamanhoAtivoIdeal
-                            : tamanhoInativoIdeal,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: _getCorIndicador(isAtual, isPreenchida),
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.6),
-                            width: isAtual ? 2 : 1,
+                    return Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      child: GestureDetector(
+                        onTap: () => _irParaAmostra(index),
+                        child: Container(
+                          width: isAtual
+                              ? tamanhoAtivoIdeal
+                              : tamanhoInativoIdeal,
+                          height: isAtual
+                              ? tamanhoAtivoIdeal
+                              : tamanhoInativoIdeal,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: _getCorIndicador(isAtual, isPreenchida),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.9),
+                              width: isAtual ? 3 : 2,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.15),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                           ),
-                        ),
-                        child: Center(
-                          child: Text(
-                            widget.amostras[index].letraAmostra,
-                            style: GoogleFonts.poppins(
-                              fontSize: isAtual
-                                  ? (tamanhoAtivoIdeal * 0.4).clamp(16.0, 22.0)
-                                  : (tamanhoInativoIdeal * 0.45).clamp(
-                                      14.0,
-                                      20.0,
-                                    ),
-                              fontWeight: isAtual
-                                  ? FontWeight.bold
-                                  : FontWeight.w500,
-                              color: isAtual || isPreenchida
-                                  ? Colors.white
-                                  : Colors.grey[400],
+                          child: Center(
+                            child: Text(
+                              widget.amostras[index].letraAmostra,
+                              style: GoogleFonts.poppins(
+                                fontSize: isAtual ? 18.0 : 16.0,
+                                fontWeight: isAtual
+                                    ? FontWeight.bold
+                                    : FontWeight.w600,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  ),
+                    );
+                  }).toList(),
                 ),
               );
-            }),
+            }).toList(),
           ),
         );
       },
@@ -1807,11 +1810,17 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
 
   Color _getCorIndicador(bool isAtual, bool isPreenchida) {
     if (isAtual) {
-      return Colors.orange[400]!; // Mudança: azul para laranja
+      return Colors.blue[600]!.withValues(
+        alpha: 0.8,
+      ); // Azul semi-transparente para amostra atual
     } else if (isPreenchida) {
-      return Colors.green[400]!;
+      return Colors.green[600]!.withValues(
+        alpha: 0.7,
+      ); // Verde semi-transparente para preenchida
     } else {
-      return Colors.white.withValues(alpha: 0.4);
+      return Colors.white.withValues(
+        alpha: 0.3,
+      ); // Branco bem transparente para não preenchida
     }
   }
 
