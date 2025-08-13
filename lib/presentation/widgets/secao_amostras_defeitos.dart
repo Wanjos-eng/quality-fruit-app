@@ -32,6 +32,9 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
   int _amostraAtualIndex = 0;
   late AmostraDetalhada _amostraAtual;
 
+  // Armazena o valor do campo Baga no formato string (ex: "16-18")
+  String? _bagaString;
+
   // Controllers para Brix (quantidade variável)
   final List<TextEditingController> _brixControllers = List.generate(
     20, // Máximo 20 para Cumbuca 250g
@@ -49,6 +52,11 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
     super.initState();
     _amostraAtual = widget.amostras[_amostraAtualIndex];
     _inicializarControllers();
+  }
+
+  /// Retorna o valor de exibição para o campo Baga
+  String? _getBagaDisplayValue() {
+    return _bagaString;
   }
 
   @override
@@ -82,6 +90,9 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
         _pesoBrutoControllers[i].clear();
       }
     }
+
+    // Limpar o valor da baga para nova amostra (será preenchido pelo usuário)
+    _bagaString = null;
   }
 
   void _proximaAmostra() {
@@ -406,15 +417,26 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
           // ROW 8: Ø Baga
           _buildCampoTexto(
             label: 'Ø Baga',
-            value: _amostraAtual.bagaMm?.toString(),
-            hint: 'Diâmetro em mm (Ex: 16-18)',
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            value: _getBagaDisplayValue(),
+            hint: 'Formato: 16-18, 15-17, etc.',
+            keyboardType: TextInputType.text,
             inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+              FilteringTextInputFormatter.allow(RegExp(r'^\d{0,2}-?\d{0,2}$')),
+              _BagaFormatter(),
             ],
             onChanged: (valor) {
-              final baga = double.tryParse(valor ?? '');
-              _amostraAtual = _amostraAtual.copyWith(bagaMm: baga);
+              // Só aceita se estiver no formato correto
+              if (valor != null && RegExp(r'^\d+-\d+$').hasMatch(valor)) {
+                // Armazena o valor como string no formato original
+                _bagaString = valor;
+                // Para fins de compatibilidade, calcula a média para bagaMm
+                final partes = valor.split('-');
+                final media = (int.parse(partes[0]) + int.parse(partes[1])) / 2;
+                _amostraAtual = _amostraAtual.copyWith(bagaMm: media);
+              } else if (valor == null || valor.isEmpty) {
+                _bagaString = null;
+                _amostraAtual = _amostraAtual.copyWith(bagaMm: null);
+              }
             },
           ),
 
@@ -1964,6 +1986,57 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Formatador personalizado para campo Baga no formato "número-número"
+class _BagaFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final text = newValue.text;
+
+    // Se está vazio, permite
+    if (text.isEmpty) {
+      return newValue;
+    }
+
+    // Remove caracteres não numéricos e hífen
+    final cleaned = text.replaceAll(RegExp(r'[^\d-]'), '');
+
+    // Se só tem números, adiciona hífen automaticamente após 2 dígitos
+    if (!cleaned.contains('-') && cleaned.length > 2) {
+      final formatted = '${cleaned.substring(0, 2)}-${cleaned.substring(2)}';
+      return TextEditingValue(
+        text: formatted,
+        selection: TextSelection.collapsed(offset: formatted.length),
+      );
+    }
+
+    // Se já tem hífen, limita a 2 dígitos antes e 2 depois
+    if (cleaned.contains('-')) {
+      final parts = cleaned.split('-');
+      if (parts.length == 2) {
+        final primeiro = parts[0].length > 2
+            ? parts[0].substring(0, 2)
+            : parts[0];
+        final segundo = parts[1].length > 2
+            ? parts[1].substring(0, 2)
+            : parts[1];
+        final formatted = '$primeiro-$segundo';
+        return TextEditingValue(
+          text: formatted,
+          selection: TextSelection.collapsed(offset: formatted.length),
+        );
+      }
+    }
+
+    return TextEditingValue(
+      text: cleaned,
+      selection: TextSelection.collapsed(offset: cleaned.length),
     );
   }
 }
