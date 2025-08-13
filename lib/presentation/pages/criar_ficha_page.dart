@@ -323,7 +323,7 @@ class _CriarFichaPageState extends State<CriarFichaPage> {
 
   /// Constrói os botões de navegação entre etapas
   Widget _buildBotoesNavegacao() {
-    return Container(
+    return SizedBox(
       width: double.infinity,
       child: Row(
         children: [
