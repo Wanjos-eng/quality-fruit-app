@@ -420,10 +420,7 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
             value: _getBagaDisplayValue(),
             hint: 'Formato: 16-18, 15-17, etc.',
             keyboardType: TextInputType.text,
-            inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'^\d{0,2}-?\d{0,2}$')),
-              _BagaFormatter(),
-            ],
+            inputFormatters: [_BagaFormatter()],
             onChanged: (valor) {
               // Só aceita se estiver no formato correto
               if (valor != null && RegExp(r'^\d+-\d+$').hasMatch(valor)) {

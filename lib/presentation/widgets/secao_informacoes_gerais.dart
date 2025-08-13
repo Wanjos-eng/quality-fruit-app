@@ -656,9 +656,7 @@ class SecaoInformacoesGerais extends StatelessWidget {
       if (data != null && context.mounted) {
         onDataChanged(data);
       }
-    } catch (e, stackTrace) {
-      debugPrint('Erro ao abrir seletor de data: $e');
-      debugPrint('Stack trace: $stackTrace');
+    } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

@@ -40,11 +40,9 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
       _datasource = LocalDatasource();
 
       // FORÇAR reset completo do banco para garantir estrutura correta
-      debugPrint('🔄 Resetando banco de dados...');
       await _datasource.resetDatabase();
 
       // Inicializar banco com nova estrutura
-      debugPrint('🔄 Inicializando nova estrutura do banco...');
       await _datasource.database;
 
       // Inicializar repositórios e use cases
@@ -52,15 +50,12 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
       _listarFichasUseCase = ListarFichasUseCase(_fichaRepository);
       _salvarFichaUseCase = SalvarFichaUseCase(_fichaRepository);
 
-      debugPrint('✅ Serviços inicializados com sucesso!');
-
       // Criar fichas de teste
       await _criarFichasDeTeste();
 
       // Carregar fichas do banco
       await _carregarFichas();
     } catch (e) {
-      debugPrint('❌ Erro na inicialização: $e');
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -85,19 +80,15 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
     });
 
     try {
-      debugPrint('🔍 Carregando fichas do banco...');
       final fichas = await _listarFichasUseCase.listarTodas();
-      debugPrint('📊 ${fichas.length} fichas encontradas');
 
       if (mounted) {
         setState(() {
           _fichas = fichas;
           _isLoading = false;
         });
-        debugPrint('✅ Fichas carregadas com sucesso na UI');
       }
     } catch (e) {
-      debugPrint('❌ Erro ao carregar fichas: $e');
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -115,8 +106,6 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
 
   Future<void> _criarFichasDeTeste() async {
     try {
-      debugPrint('🔄 Iniciando criação de fichas de teste...');
-
       final agoraExato = DateTime.now(); // Data atual do sistema
 
       // Ficha 1: Fazenda Pura Verde
@@ -225,28 +214,11 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
       );
 
       // Salvar todas as fichas de teste - o numeroFicha será gerado automaticamente
-      debugPrint('📝 Salvando ficha 1 (fazenda: ${ficha1.fazenda})');
-      final fichaSalva1 = await _salvarFichaUseCase.call(ficha1);
-      debugPrint('✅ Ficha 1 salva com número: ${fichaSalva1.numeroFicha}');
-
-      debugPrint('📝 Salvando ficha 2 (fazenda: ${ficha2.fazenda})');
-      final fichaSalva2 = await _salvarFichaUseCase.call(ficha2);
-      debugPrint('✅ Ficha 2 salva com número: ${fichaSalva2.numeroFicha}');
-
-      debugPrint('📝 Salvando ficha 3 (fazenda: ${ficha3.fazenda})');
-      final fichaSalva3 = await _salvarFichaUseCase.call(ficha3);
-      debugPrint('✅ Ficha 3 salva com número: ${fichaSalva3.numeroFicha}');
-
-      debugPrint('📝 Salvando ficha 4 (fazenda: ${ficha4.fazenda})');
-      final fichaSalva4 = await _salvarFichaUseCase.call(ficha4);
-      debugPrint('✅ Ficha 4 salva com número: ${fichaSalva4.numeroFicha}');
-
-      debugPrint('✅ 4 fichas de UVA criadas com números automáticos!');
-      debugPrint(
-        '📋 Números gerados: ${fichaSalva1.numeroFicha}, ${fichaSalva2.numeroFicha}, ${fichaSalva3.numeroFicha}, ${fichaSalva4.numeroFicha}',
-      );
+      await _salvarFichaUseCase.call(ficha1);
+      await _salvarFichaUseCase.call(ficha2);
+      await _salvarFichaUseCase.call(ficha3);
+      await _salvarFichaUseCase.call(ficha4);
     } catch (e) {
-      debugPrint('❌ Erro ao criar fichas de teste: $e');
       rethrow; // Re-lançar erro para que seja capturado na inicialização
     }
   }
@@ -1140,7 +1112,6 @@ class _ListaFichasPageState extends State<ListaFichasPage> {
       return await datasource.buscarAmostrasDetalhadasPorFicha(fichaId);
     } catch (e) {
       // Em caso de erro, retorna amostras de exemplo
-      debugPrint('Erro ao carregar amostras do banco: $e');
       return _criarAmostrasExemplo(fichaId);
     }
   }
