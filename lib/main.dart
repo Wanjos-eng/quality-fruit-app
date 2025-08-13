@@ -22,9 +22,8 @@ void main() async {
   try {
     final appInit = AppInitializationService();
     await appInit.initialize();
-    debugPrint('🚀 Aplicação inicializada com sucesso');
   } catch (e) {
-    debugPrint('❌ Erro na inicialização: $e');
+    // Erro na inicialização - aplicação continua mesmo assim
   }
 
   runApp(const QualityFruitApp());

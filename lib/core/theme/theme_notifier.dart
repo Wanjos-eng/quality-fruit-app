@@ -32,7 +32,6 @@ class ThemeNotifier extends ChangeNotifier {
       }
       notifyListeners();
     } catch (e) {
-      debugPrint('Erro ao carregar tema: $e');
       _themeMode = ThemeMode.light;
     }
   }
@@ -54,7 +53,7 @@ class ThemeNotifier extends ChangeNotifier {
       final themeString = _themeMode == ThemeMode.light ? 'light' : 'dark';
       await prefs.setString(_themeKey, themeString);
     } catch (e) {
-      debugPrint('Erro ao salvar tema: $e');
+      // Falha silenciosa no salvamento do tema
     }
   }
 

@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import '../services/directory_manager_service.dart';
 import '../../data/datasources/local_datasource.dart';
 
@@ -24,7 +23,6 @@ class AppInitializationService {
       // Limpa arquivos antigos se necessário
       await _cleanupOldFiles();
     } catch (e) {
-      debugPrint('Erro durante inicialização: $e');
       rethrow;
     }
   }
@@ -33,7 +31,6 @@ class AppInitializationService {
   Future<void> _initializeDirectories() async {
     final directoryManager = DirectoryManagerService();
     await directoryManager.initializeDirectoryStructure();
-    debugPrint('✅ Estrutura de diretórios inicializada');
   }
 
   /// Inicializa o banco de dados
@@ -41,7 +38,6 @@ class AppInitializationService {
     final datasource = LocalDatasource();
     // Apenas acessa o database para forçar sua criação
     await datasource.database;
-    debugPrint('✅ Banco de dados inicializado');
   }
 
   /// Limpa arquivos antigos se necessário
@@ -49,10 +45,8 @@ class AppInitializationService {
     try {
       final directoryManager = DirectoryManagerService();
       await directoryManager.cleanOldFiles();
-      debugPrint('✅ Limpeza de arquivos antigos concluída');
     } catch (e) {
       // Não é crítico se a limpeza falhar
-      debugPrint('⚠️ Aviso: Falha na limpeza de arquivos antigos: $e');
     }
   }
 
