@@ -510,9 +510,7 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
                         keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,
                         ),
-                        inputFormatters: [
-                          _DecimalFormatter(),
-                        ],
+                        inputFormatters: [_DecimalFormatter()],
                         textAlign: TextAlign.center,
                         decoration: InputDecoration(
                           hintText: '0.0',
@@ -610,9 +608,7 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
                         keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,
                         ),
-                        inputFormatters: [
-                          _DecimalFormatter(),
-                        ],
+                        inputFormatters: [_DecimalFormatter()],
                         textAlign: TextAlign.center,
                         decoration: InputDecoration(
                           hintText: '0.0',
@@ -768,9 +764,7 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
                 decimal: true,
               ),
               textAlign: TextAlign.center,
-              inputFormatters: [
-                _PercentFormatter(),
-              ],
+              inputFormatters: [_PercentFormatter()],
               style: GoogleFonts.poppins(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
@@ -1290,9 +1284,7 @@ class _SecaoAmostrasDefeitosState extends State<SecaoAmostrasDefeitos> {
             onChanged(numero);
           },
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          inputFormatters: [
-            _DecimalFormatter(),
-          ],
+          inputFormatters: [_DecimalFormatter()],
           textAlign: TextAlign.center,
           style: GoogleFonts.poppins(
             fontSize: fontSize,
@@ -2028,15 +2020,15 @@ class _DecimalFormatter extends TextInputFormatter {
     TextEditingValue newValue,
   ) {
     final text = newValue.text;
-    
+
     // Se está vazio, permite
     if (text.isEmpty) {
       return newValue;
     }
-    
+
     // Converte vírgula para ponto
     final normalizedText = text.replaceAll(',', '.');
-    
+
     // Valida se é um número decimal válido
     if (RegExp(r'^\d*\.?\d*$').hasMatch(normalizedText)) {
       return TextEditingValue(
@@ -2044,7 +2036,7 @@ class _DecimalFormatter extends TextInputFormatter {
         selection: TextSelection.collapsed(offset: normalizedText.length),
       );
     }
-    
+
     // Se não é válido, mantém o valor anterior
     return oldValue;
   }
@@ -2058,26 +2050,26 @@ class _PercentFormatter extends TextInputFormatter {
     TextEditingValue newValue,
   ) {
     final text = newValue.text;
-    
+
     // Se está vazio, permite
     if (text.isEmpty) {
       return newValue;
     }
-    
+
     // Converte vírgula para ponto
     final normalizedText = text.replaceAll(',', '.');
-    
+
     // Valida formato básico
     if (!RegExp(r'^\d{0,3}(\.\d{0,2})?$').hasMatch(normalizedText)) {
       return oldValue;
     }
-    
+
     // Verifica se o número está dentro do limite (0-100)
     final numero = double.tryParse(normalizedText);
     if (numero != null && numero > 100) {
       return oldValue;
     }
-    
+
     return TextEditingValue(
       text: normalizedText,
       selection: TextSelection.collapsed(offset: normalizedText.length),
